@@ -1,35 +1,39 @@
-import hashlib
 from database import get_connection
 
-def hash_password(p):
-    return hashlib.sha256(p.encode()).hexdigest()
-
 def register_user(username, email, password, skills, bio, portfolio):
+
     conn = get_connection()
-    try:
-        conn.execute(
-            "INSERT INTO users (username,email,password,skills,bio,portfolio_link) VALUES (?,?,?,?,?,?)",
-            (username,email,hash_password(password),skills,bio,portfolio)
-        )
-        conn.commit()
-        return True,"Success"
-    except:
-        return False,"User exists"
-    finally:
+    c = conn.cursor()
+
+    # CHECK USERNAME ONLY (IMPORTANT)
+    c.execute("SELECT * FROM users WHERE username = ?", (username,))
+    existing_user = c.fetchone()
+
+    if existing_user:
         conn.close()
+        return False, "Username already exists"
 
-def login_user(username,password):
-    conn = get_connection()
-    c=conn.cursor()
-    c.execute("SELECT * FROM users WHERE username=? AND password=?",
-              (username,hash_password(password)))
-    u=c.fetchone()
-    conn.close()
-    return u
+    # INSERT NEW USER
+    c.execute("""
+        INSERT INTO users (username, email, password, skills, bio, portfolio, trust_score)
+        VALUES (?, ?, ?, ?, ?, ?, ?)
+    """, (username, email, password, skills, bio, portfolio, 0))
 
-def update_trust_score(username,score):
-    conn = get_connection()
-    conn.execute("UPDATE users SET trust_score=trust_score+? WHERE username=?",
-                 (score,username))
     conn.commit()
     conn.close()
+
+    return True, "User registered successfully"
+
+
+def login_user(username, password):
+    conn = get_connection()
+    c = conn.cursor()
+
+    c.execute("""
+        SELECT * FROM users WHERE username = ? AND password = ?
+    """, (username, password))
+
+    user = c.fetchone()
+    conn.close()
+
+    return user
