@@ -65,7 +65,52 @@ header, #MainMenu, footer {visibility: hidden;}
 
 </style>
 """, unsafe_allow_html=True)
+st.markdown("""
+<style>
 
+/* AUTH PAGE LAYOUT */
+.auth-container {
+    display: flex;
+    height: 100vh;
+}
+
+/* LEFT IMAGE PANEL */
+.left-panel {
+    flex: 1;
+    background: url('https://images.unsplash.com/photo-1500530855697-b586d89ba3ee') center/cover no-repeat;
+    border-radius: 20px;
+    margin: 20px;
+    display:flex;
+    align-items:flex-end;
+    padding:30px;
+    color:white;
+    font-size:22px;
+}
+
+/* RIGHT FORM PANEL */
+.right-panel {
+    flex: 1;
+    padding: 80px;
+}
+
+/* INPUT FIELDS */
+.stTextInput input {
+    background-color: #1f2937 !important;
+    color: white !important;
+    border-radius: 8px !important;
+}
+
+/* BUTTON */
+.stButton>button {
+    background: linear-gradient(90deg,#7c3aed,#a855f7);
+    color: white;
+    border-radius: 10px;
+    height: 45px;
+    width: 100%;
+}
+
+</style>
+""", unsafe_allow_html=True)
 # ================= LANDING =================
 def landing():
 
@@ -104,22 +149,66 @@ def landing():
 
 # ================= LOGIN =================
 def login():
-    st.title("Login")
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    col1, col2 = st.columns([1,1])
 
-    if st.button("Login"):
-        user = login_user(username, password)
-        if user:
-            st.success("Login successful")
-        else:
-            st.error("Invalid credentials")
+    with col1:
+        st.markdown("""
+        <div class="left-panel">
+            Capturing Moments,<br>Creating Memories
+        </div>
+        """, unsafe_allow_html=True)
 
-    if st.button("Register"):
-        st.session_state.page = "register"
-        st.rerun()
+    with col2:
+        st.markdown("<h1>Create an account</h1>", unsafe_allow_html=True)
 
+        username = st.text_input("Username")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+
+        agree = st.checkbox("I agree to Terms & Conditions")
+
+        if st.button("Create account"):
+            if agree:
+                success, msg = register_user(username, email, password, "", "", "")
+                if success:
+                    st.success("Account created successfully")
+                else:
+                    st.error(msg)
+            else:
+                st.warning("Please accept terms")
+
+        st.markdown("Already have an account?")
+        if st.button("Login"):
+            st.session_state.page = "login_user"
+            st.rerun()
+def login_user_page():
+
+    col1, col2 = st.columns([1,1])
+
+    with col1:
+        st.markdown("""
+        <div class="left-panel">
+            Welcome Back 👋
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        st.markdown("<h1>Login</h1>", unsafe_allow_html=True)
+
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
+
+        if st.button("Login"):
+            user = login_user(username, password)
+            if user:
+                st.success("Login successful")
+            else:
+                st.error("Invalid credentials")
+
+        if st.button("Create Account"):
+            st.session_state.page = "login"
+            st.rerun()
 # ================= REGISTER =================
 def register():
     st.title("Register")
@@ -147,5 +236,5 @@ if st.session_state.page == "landing":
     landing()
 elif st.session_state.page == "login":
     login()
-elif st.session_state.page == "register":
-    register()
+elif st.session_state.page == "login_user":
+    login_user_page()
