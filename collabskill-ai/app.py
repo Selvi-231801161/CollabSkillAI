@@ -9,49 +9,43 @@ st.set_page_config(layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = "landing"
 
-if "section" not in st.session_state:
-    st.session_state.section = "home"
-
-# ================= CSS =================
+# ================= REMOVE STREAMLIT HEADER =================
 st.markdown("""
 <style>
 
-/* BACKGROUND */
+/* REMOVE WHITE HEADER */
+header {visibility: hidden;}
+footer {visibility: hidden;}
+#MainMenu {visibility: hidden;}
+
+/* REMOVE TOP SPACE */
+.block-container {
+    padding-top: 0rem;
+}
+
+/* FULL BACKGROUND */
 .stApp {
     background-color: #050816;
 }
 
-/* REMOVE PADDING */
-.block-container {
-    padding-top: 1rem;
-}
-
 /* TEXT */
-h1, h2, h3 {
-    color: #e5e7eb !important;
+h1 {
+    color: #e5e7eb;
 }
 p {
-    color: #94a3b8 !important;
-}
-
-/* NAVBAR */
-.navbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:15px 40px;
+    color: #94a3b8;
 }
 
 /* HERO */
 .hero {
-    text-align:center;
-    margin-top:100px;
+    text-align: center;
+    margin-top: 80px;
 }
 
 .hero h1 {
-    font-size:80px;
-    font-weight:900;
-    line-height:1.1;
+    font-size: 85px;
+    font-weight: 900;
+    line-height: 1.1;
 }
 
 /* GRADIENT TEXT */
@@ -64,9 +58,9 @@ p {
 /* BUTTON */
 .stButton>button {
     background: linear-gradient(90deg,#22d3ee,#7c3aed);
-    color:white;
-    border-radius:10px;
-    border:none;
+    color: white;
+    border-radius: 10px;
+    border: none;
 }
 
 </style>
@@ -76,17 +70,12 @@ p {
 def landing():
 
     # ===== NAVBAR =====
-    col1, col2, col3 = st.columns([6,2,2])
+    col1, col2 = st.columns([8,2])
 
     with col1:
         st.markdown("### 🚀 CollabSkill AI")
 
     with col2:
-        if st.button("How It Works"):
-            st.session_state.section = "how"
-            st.rerun()
-
-    with col3:
         if st.button("Get Started"):
             st.session_state.page = "login"
             st.rerun()
@@ -104,59 +93,12 @@ def landing():
     """, unsafe_allow_html=True)
 
     st.markdown(
-        "An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly."
+        "<p style='text-align:center; font-size:18px;'>"
+        "An intelligent platform that matches you with the right people — "
+        "using AI to connect digital skill providers with those who need them instantly."
+        "</p>",
+        unsafe_allow_html=True
     )
-
-    # ===== HOW IT WORKS =====
-    if st.session_state.section == "how":
-
-        st.markdown("## How CollabSkill AI Works")
-
-        col1, col2 = st.columns(2)
-        col3, col4 = st.columns(2)
-        col5, col6 = st.columns(2)
-
-        col1.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>01 Register</h4>
-        <p>Create your profile</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col2.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>02 Post Task</h4>
-        <p>Describe your need</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col3.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>03 AI Match</h4>
-        <p>Find best users</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col4.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>04 Collaborate</h4>
-        <p>Work together</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col5.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>05 Complete</h4>
-        <p>Finish task</p>
-        </div>
-        """, unsafe_allow_html=True)
-
-        col6.markdown("""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;">
-        <h4>06 Trust Score</h4>
-        <p>Build reputation</p>
-        </div>
-        """, unsafe_allow_html=True)
 
 # ================= LOGIN =================
 def login():
