@@ -23,73 +23,67 @@ header, #MainMenu, footer {visibility: hidden;}
     background-color: #050816;
 }
 
-/* CENTER CONTENT */
+/* HERO */
 .center {
     text-align: center;
     margin-top: 80px;
 }
 
-/* HERO TEXT */
 .light {
     color: #e5e7eb;
     font-size: 85px;
     font-weight: 900;
-    line-height: 1.1;
 }
 
-/* GRADIENT */
 .gradient {
     font-size: 85px;
     font-weight: 900;
-    line-height: 1.1;
     background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
     -webkit-background-clip: text;
     color: transparent;
 }
 
-/* SUBTEXT */
 .sub {
     color: #94a3b8;
-    font-size: 18px;
     text-align: center;
-    margin-top: 20px;
 }
 
-/* INPUT FIX */
+/* ===== AUTH CARD ===== */
+.auth-card {
+    max-width: 450px;
+    margin: auto;
+    margin-top: 80px;
+    padding: 30px;
+    background-color: #111827;
+    border-radius: 15px;
+    box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+
+/* INPUT */
 .stTextInput input, .stTextArea textarea {
     background-color: #1f2937 !important;
     color: white !important;
     border: 1px solid #374151 !important;
 }
 
-/* LABEL FIX (IMPORTANT) */
-label, .stTextInput label, .stTextArea label {
-    color: #ffffff !important;
-    font-weight: 500;
-}
-
-/* PLACEHOLDER */
-input::placeholder {
-    color: #9ca3af !important;
-}
-
-/* SELECTBOX */
-.stSelectbox div {
-    background-color: #1f2937 !important;
-    color: white !important;
-}
-
-/* CHECKBOX */
-.stCheckbox label {
+/* LABEL */
+label {
     color: white !important;
 }
 
 /* BUTTON */
 .stButton>button {
+    width: 100%;
     background: linear-gradient(90deg,#22d3ee,#7c3aed);
     color: white;
     border-radius: 10px;
     border: none;
+}
+
+/* TEXT */
+.small-text {
+    color: #9ca3af;
+    text-align: center;
 }
 
 </style>
@@ -101,10 +95,7 @@ def landing():
     col1, col2 = st.columns([8,2])
 
     with col1:
-        st.markdown(
-            "<h3 style='color:#e5e7eb;'>🚀 CollabSkill AI</h3>",
-            unsafe_allow_html=True
-        )
+        st.markdown("<h3 style='color:#e5e7eb;'>🚀 CollabSkill AI</h3>", unsafe_allow_html=True)
 
     with col2:
         if st.button("Get Started"):
@@ -130,7 +121,10 @@ def landing():
 
 # ================= LOGIN =================
 def login():
-    st.markdown("<h1 style='color:#e5e7eb;'>Login</h1>", unsafe_allow_html=True)
+
+    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
+
+    st.markdown("<h2 style='color:#e5e7eb;text-align:center;'>Login</h2>", unsafe_allow_html=True)
 
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
@@ -142,38 +136,34 @@ def login():
         else:
             st.error("Invalid credentials")
 
-    st.markdown("<p style='color:#9ca3af;'>Don't have an account?</p>", unsafe_allow_html=True)
+    st.markdown('<p class="small-text">Don’t have an account?</p>', unsafe_allow_html=True)
 
     if st.button("Create Account"):
         st.session_state.page = "register"
         st.rerun()
 
+    st.markdown('</div>', unsafe_allow_html=True)
+
 # ================= REGISTER =================
 def register():
 
-    st.markdown("<h1 style='color:#e5e7eb;'>Create Your Profile</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#9ca3af;'>Join the skill exchange community</p>", unsafe_allow_html=True)
+    st.markdown('<div class="auth-card">', unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
+    st.markdown("<h2 style='color:#e5e7eb;text-align:center;'>Create Account</h2>", unsafe_allow_html=True)
 
-    with col1:
-        username = st.text_input("Username")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-
-    with col2:
-        skills = st.text_input("Skills (e.g. Python, UI Design)")
-        experience = st.selectbox("Experience Level", ["Beginner", "Intermediate", "Advanced"])
-        portfolio = st.text_input("Portfolio / GitHub Link (optional)")
-
-    bio = st.text_area("Short Bio")
+    username = st.text_input("Username")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    skills = st.text_input("Skills")
+    bio = st.text_area("Bio")
+    portfolio = st.text_input("Portfolio")
 
     agree = st.checkbox("I agree to Terms & Conditions")
 
     if st.button("Create Account"):
         if not agree:
             st.warning("Please accept terms")
-        elif username and email and password:
+        else:
             success, msg = register_user(username, email, password, skills, bio, portfolio)
             if success:
                 st.success("Account created successfully 🎉")
@@ -181,14 +171,14 @@ def register():
                 st.rerun()
             else:
                 st.error(msg)
-        else:
-            st.warning("Please fill all required fields")
 
-    st.markdown("<p style='color:#9ca3af;'>Already have an account?</p>", unsafe_allow_html=True)
+    st.markdown('<p class="small-text">Already have an account?</p>', unsafe_allow_html=True)
 
     if st.button("Login"):
         st.session_state.page = "login"
         st.rerun()
+
+    st.markdown('</div>', unsafe_allow_html=True)
 
 # ================= ROUTING =================
 if st.session_state.page == "landing":
