@@ -121,7 +121,7 @@ def landing():
 
     # NORMAL TEXT (NO HTML BUG)
     st.markdown(
-        "An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly."
+        "                An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly."
     )
 
     st.markdown("<br>", unsafe_allow_html=True)
