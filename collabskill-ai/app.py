@@ -11,7 +11,7 @@ if "page" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# ================= GLOBAL CSS (UNCHANGED) =================
+# ================= CSS FIX =================
 st.markdown("""
 <style>
 header, #MainMenu, footer {visibility: hidden;}
@@ -19,19 +19,15 @@ header, #MainMenu, footer {visibility: hidden;}
 
 .stApp { background-color: #050816; }
 
-.center { text-align: center; margin-top: 80px; }
-
 .light {
     color: #e5e7eb;
     font-size: 85px;
     font-weight: 900;
-    line-height: 1.1;
 }
 
 .gradient {
     font-size: 85px;
     font-weight: 900;
-    line-height: 1.1;
     background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
     -webkit-background-clip: text;
     color: transparent;
@@ -39,29 +35,38 @@ header, #MainMenu, footer {visibility: hidden;}
 
 .sub {
     color: #94a3b8;
-    font-size: 18px;
     text-align: center;
-    margin-top: 20px;
 }
 
+/* INPUT */
 .stTextInput input, .stTextArea textarea {
     background-color: #1f2937 !important;
     color: white !important;
-    border: 1px solid #374151 !important;
 }
 
-label { color: #ffffff !important; }
+/* LABEL FIX */
+label, .stCheckbox label {
+    color: white !important;
+}
 
+/* BUTTON TEXT FIX */
 .stButton>button {
     background: linear-gradient(90deg,#22d3ee,#7c3aed);
-    color: white;
-    border-radius: 10px;
-    border: none;
+    color: white !important;
+    font-weight: 600;
+}
+
+/* CARDS */
+.card {
+    background:#0f172a;
+    padding:20px;
+    border-radius:10px;
+    margin-bottom:15px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ================= NAVBAR (NEW - MINIMAL, DOESN'T BREAK UI) =================
+# ================= NAVBAR =================
 def navbar():
     col1, col2 = st.columns([6,4])
 
@@ -92,9 +97,8 @@ def navbar():
             st.session_state.page = "landing"
             st.rerun()
 
-# ================= LANDING (UNCHANGED) =================
+# ================= LANDING =================
 def landing():
-
     col1, col2 = st.columns([8,2])
 
     with col1:
@@ -105,21 +109,15 @@ def landing():
             st.session_state.page = "login"
             st.rerun()
 
-    st.markdown(
-        '<div class="center">'
-        '<div class="light">Connect.<br>Collaborate.</div>'
-        '<div class="gradient">Exchange Skills</div>'
-        '<div class="gradient">Smarter.</div>'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("""
+    <div style='text-align:center;margin-top:80px;'>
+        <div class="light">Connect.<br>Collaborate.</div>
+        <div class="gradient">Exchange Skills</div>
+        <div class="gradient">Smarter.</div>
+    </div>
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-        '<div class="sub">'
-        'An intelligent platform that matches you with the right people — using AI.'
-        '</div>',
-        unsafe_allow_html=True
-    )
+    st.markdown("<p class='sub'>AI-powered collaboration platform</p>", unsafe_allow_html=True)
 
 # ================= LOGIN =================
 def login():
@@ -128,7 +126,7 @@ def login():
     with center:
         st.markdown("<div style='background:#0f172a;padding:40px;border-radius:15px;'>", unsafe_allow_html=True)
 
-        st.markdown("<h2 style='text-align:center;color:#e5e7eb;'>Login</h2>", unsafe_allow_html=True)
+        st.markdown("<h2 style='text-align:center;color:white;'>Login</h2>", unsafe_allow_html=True)
 
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
@@ -142,6 +140,8 @@ def login():
             else:
                 st.error("Invalid credentials")
 
+        st.markdown("<p style='color:white;'>Don't have an account?</p>", unsafe_allow_html=True)
+
         if st.button("Create Account"):
             st.session_state.page = "register"
             st.rerun()
@@ -150,29 +150,28 @@ def login():
 
 # ================= REGISTER =================
 def register():
-    st.markdown("<h1 style='color:#e5e7eb;'>Create Your Profile</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:white;'>Create Account</h1>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns(2)
-
-    with col1:
-        username = st.text_input("Username")
-        email = st.text_input("Email")
-        password = st.text_input("Password", type="password")
-
-    with col2:
-        skills = st.text_input("Skills")
-        portfolio = st.text_input("Portfolio")
-
+    username = st.text_input("Username")
+    email = st.text_input("Email")
+    password = st.text_input("Password", type="password")
+    skills = st.text_input("Skills")
     bio = st.text_area("Bio")
+    portfolio = st.text_input("Portfolio")
 
-    if st.button("Create Account"):
-        success, msg = register_user(username, email, password, skills, bio, portfolio)
-        if success:
-            st.success("Account created")
-            st.session_state.page = "login"
-            st.rerun()
+    agree = st.checkbox("I agree to Terms & Conditions")
+
+    if st.button("Register"):
+        if not agree:
+            st.warning("Accept terms")
         else:
-            st.error(msg)
+            success, msg = register_user(username, email, password, skills, bio, portfolio)
+            if success:
+                st.success("Registered successfully")
+                st.session_state.page = "login"
+                st.rerun()
+            else:
+                st.error(msg)
 
 # ================= DASHBOARD =================
 def dashboard():
@@ -180,15 +179,32 @@ def dashboard():
 
     st.markdown(f"<h2 style='color:#22d3ee;'>Welcome {st.session_state.user}</h2>", unsafe_allow_html=True)
 
-    st.write("🚀 Explore tasks and collaborate")
+    st.write("🚀 Explore Tasks Below")
 
-# ================= POST TASK =================
+    conn = get_connection()
+    c = conn.cursor()
+    c.execute("SELECT title, description FROM tasks")
+    tasks = c.fetchall()
+    conn.close()
+
+    if not tasks:
+        st.info("No tasks yet. Post one!")
+    else:
+        for t in tasks:
+            st.markdown(f"""
+            <div class="card">
+            <b>{t[0]}</b><br>
+            {t[1]}
+            </div>
+            """, unsafe_allow_html=True)
+
+# ================= POST =================
 def post_task():
     navbar()
 
-    st.markdown("### Post a Task")
+    st.markdown("### Post Task")
 
-    title = st.text_input("Task Title")
+    title = st.text_input("Title")
     desc = st.text_area("Description")
     skills = st.text_input("Skills")
 
@@ -199,7 +215,8 @@ def post_task():
                   (title, desc, skills, st.session_state.user))
         conn.commit()
         conn.close()
-        st.success("Task Posted")
+
+        st.success("Posted!")
 
 # ================= BROWSE =================
 def browse():
@@ -209,16 +226,16 @@ def browse():
 
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT title, description, skills, posted_by FROM tasks")
+    c.execute("SELECT * FROM tasks")
     tasks = c.fetchall()
     conn.close()
 
     for t in tasks:
         st.markdown(f"""
-        <div style="background:#0f172a;padding:20px;border-radius:10px;margin-bottom:10px;">
-        <b>{t[0]}</b><br>{t[1]}<br>
-        Skills: {t[2]}<br>
-        By: {t[3]}
+        <div class="card">
+        <b>{t[1]}</b><br>
+        {t[2]}<br>
+        Skills: {t[3]}
         </div>
         """, unsafe_allow_html=True)
 
@@ -232,7 +249,7 @@ def profile():
     user = c.fetchone()
     conn.close()
 
-    st.markdown("### My Profile")
+    st.markdown("### Profile")
 
     if user:
         st.write("Username:", user[1])
