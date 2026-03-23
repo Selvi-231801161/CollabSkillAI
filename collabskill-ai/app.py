@@ -29,7 +29,7 @@ header, #MainMenu, footer {visibility: hidden;}
     margin-top: 80px;
 }
 
-/* TEXT */
+/* HERO TEXT */
 .light {
     color: #e5e7eb;
     font-size: 85px;
@@ -62,8 +62,25 @@ header, #MainMenu, footer {visibility: hidden;}
     border: 1px solid #374151 !important;
 }
 
+/* LABEL FIX (IMPORTANT) */
+label, .stTextInput label, .stTextArea label {
+    color: #ffffff !important;
+    font-weight: 500;
+}
+
+/* PLACEHOLDER */
+input::placeholder {
+    color: #9ca3af !important;
+}
+
+/* SELECTBOX */
 .stSelectbox div {
     background-color: #1f2937 !important;
+    color: white !important;
+}
+
+/* CHECKBOX */
+.stCheckbox label {
     color: white !important;
 }
 
@@ -131,7 +148,7 @@ def login():
         st.session_state.page = "register"
         st.rerun()
 
-# ================= REGISTER (UPDATED) =================
+# ================= REGISTER =================
 def register():
 
     st.markdown("<h1 style='color:#e5e7eb;'>Create Your Profile</h1>", unsafe_allow_html=True)
