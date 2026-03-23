@@ -309,7 +309,4 @@ else:
 
 
 
-1. Open Command Prompt → cd Desktop\collabskill-ai
-2. Edit any file → right-click → Edit with IDLE → save with Ctrl+S
-3. Run → streamlit run app.py in Command Prompt
-4. See changes live in browser
+
