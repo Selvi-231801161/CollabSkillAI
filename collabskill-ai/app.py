@@ -308,25 +308,7 @@ else:
     elif page == "⭐ Give Feedback": show_feedback()
 
 
-## ▶️ PHASE 8 — Run Your App
 
-1. Open **Command Prompt**
-2. Navigate to your folder:
-```
-cd Desktop\collabskill-ai
-```
-3. Run the app:
-```
-streamlit run app.py
-```
-4. Your browser will automatically open at `http://localhost:8501` 🎉
-
----
-
-## 🔁 Daily Workflow (How to work with IDLE)
-
-Every time you want to work on the project:
-```
 1. Open Command Prompt → cd Desktop\collabskill-ai
 2. Edit any file → right-click → Edit with IDLE → save with Ctrl+S
 3. Run → streamlit run app.py in Command Prompt
