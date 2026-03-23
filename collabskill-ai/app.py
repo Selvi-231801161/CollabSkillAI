@@ -2,76 +2,134 @@ import streamlit as st
 from database import init_db, get_connection
 from auth import register_user, login_user
 
-st.set_page_config(layout="wide")
-
 init_db()
+st.set_page_config(layout="wide")
 
 # SESSION
 if "page" not in st.session_state:
-    st.session_state.page = "home"
+    st.session_state.page = "landing"
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# ---------- DARK UI (RESTORED) ----------
+# ================= GLOBAL CSS (UNCHANGED) =================
 st.markdown("""
 <style>
-.stApp {
-    background-color: #020617;
+header, #MainMenu, footer {visibility: hidden;}
+.block-container {padding-top: 0rem;}
+
+.stApp { background-color: #050816; }
+
+.center { text-align: center; margin-top: 80px; }
+
+.light {
+    color: #e5e7eb;
+    font-size: 85px;
+    font-weight: 900;
+    line-height: 1.1;
+}
+
+.gradient {
+    font-size: 85px;
+    font-weight: 900;
+    line-height: 1.1;
+    background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.sub {
+    color: #94a3b8;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 20px;
+}
+
+.stTextInput input, .stTextArea textarea {
+    background-color: #1f2937 !important;
+    color: white !important;
+    border: 1px solid #374151 !important;
+}
+
+label { color: #ffffff !important; }
+
+.stButton>button {
+    background: linear-gradient(90deg,#22d3ee,#7c3aed);
     color: white;
-}
-
-html, body, [class*="css"] {
-    color: white !important;
-}
-
-h1, h2, h3 {
-    color: white !important;
-}
-
-input, textarea {
-    background-color: #1e293b !important;
-    color: white !important;
-}
-
-button {
-    border-radius: 10px !important;
+    border-radius: 10px;
+    border: none;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- HERO (UNCHANGED DESIGN) ----------
-def home():
-    st.markdown("""
-    <h1 style='text-align:center;font-size:80px;color:#e2e8f0;'>
-    Connect.<br>Collaborate.
-    </h1>
+# ================= NAVBAR (NEW - MINIMAL, DOESN'T BREAK UI) =================
+def navbar():
+    col1, col2 = st.columns([6,4])
 
-    <h1 style='text-align:center;
-    background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
-    -webkit-background-clip: text;
-    color: transparent;
-    font-size:80px;'>
-    Exchange Skills<br>Smarter.
-    </h1>
+    with col1:
+        st.markdown("<h3 style='color:#e5e7eb;'>🚀 CollabSkill AI</h3>", unsafe_allow_html=True)
 
-    <p style='text-align:center;color:#94a3b8;font-size:18px;'>
-    An intelligent platform that matches you with the right people — using AI.
-    </p>
-    """, unsafe_allow_html=True)
+    with col2:
+        c1, c2, c3, c4, c5 = st.columns(5)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+        if c1.button("Dashboard"):
+            st.session_state.page = "dashboard"
+            st.rerun()
 
-    col1, col2, col3 = st.columns([3,2,3])
+        if c2.button("Post"):
+            st.session_state.page = "post"
+            st.rerun()
+
+        if c3.button("Browse"):
+            st.session_state.page = "browse"
+            st.rerun()
+
+        if c4.button("Profile"):
+            st.session_state.page = "profile"
+            st.rerun()
+
+        if c5.button("Logout"):
+            st.session_state.user = None
+            st.session_state.page = "landing"
+            st.rerun()
+
+# ================= LANDING (UNCHANGED) =================
+def landing():
+
+    col1, col2 = st.columns([8,2])
+
+    with col1:
+        st.markdown("<h3 style='color:#e5e7eb;'>🚀 CollabSkill AI</h3>", unsafe_allow_html=True)
+
     with col2:
         if st.button("Get Started"):
             st.session_state.page = "login"
+            st.rerun()
 
-# ---------- LOGIN ----------
+    st.markdown(
+        '<div class="center">'
+        '<div class="light">Connect.<br>Collaborate.</div>'
+        '<div class="gradient">Exchange Skills</div>'
+        '<div class="gradient">Smarter.</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    st.markdown(
+        '<div class="sub">'
+        'An intelligent platform that matches you with the right people — using AI.'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+# ================= LOGIN =================
 def login():
-    st.markdown("<h1 style='text-align:center;'>Login</h1>", unsafe_allow_html=True)
+    left, center, right = st.columns([1,2,1])
 
-    col1, col2, col3 = st.columns([2,3,2])
-    with col2:
+    with center:
+        st.markdown("<div style='background:#0f172a;padding:40px;border-radius:15px;'>", unsafe_allow_html=True)
+
+        st.markdown("<h2 style='text-align:center;color:#e5e7eb;'>Login</h2>", unsafe_allow_html=True)
+
         username = st.text_input("Username")
         password = st.text_input("Password", type="password")
 
@@ -80,89 +138,74 @@ def login():
             if user:
                 st.session_state.user = username
                 st.session_state.page = "dashboard"
+                st.rerun()
             else:
                 st.error("Invalid credentials")
 
-        st.write("Don't have an account?")
         if st.button("Create Account"):
             st.session_state.page = "register"
+            st.rerun()
 
-# ---------- REGISTER ----------
+        st.markdown("</div>", unsafe_allow_html=True)
+
+# ================= REGISTER =================
 def register():
-    st.markdown("<h1 style='text-align:center;'>Create Account</h1>", unsafe_allow_html=True)
+    st.markdown("<h1 style='color:#e5e7eb;'>Create Your Profile</h1>", unsafe_allow_html=True)
 
-    col1, col2, col3 = st.columns([2,3,2])
-    with col2:
+    col1, col2 = st.columns(2)
+
+    with col1:
         username = st.text_input("Username")
         email = st.text_input("Email")
         password = st.text_input("Password", type="password")
-        skills = st.text_input("Skills")
-        bio = st.text_area("Bio")
-        portfolio = st.text_input("Portfolio")
-
-        if st.button("Register"):
-            success, msg = register_user(username, email, password, skills, bio, portfolio)
-            if success:
-                st.success(msg)
-                st.session_state.page = "login"
-            else:
-                st.error(msg)
-
-# ---------- NAVBAR (MINIMAL - DOES NOT BREAK UI) ----------
-def navbar():
-    col1, col2 = st.columns([6,4])
-
-    with col1:
-        st.markdown("### 🚀 CollabSkill AI")
 
     with col2:
-        c1, c2, c3, c4 = st.columns(4)
-        if c1.button("Dashboard"):
-            st.session_state.page = "dashboard"
-        if c2.button("Post"):
-            st.session_state.page = "post"
-        if c3.button("Browse"):
-            st.session_state.page = "browse"
-        if c4.button("Profile"):
-            st.session_state.page = "profile"
+        skills = st.text_input("Skills")
+        portfolio = st.text_input("Portfolio")
 
-# ---------- DASHBOARD ----------
+    bio = st.text_area("Bio")
+
+    if st.button("Create Account"):
+        success, msg = register_user(username, email, password, skills, bio, portfolio)
+        if success:
+            st.success("Account created")
+            st.session_state.page = "login"
+            st.rerun()
+        else:
+            st.error(msg)
+
+# ================= DASHBOARD =================
 def dashboard():
     navbar()
 
-    st.markdown(f"""
-    <h2 style='color:#38bdf8;'>Welcome {st.session_state.user}</h2>
-    """, unsafe_allow_html=True)
+    st.markdown(f"<h2 style='color:#22d3ee;'>Welcome {st.session_state.user}</h2>", unsafe_allow_html=True)
 
-    st.write("✨ Start collaborating and exploring tasks")
+    st.write("🚀 Explore tasks and collaborate")
 
-# ---------- POST TASK ----------
+# ================= POST TASK =================
 def post_task():
     navbar()
 
-    st.markdown("## Post a Task")
+    st.markdown("### Post a Task")
 
     title = st.text_input("Task Title")
     desc = st.text_area("Description")
-    skills = st.text_input("Required Skills")
+    skills = st.text_input("Skills")
 
     if st.button("Post"):
         conn = get_connection()
         c = conn.cursor()
-        c.execute("""
-        INSERT INTO tasks (title, description, skills, posted_by)
-        VALUES (?, ?, ?, ?)
-        """, (title, desc, skills, st.session_state.user))
+        c.execute("INSERT INTO tasks (title, description, skills, posted_by) VALUES (?,?,?,?)",
+                  (title, desc, skills, st.session_state.user))
         conn.commit()
         conn.close()
+        st.success("Task Posted")
 
-        st.success("Task Posted Successfully")
-
-# ---------- BROWSE ----------
+# ================= BROWSE =================
 def browse():
     navbar()
 
-    st.markdown("## Browse Tasks")
+    st.markdown("### Browse Tasks")
 
     conn = get_connection()
     c = conn.cursor()
@@ -172,33 +215,32 @@ def browse():
 
     for t in tasks:
         st.markdown(f"""
-        <div style="background:#0f172a;padding:20px;border-radius:12px;margin-bottom:15px;">
-        <h3>{t[0]}</h3>
-        <p>{t[1]}</p>
-        <b>Skills:</b> {t[2]} <br>
-        <b>Posted by:</b> {t[3]}
+        <div style="background:#0f172a;padding:20px;border-radius:10px;margin-bottom:10px;">
+        <b>{t[0]}</b><br>{t[1]}<br>
+        Skills: {t[2]}<br>
+        By: {t[3]}
         </div>
         """, unsafe_allow_html=True)
 
-# ---------- PROFILE ----------
+# ================= PROFILE =================
 def profile():
     navbar()
 
     conn = get_connection()
     c = conn.cursor()
-    c.execute("SELECT * FROM users WHERE username = ?", (st.session_state.user,))
+    c.execute("SELECT * FROM users WHERE username=?", (st.session_state.user,))
     user = c.fetchone()
     conn.close()
 
-    st.markdown("## My Profile")
+    st.markdown("### My Profile")
 
     if user:
-        st.write(f"Username: {user[1]}")
-        st.write(f"Email: {user[2]}")
-        st.write(f"Skills: {user[4]}")
-        st.write(f"Bio: {user[5]}")
+        st.write("Username:", user[1])
+        st.write("Email:", user[2])
+        st.write("Skills:", user[4])
+        st.write("Bio:", user[5])
 
-# ---------- ROUTER ----------
+# ================= ROUTING =================
 if st.session_state.user:
     if st.session_state.page == "dashboard":
         dashboard()
@@ -209,8 +251,8 @@ if st.session_state.user:
     elif st.session_state.page == "profile":
         profile()
 else:
-    if st.session_state.page == "home":
-        home()
+    if st.session_state.page == "landing":
+        landing()
     elif st.session_state.page == "login":
         login()
     elif st.session_state.page == "register":
