@@ -308,7 +308,7 @@ else:
     elif page == "⭐ Give Feedback": show_feedback()
 ```
 
-Press **Ctrl + S** → close IDLE.
+
 
 ---
 
