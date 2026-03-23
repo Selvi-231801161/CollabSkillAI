@@ -10,47 +10,49 @@ st.set_page_config(layout="wide")
 if "page" not in st.session_state:
     st.session_state.page = "landing"
 
-# ================= CSS =================
+# ================= GLOBAL CSS =================
 st.markdown("""
 <style>
 
 /* REMOVE STREAMLIT HEADER */
-header {visibility: hidden;}
-#MainMenu {visibility: hidden;}
-footer {visibility: hidden;}
-
-/* REMOVE TOP SPACE */
-.block-container {
-    padding-top: 0rem;
-}
+header, #MainMenu, footer {visibility: hidden;}
+.block-container {padding-top: 0rem;}
 
 /* BACKGROUND */
 .stApp {
     background-color: #050816;
 }
 
-/* HERO */
-.hero {
+/* CENTER CONTENT */
+.center {
     text-align: center;
     margin-top: 80px;
 }
 
-.hero h1 {
+/* TEXT STYLES */
+.light {
+    color: #e5e7eb;
     font-size: 85px;
     font-weight: 900;
     line-height: 1.1;
 }
 
-/* TEXT VISIBILITY */
-.light-text {
-    color: #e5e7eb;
-}
-
 /* GRADIENT TEXT */
 .gradient {
+    font-size: 85px;
+    font-weight: 900;
+    line-height: 1.1;
     background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
     -webkit-background-clip: text;
     color: transparent;
+}
+
+/* SUBTEXT */
+.sub {
+    color: #94a3b8;
+    font-size: 18px;
+    text-align: center;
+    margin-top: 20px;
 }
 
 /* BUTTON */
@@ -67,7 +69,7 @@ footer {visibility: hidden;}
 # ================= LANDING =================
 def landing():
 
-    # ===== NAVBAR =====
+    # NAVBAR
     col1, col2 = st.columns([8,2])
 
     with col1:
@@ -78,31 +80,22 @@ def landing():
             st.session_state.page = "login"
             st.rerun()
 
-    # ===== HERO =====
-    st.markdown("""
-    <div class="hero">
-
-        <h1 class="light-text">
-            Connect.<br>
-            Collaborate.
-        </h1>
-
-        <h1 class="gradient">
-            Exchange Skills
-        </h1>
-
-        <h1 class="gradient">
-            Smarter.
-        </h1>
-
-    </div>
-    """, unsafe_allow_html=True)
-
+    # HERO TEXT (SAFE HTML — WORKS)
     st.markdown(
-        "<p style='text-align:center; font-size:18px; color:#94a3b8;'>"
-        "An intelligent platform that matches you with the right people — "
-        "using AI to connect digital skill providers with those who need them instantly."
-        "</p>",
+        '<div class="center">'
+        '<div class="light">Connect.<br>Collaborate.</div>'
+        '<div class="gradient">Exchange Skills</div>'
+        '<div class="gradient">Smarter.</div>'
+        '</div>',
+        unsafe_allow_html=True
+    )
+
+    # SUBTEXT (NO HTML BUG)
+    st.markdown(
+        '<div class="sub">'
+        'An intelligent platform that matches you with the right people — '
+        'using AI to connect digital skill providers with those who need them instantly.'
+        '</div>',
         unsafe_allow_html=True
     )
 
