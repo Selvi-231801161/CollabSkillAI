@@ -73,14 +73,17 @@ def landing():
     col1, col2 = st.columns([8,2])
 
     with col1:
-        st.markdown("### 🚀 CollabSkill AI")
+        st.markdown(
+            "<h3 style='color:#e5e7eb;'>🚀 CollabSkill AI</h3>",
+            unsafe_allow_html=True
+        )
 
     with col2:
         if st.button("Get Started"):
             st.session_state.page = "login"
             st.rerun()
 
-    # HERO TEXT (SAFE HTML — WORKS)
+    # HERO TEXT
     st.markdown(
         '<div class="center">'
         '<div class="light">Connect.<br>Collaborate.</div>'
@@ -90,7 +93,7 @@ def landing():
         unsafe_allow_html=True
     )
 
-    # SUBTEXT (NO HTML BUG)
+    # SUBTEXT
     st.markdown(
         '<div class="sub">'
         'An intelligent platform that matches you with the right people — '
