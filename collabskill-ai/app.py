@@ -130,23 +130,40 @@ def landing():
 
 # ================= LOGIN =================
 def login():
-    st.markdown("<h1 style='color:#e5e7eb;'>Login</h1>", unsafe_allow_html=True)
 
-    username = st.text_input("Username")
-    password = st.text_input("Password", type="password")
+    # Create 3 columns to center content
+    left, center, right = st.columns([1,2,1])
 
-    if st.button("Login"):
-        user = login_user(username, password)
-        if user:
-            st.success("Login successful")
-        else:
-            st.error("Invalid credentials")
+    with center:
 
-    st.markdown("<p style='color:#9ca3af;'>Don't have an account?</p>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style="
+            background-color:#0f172a;
+            padding:40px;
+            border-radius:15px;
+            box-shadow:0 0 30px rgba(0,0,0,0.5);
+        ">
+        """, unsafe_allow_html=True)
 
-    if st.button("Create Account"):
-        st.session_state.page = "register"
-        st.rerun()
+        st.markdown("<h2 style='color:#e5e7eb; text-align:center;'>Login</h2>", unsafe_allow_html=True)
+
+        username = st.text_input("Username", key="login_user")
+        password = st.text_input("Password", type="password", key="login_pass")
+
+        if st.button("Login"):
+            user = login_user(username, password)
+            if user:
+                st.success("Login successful")
+            else:
+                st.error("Invalid credentials")
+
+        st.markdown("<p style='color:#9ca3af;'>Don't have an account?</p>", unsafe_allow_html=True)
+
+        if st.button("Create Account"):
+            st.session_state.page = "register"
+            st.rerun()
+
+        st.markdown("</div>", unsafe_allow_html=True)
 
 # ================= REGISTER =================
 def register():
