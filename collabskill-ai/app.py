@@ -16,6 +16,61 @@ if "page" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state.user = None
 
+# ================= DARK UI CSS =================
+st.markdown("""
+<style>
+header, #MainMenu, footer {visibility: hidden;}
+.block-container {padding-top: 0rem;}
+
+.stApp {
+    background-color: #050816;
+}
+
+/* TEXT */
+.light {
+    color: #e5e7eb;
+    font-size: 85px;
+    font-weight: 900;
+    text-align:center;
+}
+
+.gradient {
+    font-size: 85px;
+    font-weight: 900;
+    text-align:center;
+    background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.sub {
+    color: #94a3b8;
+    text-align:center;
+}
+
+/* INPUT */
+.stTextInput input, .stTextArea textarea {
+    background-color: #1f2937 !important;
+    color: white !important;
+    border: 1px solid #374151 !important;
+}
+
+/* LABEL */
+label {
+    color: white !important;
+}
+
+/* BUTTON */
+.stButton>button {
+    background: linear-gradient(90deg,#22d3ee,#7c3aed);
+    color: white;
+    border-radius: 10px;
+    border: none;
+}
+
+</style>
+""", unsafe_allow_html=True)
+
 # ================= LANDING =================
 def landing():
 
@@ -30,16 +85,20 @@ def landing():
             st.rerun()
 
     st.markdown("""
-    <div style="text-align:center; margin-top:100px;">
-        <h1 style="color:#e5e7eb;">Connect.<br>Collaborate.</h1>
-        <h1 style="background:linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
-        -webkit-background-clip:text; color:transparent;">Exchange Skills</h1>
-        <h1 style="background:linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
-        -webkit-background-clip:text; color:transparent;">Smarter.</h1>
+    <div style="margin-top:100px;">
+        <div class="light">Connect.<br>Collaborate.</div>
+        <div class="gradient">Exchange Skills</div>
+        <div class="gradient">Smarter.</div>
     </div>
     """, unsafe_allow_html=True)
 
-# ================= LOGIN =================
+    st.markdown("""
+    <div class="sub">
+    An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly.
+    </div>
+    """, unsafe_allow_html=True)
+
+# ================= LOGIN (CENTERED) =================
 def login():
 
     left, center, right = st.columns([1,2,1])
@@ -110,7 +169,6 @@ def dashboard():
 
     menu = st.sidebar.selectbox("Menu", ["Post Task", "View Tasks", "Chat", "AI Chatbot"])
 
-    # POST TASK
     if menu == "Post Task":
         title = st.text_input("Task Title")
         desc = st.text_area("Description")
@@ -120,7 +178,6 @@ def dashboard():
             create_task(title, desc, skills, st.session_state.user)
             st.success("Task posted!")
 
-    # VIEW TASKS + AI MATCH
     elif menu == "View Tasks":
         tasks = get_tasks()
 
@@ -135,7 +192,6 @@ def dashboard():
                     st.write(f"{m['username']} - {m['match_score']}%")
                     st.write(m['reason'])
 
-    # CHAT
     elif menu == "Chat":
         other = st.text_input("Chat with user")
         msg = st.text_input("Message")
@@ -147,7 +203,6 @@ def dashboard():
         for m in msgs:
             st.write(f"{m[0]}: {m[1]}")
 
-    # AI CHATBOT
     elif menu == "AI Chatbot":
         q = st.text_input("Ask AI")
 
