@@ -6,70 +6,57 @@ init_db()
 
 st.set_page_config(layout="wide")
 
+# SESSION
 if "page" not in st.session_state:
     st.session_state.page = "landing"
 
 if "section" not in st.session_state:
     st.session_state.section = "home"
 
-# ================= DARK FULL BACKGROUND =================
+# ================= CSS =================
 st.markdown("""
 <style>
 .stApp {
     background-color: #050816;
 }
 
-/* NAVBAR */
-.navbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:20px 40px;
+/* TEXT VISIBILITY */
+h1, h2, h3, h4 {
+    color: #e5e7eb !important;
 }
 
-.nav-links {
-    color:#94a3b8;
-    font-size:14px;
+p {
+    color: #9ca3af !important;
 }
 
 /* HERO */
 .hero {
-    text-align:center;
-    margin-top:120px;
+    text-align: center;
+    margin-top: 120px;
 }
 
 .hero h1 {
-    font-size:85px;
-    font-weight:900;
-    line-height:1.1;
-    color:white;
+    font-size: 85px;
+    font-weight: 900;
+    line-height: 1.1;
 }
 
+/* GRADIENT TEXT */
 .gradient {
-    background: linear-gradient(90deg,#00e5ff,#7c3aed);
+    background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
     -webkit-background-clip: text;
     color: transparent;
 }
 
-.subtext {
-    color:#94a3b8;
-    font-size:18px;
-    margin-top:20px;
-}
-
 /* BUTTON */
 .stButton>button {
-    background: linear-gradient(90deg,#00e5ff,#7c3aed);
-    color:white;
-    border-radius:10px;
-    border:none;
+    background: linear-gradient(90deg,#22d3ee,#7c3aed);
+    color: white;
+    border-radius: 10px;
+    border: none;
 }
 
-/* SECTION */
-.section {
-    margin-top:120px;
-}
-
+/* CARD */
 .card {
     background:#0f172a;
     padding:25px;
@@ -104,30 +91,32 @@ def landing():
             st.session_state.page = "login"
             st.rerun()
 
-    # HERO
-    st.markdown("""
-    <div class="hero">
-        <h1>
-            Connect.<br>
-            Collaborate.<br>
-            <span class="gradient">Exchange Skills</span><br>
-            <span class="gradient">Smarter.</span>
-        </h1>
+    # HERO SECTION
+    st.markdown(
+        """
+        <div class="hero">
+            <h1>
+                Connect.<br>
+                Collaborate.<br>
+                <span class="gradient">Exchange Skills</span><br>
+                <span class="gradient">Smarter.</span>
+            </h1>
 
-        <div class="subtext">
-        An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly.
+            <p style="margin-top:20px; font-size:18px;">
+            An intelligent platform that matches you with the right people — 
+            using AI to connect digital skill providers with those who need them instantly.
+            </p>
         </div>
-    </div>
-    """, unsafe_allow_html=True)
+        """,
+        unsafe_allow_html=True
+    )
 
     if st.button("🚀 Launch App"):
         st.session_state.page = "login"
         st.rerun()
 
-    # ================= CONDITIONAL SCROLL =================
+    # ================= HOW IT WORKS =================
     if st.session_state.section == "how":
-
-        st.markdown('<div class="section"></div>', unsafe_allow_html=True)
 
         st.markdown("## How CollabSkill AI Works")
 
@@ -138,42 +127,42 @@ def landing():
         col1.markdown("""
         <div class="card">
         <h4>01 Register & Build Profile</h4>
-        Create your skill profile and showcase expertise.
+        <p>Create your skill profile and showcase expertise.</p>
         </div>
         """, unsafe_allow_html=True)
 
         col2.markdown("""
         <div class="card">
         <h4>02 Post a Task</h4>
-        Describe what help you need.
+        <p>Describe what help you need.</p>
         </div>
         """, unsafe_allow_html=True)
 
         col3.markdown("""
         <div class="card">
         <h4>03 AI Matches</h4>
-        AI finds best skilled users.
+        <p>AI finds best skilled users.</p>
         </div>
         """, unsafe_allow_html=True)
 
         col4.markdown("""
         <div class="card">
         <h4>04 Connect & Collaborate</h4>
-        Work together online.
+        <p>Work together online.</p>
         </div>
         """, unsafe_allow_html=True)
 
         col5.markdown("""
         <div class="card">
         <h4>05 Complete Task</h4>
-        Finish and mark done.
+        <p>Finish and mark done.</p>
         </div>
         """, unsafe_allow_html=True)
 
         col6.markdown("""
         <div class="card">
         <h4>06 Trust Score</h4>
-        Ratings build credibility.
+        <p>Ratings build credibility.</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -187,9 +176,9 @@ def login():
     if st.button("Login"):
         user = login_user(username, password)
         if user:
-            st.success("Login success")
+            st.success("Login successful")
         else:
-            st.error("Invalid")
+            st.error("Invalid credentials")
 
     if st.button("Go to Register"):
         st.session_state.page = "register"
@@ -197,7 +186,7 @@ def login():
 
 # ================= REGISTER =================
 def register():
-    st.title("Register")
+    st.title("Create Account")
 
     username = st.text_input("Username")
     email = st.text_input("Email")
