@@ -2,7 +2,7 @@ import streamlit as st
 from database import init_db, get_connection
 from auth import register_user, login_user
 
-st.set_page_config(page_title="CollabSkill AI", layout="wide")
+st.set_page_config(layout="wide")
 
 init_db()
 
@@ -12,88 +12,37 @@ if "page" not in st.session_state:
 if "user" not in st.session_state:
     st.session_state.user = None
 
-# ---------- GLOBAL CSS ----------
+# ---------- DARK UI (RESTORED) ----------
 st.markdown("""
 <style>
-body {
+.stApp {
     background-color: #020617;
     color: white;
 }
 
-h1, h2, h3, h4, h5 {
-    color: #ffffff !important;
+html, body, [class*="css"] {
+    color: white !important;
 }
 
-.navbar {
-    display:flex;
-    justify-content:space-between;
-    align-items:center;
-    padding:20px 40px;
-    background:#020617;
-}
-
-.nav-links button {
-    background:none;
-    border:none;
-    color:#cbd5f5;
-    margin-left:20px;
-    font-size:16px;
-    cursor:pointer;
-}
-
-.nav-links button:hover {
-    color:white;
-}
-
-.btn {
-    padding:10px 20px;
-    border-radius:10px;
-    background:linear-gradient(90deg,#22d3ee,#a855f7);
-    color:white;
-    border:none;
-    font-weight:600;
-}
-
-.card {
-    max-width:600px;
-    margin:auto;
-    padding:30px;
-    background:#0f172a;
-    border-radius:15px;
+h1, h2, h3 {
+    color: white !important;
 }
 
 input, textarea {
-    background:#1e293b !important;
-    color:white !important;
+    background-color: #1e293b !important;
+    color: white !important;
+}
+
+button {
+    border-radius: 10px !important;
 }
 </style>
 """, unsafe_allow_html=True)
 
-# ---------- NAVBAR ----------
-def navbar():
-    col1, col2 = st.columns([6,4])
-
-    with col1:
-        st.markdown("## 🚀 CollabSkill AI")
-
-    with col2:
-        cols = st.columns(5)
-        if cols[0].button("Dashboard"):
-            st.session_state.page = "dashboard"
-        if cols[1].button("Post Task"):
-            st.session_state.page = "post"
-        if cols[2].button("Browse"):
-            st.session_state.page = "browse"
-        if cols[3].button("Profile"):
-            st.session_state.page = "profile"
-        if cols[4].button("Logout"):
-            st.session_state.user = None
-            st.session_state.page = "home"
-
-# ---------- HOME ----------
+# ---------- HERO (UNCHANGED DESIGN) ----------
 def home():
     st.markdown("""
-    <h1 style='text-align:center;font-size:70px;'>
+    <h1 style='text-align:center;font-size:80px;color:#e2e8f0;'>
     Connect.<br>Collaborate.
     </h1>
 
@@ -101,14 +50,18 @@ def home():
     background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
     -webkit-background-clip: text;
     color: transparent;
-    font-size:70px;'>
+    font-size:80px;'>
     Exchange Skills<br>Smarter.
     </h1>
+
+    <p style='text-align:center;color:#94a3b8;font-size:18px;'>
+    An intelligent platform that matches you with the right people — using AI.
+    </p>
     """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    col1, col2 = st.columns([5,1])
+    col1, col2, col3 = st.columns([3,2,3])
     with col2:
         if st.button("Get Started"):
             st.session_state.page = "login"
@@ -117,55 +70,71 @@ def home():
 def login():
     st.markdown("<h1 style='text-align:center;'>Login</h1>", unsafe_allow_html=True)
 
-    with st.container():
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            username = st.text_input("Username")
-            password = st.text_input("Password", type="password")
+    col1, col2, col3 = st.columns([2,3,2])
+    with col2:
+        username = st.text_input("Username")
+        password = st.text_input("Password", type="password")
 
-            if st.button("Login"):
-                user = login_user(username, password)
-                if user:
-                    st.session_state.user = username
-                    st.session_state.page = "dashboard"
-                else:
-                    st.error("Invalid credentials")
+        if st.button("Login"):
+            user = login_user(username, password)
+            if user:
+                st.session_state.user = username
+                st.session_state.page = "dashboard"
+            else:
+                st.error("Invalid credentials")
 
-            st.write("Don't have an account?")
-            if st.button("Create Account"):
-                st.session_state.page = "register"
+        st.write("Don't have an account?")
+        if st.button("Create Account"):
+            st.session_state.page = "register"
 
 # ---------- REGISTER ----------
 def register():
     st.markdown("<h1 style='text-align:center;'>Create Account</h1>", unsafe_allow_html=True)
 
-    with st.container():
-        col1, col2, col3 = st.columns([1,2,1])
-        with col2:
-            username = st.text_input("Username")
-            email = st.text_input("Email")
-            password = st.text_input("Password", type="password")
-            skills = st.text_input("Skills")
-            bio = st.text_area("Bio")
-            portfolio = st.text_input("Portfolio")
+    col1, col2, col3 = st.columns([2,3,2])
+    with col2:
+        username = st.text_input("Username")
+        email = st.text_input("Email")
+        password = st.text_input("Password", type="password")
+        skills = st.text_input("Skills")
+        bio = st.text_area("Bio")
+        portfolio = st.text_input("Portfolio")
 
-            if st.button("Register"):
-                success, msg = register_user(username, email, password, skills, bio, portfolio)
-                if success:
-                    st.success(msg)
-                    st.session_state.page = "login"
-                else:
-                    st.error(msg)
+        if st.button("Register"):
+            success, msg = register_user(username, email, password, skills, bio, portfolio)
+            if success:
+                st.success(msg)
+                st.session_state.page = "login"
+            else:
+                st.error(msg)
+
+# ---------- NAVBAR (MINIMAL - DOES NOT BREAK UI) ----------
+def navbar():
+    col1, col2 = st.columns([6,4])
+
+    with col1:
+        st.markdown("### 🚀 CollabSkill AI")
+
+    with col2:
+        c1, c2, c3, c4 = st.columns(4)
+        if c1.button("Dashboard"):
+            st.session_state.page = "dashboard"
+        if c2.button("Post"):
+            st.session_state.page = "post"
+        if c3.button("Browse"):
+            st.session_state.page = "browse"
+        if c4.button("Profile"):
+            st.session_state.page = "profile"
 
 # ---------- DASHBOARD ----------
 def dashboard():
     navbar()
 
     st.markdown(f"""
-    <h1 style='color:white;'>Welcome {st.session_state.user}</h1>
+    <h2 style='color:#38bdf8;'>Welcome {st.session_state.user}</h2>
     """, unsafe_allow_html=True)
 
-    st.write("🚀 Start collaborating and exploring tasks")
+    st.write("✨ Start collaborating and exploring tasks")
 
 # ---------- POST TASK ----------
 def post_task():
@@ -189,7 +158,7 @@ def post_task():
 
         st.success("Task Posted Successfully")
 
-# ---------- BROWSE TASK ----------
+# ---------- BROWSE ----------
 def browse():
     navbar()
 
@@ -203,7 +172,7 @@ def browse():
 
     for t in tasks:
         st.markdown(f"""
-        <div class="card">
+        <div style="background:#0f172a;padding:20px;border-radius:12px;margin-bottom:15px;">
         <h3>{t[0]}</h3>
         <p>{t[1]}</p>
         <b>Skills:</b> {t[2]} <br>
