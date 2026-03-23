@@ -30,7 +30,13 @@ def init_db():
         created_by TEXT
     )
     """)
-
+    c.execute('''CREATE TABLE IF NOT EXISTS tasks (
+                    id INTEGER PRIMARY KEY AUTOINCREMENT,
+                    user_id INTEGER,
+                    title TEXT,
+                    description TEXT,
+                    skill_required TEXT,
+                    FOREIGN KEY(user_id) REFERENCES users(id))''')
     # CHAT
     c.execute("""
     CREATE TABLE IF NOT EXISTS messages (
