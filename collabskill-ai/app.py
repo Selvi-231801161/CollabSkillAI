@@ -306,11 +306,7 @@ else:
     elif page == "🔍 Browse Tasks": show_browse_tasks()
     elif page == "🤖 AI Match":     show_ai_match()
     elif page == "⭐ Give Feedback": show_feedback()
-```
 
-
-
----
 
 ## ▶️ PHASE 8 — Run Your App
 
