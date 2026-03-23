@@ -11,59 +11,28 @@ if "page" not in st.session_state:
 
 # ================= REMOVE STREAMLIT HEADER =================
 st.markdown("""
-<style>
+<div style="text-align:center; margin-top:80px;">
 
-/* REMOVE WHITE HEADER */
-header {visibility: hidden;}
-footer {visibility: hidden;}
-#MainMenu {visibility: hidden;}
+    <h1 style="font-size:85px; font-weight:900; line-height:1.1; color:#d1d5db;">
+        Connect.<br>
+        Collaborate.
+    </h1>
 
-/* REMOVE TOP SPACE */
-.block-container {
-    padding-top: 0rem;
-}
+    <h1 style="font-size:85px; font-weight:900; line-height:1.1;
+        background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
+        -webkit-background-clip: text;
+        color: transparent;">
+        Exchange Skills
+    </h1>
 
-/* FULL BACKGROUND */
-.stApp {
-    background-color: #050816;
-}
+    <h1 style="font-size:85px; font-weight:900; line-height:1.1;
+        background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
+        -webkit-background-clip: text;
+        color: transparent;">
+        Smarter.
+    </h1>
 
-/* TEXT */
-h1 {
-    color: #e5e7eb;
-}
-p {
-    color: #94a3b8;
-}
-
-/* HERO */
-.hero {
-    text-align: center;
-    margin-top: 80px;
-}
-
-.hero h1 {
-    font-size: 85px;
-    font-weight: 900;
-    line-height: 1.1;
-}
-
-/* GRADIENT TEXT */
-.gradient {
-    background: linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);
-    -webkit-background-clip: text;
-    color: transparent;
-}
-
-/* BUTTON */
-.stButton>button {
-    background: linear-gradient(90deg,#22d3ee,#7c3aed);
-    color: white;
-    border-radius: 10px;
-    border: none;
-}
-
-</style>
+</div>
 """, unsafe_allow_html=True)
 
 # ================= LANDING =================
