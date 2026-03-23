@@ -1,33 +1,45 @@
 import sqlite3
-import os
 
-DB="data.db"
+def get_connection():
+    return sqlite3.connect("collabskill.db")
 
 def init_db():
-    conn=sqlite3.connect(DB)
-    c=conn.cursor()
+    conn = get_connection()
+    c = conn.cursor()
 
-    c.execute("""CREATE TABLE IF NOT EXISTS users(
-    id INTEGER PRIMARY KEY,
-    username TEXT,
-    email TEXT,
-    password TEXT,
-    skills TEXT,
-    bio TEXT,
-    portfolio_link TEXT,
-    trust_score REAL DEFAULT 5
-    )""")
+    # USERS
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS users (
+        username TEXT PRIMARY KEY,
+        email TEXT,
+        password TEXT,
+        skills TEXT,
+        bio TEXT,
+        portfolio TEXT,
+        trust_score INTEGER DEFAULT 0
+    )
+    """)
 
-    c.execute("""CREATE TABLE IF NOT EXISTS tasks(
-    id INTEGER PRIMARY KEY,
-    title TEXT,
-    description TEXT,
-    required_skills TEXT,
-    posted_by TEXT
-    )""")
+    # TASKS
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS tasks (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        title TEXT,
+        description TEXT,
+        skills TEXT,
+        created_by TEXT
+    )
+    """)
+
+    # CHAT
+    c.execute("""
+    CREATE TABLE IF NOT EXISTS messages (
+        id INTEGER PRIMARY KEY AUTOINCREMENT,
+        sender TEXT,
+        receiver TEXT,
+        message TEXT
+    )
+    """)
 
     conn.commit()
     conn.close()
-
-def get_connection():
-    return sqlite3.connect(DB)
