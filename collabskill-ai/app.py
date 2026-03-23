@@ -21,12 +21,12 @@ st.markdown("""
     background-color: #050816;
 }
 
-/* REMOVE WHITE BOX BUG */
+/* REMOVE PADDING */
 .block-container {
     padding-top: 1rem;
 }
 
-/* TEXT COLORS */
+/* TEXT */
 h1, h2, h3 {
     color: #e5e7eb !important;
 }
@@ -39,12 +39,7 @@ p {
     display:flex;
     justify-content:space-between;
     align-items:center;
-    padding:20px 40px;
-}
-
-.nav-centre {
-    display:flex;
-    gap:20px;
+    padding:15px 40px;
 }
 
 /* HERO */
@@ -74,40 +69,29 @@ p {
     border:none;
 }
 
-/* CARD */
-.card {
-    background:#0f172a;
-    padding:20px;
-    border-radius:12px;
-    border:1px solid #1f2937;
-}
-
 </style>
 """, unsafe_allow_html=True)
 
 # ================= LANDING =================
 def landing():
 
-    # NAVBAR
-    col1, col2 = st.columns([8,2])
+    # ===== NAVBAR =====
+    col1, col2, col3 = st.columns([6,2,2])
 
     with col1:
         st.markdown("### 🚀 CollabSkill AI")
 
     with col2:
-        col21, col22 = st.columns(2)
+        if st.button("How It Works"):
+            st.session_state.section = "how"
+            st.rerun()
 
-        with col21:
-            if st.button("How It Works"):
-                st.session_state.section = "how"
-                st.rerun()
+    with col3:
+        if st.button("Get Started"):
+            st.session_state.page = "login"
+            st.rerun()
 
-        with col22:
-            if st.button("Get Started"):
-                st.session_state.page = "login"
-                st.rerun()
-
-    # HERO TEXT (FIXED)
+    # ===== HERO =====
     st.markdown("""
     <div class="hero">
         <h1>
@@ -119,18 +103,11 @@ def landing():
     </div>
     """, unsafe_allow_html=True)
 
-    # NORMAL TEXT (NO HTML BUG)
     st.markdown(
-        "                .                  An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly."
+        "An intelligent platform that matches you with the right people — using AI to connect digital skill providers with those who need them instantly."
     )
 
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    if st.button("🚀 Launch App"):
-        st.session_state.page = "login"
-        st.rerun()
-
-    # ================= HOW IT WORKS =================
+    # ===== HOW IT WORKS =====
     if st.session_state.section == "how":
 
         st.markdown("## How CollabSkill AI Works")
@@ -140,44 +117,44 @@ def landing():
         col5, col6 = st.columns(2)
 
         col1.markdown("""
-        <div class="card">
-        <h4>01 Register & Build Profile</h4>
-        <p>Create your skill profile.</p>
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
+        <h4>01 Register</h4>
+        <p>Create your profile</p>
         </div>
         """, unsafe_allow_html=True)
 
         col2.markdown("""
-        <div class="card">
-        <h4>02 Post a Task</h4>
-        <p>Describe your needs.</p>
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
+        <h4>02 Post Task</h4>
+        <p>Describe your need</p>
         </div>
         """, unsafe_allow_html=True)
 
         col3.markdown("""
-        <div class="card">
-        <h4>03 AI Matches</h4>
-        <p>Find best collaborators.</p>
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
+        <h4>03 AI Match</h4>
+        <p>Find best users</p>
         </div>
         """, unsafe_allow_html=True)
 
         col4.markdown("""
-        <div class="card">
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
         <h4>04 Collaborate</h4>
-        <p>Work together online.</p>
+        <p>Work together</p>
         </div>
         """, unsafe_allow_html=True)
 
         col5.markdown("""
-        <div class="card">
-        <h4>05 Complete Task</h4>
-        <p>Finish the task.</p>
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
+        <h4>05 Complete</h4>
+        <p>Finish task</p>
         </div>
         """, unsafe_allow_html=True)
 
         col6.markdown("""
-        <div class="card">
+        <div style="background:#0f172a;padding:20px;border-radius:12px;">
         <h4>06 Trust Score</h4>
-        <p>Build reputation.</p>
+        <p>Build reputation</p>
         </div>
         """, unsafe_allow_html=True)
 
@@ -195,7 +172,7 @@ def login():
         else:
             st.error("Invalid credentials")
 
-    if st.button("Go to Register"):
+    if st.button("Register"):
         st.session_state.page = "register"
         st.rerun()
 
