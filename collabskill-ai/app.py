@@ -1,80 +1,126 @@
 import streamlit as st
-import pandas as pd
-from database import init_db, get_connection
-from auth import register_user, login_user, update_trust_score
-from ai_matching import match_users_to_task
+from database import init_db
+from auth import register_user, login_user
 
 init_db()
 
-st.set_page_config(page_title="CollabSkill AI", page_icon="🚀", layout="wide")
+st.set_page_config(page_title="CollabSkill AI", layout="wide")
 
+# SESSION STATE
+if "page" not in st.session_state:
+    st.session_state.page = "landing"
+
+# CSS (Landing Page Style)
 st.markdown("""
 <style>
-body { background-color: #070a12; color: #e2e8f0; }
-[data-testid="stSidebar"] { background-color: #0d1221; }
-
-.big-title {
-    font-size: 2.5rem;
-    font-weight: 800;
-    color: #00e5ff;
+body {
+    background-color: #050816;
+    color: white;
 }
 
-.sub-text { color: #64748b; }
+/* NAVBAR */
+.navbar {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 40px;
+}
 
-.stButton>button {
-    background: linear-gradient(135deg, #00e5ff, #7c3aed);
-    color: white;
+.logo {
+    font-size: 24px;
+    font-weight: bold;
+}
+
+.get-started {
+    background: linear-gradient(90deg,#00e5ff,#7c3aed);
+    padding: 10px 20px;
     border-radius: 10px;
-    border: none;
-}
-
-.stTextInput input, .stTextArea textarea {
-    background-color: #111827;
     color: white;
+    text-decoration: none;
 }
 
-.card {
-    background: #111827;
-    padding: 20px;
-    border-radius: 12px;
-    border: 1px solid #1f2937;
-    margin-bottom: 10px;
+/* HERO */
+.hero {
+    text-align: center;
+    margin-top: 100px;
+}
+
+.hero h1 {
+    font-size: 70px;
+    font-weight: 800;
+}
+
+.gradient {
+    background: linear-gradient(90deg,#00e5ff,#7c3aed);
+    -webkit-background-clip: text;
+    color: transparent;
+}
+
+.btn {
+    background: linear-gradient(90deg,#00e5ff,#7c3aed);
+    padding: 12px 25px;
+    border-radius: 10px;
+    color: white;
+    margin-top: 20px;
 }
 </style>
 """, unsafe_allow_html=True)
 
-if "user" not in st.session_state:
-    st.session_state.user = None
+# =========================
+# LANDING PAGE
+# =========================
+def landing_page():
+    col1, col2 = st.columns([8,2])
 
-with st.sidebar:
-    if st.session_state.user is None:
-        page = st.radio("", ["Login", "Register"])
-    else:
-        u = st.session_state.user
-        st.success(u[1])
-        page = st.radio("Menu", [
-            "Dashboard", "Profile", "Post Task",
-            "Browse Tasks", "AI Match", "Feedback"
-        ])
-        if st.button("Logout"):
-            st.session_state.user = None
+    with col1:
+        st.markdown('<div class="logo">🚀 CollabSkill AI</div>', unsafe_allow_html=True)
+
+    with col2:
+        if st.button("Get Started"):
+            st.session_state.page = "login"
             st.rerun()
 
-def show_login():
-    st.markdown('<div class="big-title">Login</div>', unsafe_allow_html=True)
+    st.markdown("""
+    <div class="hero">
+        <h1>
+            Connect. Collaborate.<br>
+            <span class="gradient">Exchange Skills</span><br>
+            Smarter.
+        </h1>
+        <p>An AI-powered platform to connect people with the right skills instantly.</p>
+    </div>
+    """, unsafe_allow_html=True)
+
+    if st.button("🚀 Launch App"):
+        st.session_state.page = "login"
+        st.rerun()
+
+# =========================
+# LOGIN PAGE
+# =========================
+def login_page():
+    st.title("Login")
+
     username = st.text_input("Username")
     password = st.text_input("Password", type="password")
+
     if st.button("Login"):
         user = login_user(username, password)
         if user:
-            st.session_state.user = user
-            st.success("Login success")
-            st.rerun()
+            st.success("Login successful")
         else:
-            st.error("Invalid")
+            st.error("Invalid credentials")
 
-def show_register():
-    st.markdown('<div class="big-title">Create Account</div>', unsafe_allow_html=True)
+    if st.button("Go to Register"):
+        st.session_state.page = "register"
+        st.rerun()
+
+# =========================
+# REGISTER PAGE
+# =========================
+def register_page():
+    st.title("Register")
+
     username = st.text_input("Username")
     email = st.text_input("Email")
     password = st.text_input("Password", type="password")
@@ -89,88 +135,18 @@ def show_register():
         else:
             st.error(msg)
 
-def show_dashboard():
-    st.markdown('<div class="big-title">Dashboard</div>', unsafe_allow_html=True)
+    if st.button("Back to Login"):
+        st.session_state.page = "login"
+        st.rerun()
 
-    conn = get_connection()
-    total_users = pd.read_sql("SELECT COUNT(*) as c FROM users", conn).iloc[0]['c']
-    total_tasks = pd.read_sql("SELECT COUNT(*) as c FROM tasks", conn).iloc[0]['c']
-    conn.close()
+# =========================
+# ROUTING
+# =========================
+if st.session_state.page == "landing":
+    landing_page()
 
-    col1, col2 = st.columns(2)
-    col1.metric("Users", total_users)
-    col2.metric("Tasks", total_tasks)
+elif st.session_state.page == "login":
+    login_page()
 
-def show_profile():
-    st.write(st.session_state.user)
-
-def show_post():
-    st.markdown('<div class="big-title">Post Task</div>', unsafe_allow_html=True)
-
-    title = st.text_input("Title")
-    desc = st.text_area("Description")
-    skills = st.text_input("Skills")
-
-    if st.button("Post"):
-        conn = get_connection()
-        conn.execute(
-            "INSERT INTO tasks (title, description, required_skills, posted_by) VALUES (?,?,?,?)",
-            (title, desc, skills, st.session_state.user[1])
-        )
-        conn.commit()
-        conn.close()
-        st.success("Task added")
-
-def show_browse():
-    st.markdown('<div class="big-title">Tasks</div>', unsafe_allow_html=True)
-
-    conn = get_connection()
-    df = pd.read_sql("SELECT * FROM tasks", conn)
-    conn.close()
-
-    for _, row in df.iterrows():
-        st.markdown(f"""
-        <div class="card">
-            <h4>{row['title']}</h4>
-            <p>{row['description']}</p>
-            <small>{row['required_skills']}</small>
-        </div>
-        """, unsafe_allow_html=True)
-
-def show_ai():
-    st.markdown('<div class="big-title">AI Matching</div>', unsafe_allow_html=True)
-
-    title = st.text_input("Title")
-    desc = st.text_area("Description")
-    skills = st.text_input("Skills")
-
-    if st.button("Match"):
-        matches = match_users_to_task(title, desc, skills, st.session_state.user[1])
-        for m in matches:
-            st.write(m)
-
-def show_feedback():
-    user = st.text_input("User")
-    rating = st.slider("Rating", 1, 5)
-    if st.button("Submit"):
-        update_trust_score(user, rating * 2)
-        st.success("Done")
-
-if st.session_state.user is None:
-    if page == "Login":
-        show_login()
-    else:
-        show_register()
-else:
-    if page == "Dashboard":
-        show_dashboard()
-    elif page == "Profile":
-        show_profile()
-    elif page == "Post Task":
-        show_post()
-    elif page == "Browse Tasks":
-        show_browse()
-    elif page == "AI Match":
-        show_ai()
-    elif page == "Feedback":
-        show_feedback()
+elif st.session_state.page == "register":
+    register_page()
