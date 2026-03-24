@@ -1,52 +1,103 @@
-import hashlib
-from database import get_connection
+# auth.py
+import os
+import uuid
+import bcrypt
+from database import db_fetchone, db_insert, db_execute, db_fetchall
 
 
-def hash_password(password):
-    return hashlib.sha256(password.encode()).hexdigest()
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@collabskill.com").lower()
 
 
-def register_user(username, email, password, skills, bio, portfolio, experience):
-    conn = get_connection()
-    c = conn.cursor()
+# ── Password helpers ──────────────────────────────────────────
+def hash_password(plain: str) -> str:
+    return bcrypt.hashpw(plain.encode(), bcrypt.gensalt()).decode()
+
+
+def verify_password(plain: str, hashed: str) -> bool:
     try:
-        c.execute("""
-            INSERT INTO users (username, email, password, skills, bio, portfolio_link, experience)
-            VALUES (?, ?, ?, ?, ?, ?, ?)
-        """, (username.strip(), email.strip(), hash_password(password),
-              skills.strip(), bio.strip(), portfolio.strip(), experience))
-        conn.commit()
-        return True, "Registration successful!"
+        return bcrypt.checkpw(plain.encode(), hashed.encode())
     except Exception:
-        return False, "Username or email already exists. Please try another."
-    finally:
-        conn.close()
+        return False
 
 
-def login_user(username, password):
-    conn = get_connection()
-    c = conn.cursor()
-    c.execute(
-        "SELECT * FROM users WHERE username=? AND password=?",
-        (username.strip(), hash_password(password))
-    )
-    user = c.fetchone()
-    conn.close()
-    return user
+# ── Register ──────────────────────────────────────────────────
+def register_user(name, email, password, skills="", experience="Beginner", bio="", portfolio=""):
+    email = email.strip().lower()
+
+    if not name or not email or not password:
+        return False, "Name, email and password are required."
+    if len(password) < 6:
+        return False, "Password must be at least 6 characters."
+
+    existing = db_fetchone("SELECT id FROM users WHERE email = ?", (email,))
+    if existing:
+        return False, "An account with this email already exists."
+
+    # First-ever user OR matching admin email → admin role
+    count = db_fetchone("SELECT COUNT(*) AS c FROM users")["c"]
+    role  = "admin" if (count == 0 or email == ADMIN_EMAIL) else "user"
+
+    uid = str(uuid.uuid4())
+    db_insert("""
+        INSERT INTO users (id, name, email, password_hash, role, skills, experience, bio, portfolio)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+    """, (uid, name.strip(), email, hash_password(password), role, skills, experience, bio, portfolio))
+
+    # Welcome notification
+    db_insert("""
+        INSERT INTO notifications (id, user_id, title, message)
+        VALUES (?, ?, ?, ?)
+    """, (str(uuid.uuid4()), uid,
+          "Welcome to CollabSkill AI! 🎉",
+          "Your account is ready. Start by posting a task or exploring the community."))
+
+    user = db_fetchone("SELECT * FROM users WHERE id = ?", (uid,))
+    return True, user
 
 
-def update_trust_score(username, new_rating_out_of_10):
-    """Recalculate rolling average trust score (0–10)."""
-    conn = get_connection()
-    c = conn.cursor()
-    c.execute("SELECT trust_score, total_ratings FROM users WHERE username=?", (username,))
-    row = c.fetchone()
-    if row:
-        old_score, total = row
-        updated = ((old_score * total) + new_rating_out_of_10) / (total + 1)
-        c.execute(
-            "UPDATE users SET trust_score=?, total_ratings=? WHERE username=?",
-            (round(min(updated, 10.0), 2), total + 1, username)
-        )
-        conn.commit()
-    conn.close()
+# ── Login ─────────────────────────────────────────────────────
+def login_user(email, password):
+    email = email.strip().lower()
+    user  = db_fetchone("SELECT * FROM users WHERE email = ?", (email,))
+
+    if not user:
+        return False, "Invalid email or password."
+    if not user["is_active"]:
+        return False, "Your account has been deactivated."
+    if not verify_password(password, user["password_hash"]):
+        return False, "Invalid email or password."
+
+    return True, user
+
+
+# ── Profile helpers ───────────────────────────────────────────
+def get_user(user_id):
+    return db_fetchone("SELECT * FROM users WHERE id = ?", (user_id,))
+
+
+def update_profile(user_id, name, skills, experience, bio, portfolio):
+    db_execute("""
+        UPDATE users SET name=?, skills=?, experience=?, bio=?, portfolio=?
+        WHERE id=?
+    """, (name, skills, experience, bio, portfolio, user_id))
+
+
+def update_trust_score(user_id, new_rating):
+    """Weighted average; rating 1-5 → stored as 0-10 (×2)."""
+    user = db_fetchone("SELECT trust_score, total_ratings FROM users WHERE id=?", (user_id,))
+    if not user:
+        return
+    scaled    = new_rating * 2
+    old_score = user["trust_score"]
+    total     = user["total_ratings"]
+    new_score = round(((old_score * total) + scaled) / (total + 1), 1)
+    db_execute("UPDATE users SET trust_score=?, total_ratings=? WHERE id=?",
+               (new_score, total + 1, user_id))
+
+
+# ── Top users ─────────────────────────────────────────────────
+def get_top_users(limit=6):
+    return db_fetchall("""
+        SELECT id, name, skills, experience, trust_score, total_ratings
+        FROM users WHERE is_active=1 ORDER BY trust_score DESC LIMIT ?
+    """, (limit,))
