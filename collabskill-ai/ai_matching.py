@@ -7,7 +7,10 @@ from database import db_fetchall
 # ── Paste your OpenAI key here directly (or set env var) ────
 # Option 1: hardcode  →  client = OpenAI(api_key="sk-proj-...")
 # Option 2: env var   →  set OPENAI_API_KEY in your system
-client = OpenAI(api_key=os.getenv("OPENAI_API_KEY", "sk-proj-paste-your-key-here"))
+
+
+
+client = OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
 
 def get_all_users_except(current_user_id: str):
