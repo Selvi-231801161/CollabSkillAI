@@ -1,19 +1,17 @@
 # tasks_db.py
 import uuid
-from database import db_fetchone, db_fetchall, db_execute, db_insert
-
+from database import db_fetchone, db_fetchall, db_execute
 
 CATEGORIES = [
     "Development", "Design", "Marketing", "Content Writing",
     "Data Science", "Video Editing", "SEO", "DevOps",
-    "Machine Learning", "Other"
+    "Machine Learning", "Other",
 ]
 
 
-# ── Create ────────────────────────────────────────────────────
 def create_task(title, description, skills, category, deadline, priority, created_by):
     tid = str(uuid.uuid4())
-    db_insert("""
+    db_execute("""
         INSERT INTO tasks (id, title, description, skills, category, deadline, priority, created_by)
         VALUES (?, ?, ?, ?, ?, ?, ?, ?)
     """, (tid, title.strip(), description.strip(), skills.strip(),
@@ -21,63 +19,47 @@ def create_task(title, description, skills, category, deadline, priority, create
     return db_fetchone("SELECT * FROM tasks WHERE id=?", (tid,))
 
 
-# ── Read ──────────────────────────────────────────────────────
-def get_task(task_id):
-    return db_fetchone("""
-        SELECT t.*, u.name AS creator_name, u.trust_score AS creator_trust,
-               u.experience AS creator_experience, u.portfolio AS creator_portfolio
-        FROM tasks t JOIN users u ON t.created_by = u.id
-        WHERE t.id = ?
-    """, (task_id,))
-
-
 def get_all_open_tasks(search="", category="", sort="newest"):
-    where  = ["t.status = 'open'"]
-    params = []
-
+    where, params = ["t.status='open'"], []
     if search:
         where.append("(t.title LIKE ? OR t.description LIKE ? OR t.skills LIKE ?)")
-        params += [f"%{search}%", f"%{search}%", f"%{search}%"]
+        params += [f"%{search}%"] * 3
     if category and category != "All":
-        where.append("t.category = ?")
+        where.append("t.category=?")
         params.append(category)
 
     order = {"oldest": "t.created_at ASC",
              "priority": "CASE t.priority WHEN 'Urgent' THEN 1 WHEN 'Normal' THEN 2 ELSE 3 END"
              }.get(sort, "t.created_at DESC")
 
-    sql = f"""
-        SELECT t.*, u.name AS creator_name, u.trust_score AS creator_trust,
+    return db_fetchall(f"""
+        SELECT t.*,
+               u.username AS creator_name,
+               u.trust_score AS creator_trust,
                u.experience AS creator_experience,
-               (SELECT COUNT(*) FROM applications a WHERE a.task_id = t.id) AS applicant_count
-        FROM tasks t JOIN users u ON t.created_by = u.id
-        WHERE {" AND ".join(where)}
-        ORDER BY {order}
-    """
-    return db_fetchall(sql, tuple(params))
+               (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
+        FROM tasks t JOIN users u ON t.created_by=u.id
+        WHERE {" AND ".join(where)} ORDER BY {order}
+    """, tuple(params))
 
 
 def get_my_tasks(user_id):
     return db_fetchall("""
         SELECT t.*,
-               (SELECT COUNT(*) FROM applications a WHERE a.task_id = t.id) AS applicant_count
-        FROM tasks t
-        WHERE t.created_by = ?
-        ORDER BY t.created_at DESC
+               (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
+        FROM tasks t WHERE t.created_by=? ORDER BY t.created_at DESC
     """, (user_id,))
 
 
 def get_all_tasks_admin():
-    """ALL tasks for admin view."""
     return db_fetchall("""
-        SELECT t.*, u.name AS creator_name,
-               (SELECT COUNT(*) FROM applications a WHERE a.task_id = t.id) AS applicant_count
-        FROM tasks t JOIN users u ON t.created_by = u.id
+        SELECT t.*, u.username AS creator_name,
+               (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
+        FROM tasks t JOIN users u ON t.created_by=u.id
         ORDER BY t.created_at DESC
     """)
 
 
-# ── Update ────────────────────────────────────────────────────
 def update_task_status(task_id, status):
     db_execute("UPDATE tasks SET status=? WHERE id=?", (status, task_id))
 
@@ -86,74 +68,56 @@ def delete_task(task_id):
     db_execute("DELETE FROM tasks WHERE id=?", (task_id,))
 
 
-# ── Applications ──────────────────────────────────────────────
 def apply_to_task(task_id, user_id, message=""):
-    existing = db_fetchone(
-        "SELECT id FROM applications WHERE task_id=? AND user_id=?", (task_id, user_id))
-    if existing:
+    if db_fetchone("SELECT id FROM applications WHERE task_id=? AND user_id=?", (task_id, user_id)):
         return False, "You have already applied."
-
-    aid = str(uuid.uuid4())
-    db_insert("""
-        INSERT INTO applications (id, task_id, user_id, message)
-        VALUES (?, ?, ?, ?)
-    """, (aid, task_id, user_id, message))
+    db_execute("""
+        INSERT INTO applications (id, task_id, user_id, message) VALUES (?,?,?,?)
+    """, (str(uuid.uuid4()), task_id, user_id, message))
     return True, "Application submitted!"
-
-
-def get_applications_for_task(task_id):
-    return db_fetchall("""
-        SELECT a.*, u.name, u.skills, u.trust_score, u.experience
-        FROM applications a JOIN users u ON a.user_id = u.id
-        WHERE a.task_id = ?
-        ORDER BY a.created_at DESC
-    """, (task_id,))
 
 
 def get_my_applications(user_id):
     return db_fetchall("""
         SELECT a.*, t.title AS task_title, t.skills AS task_skills,
-               t.category, t.status AS task_status,
-               u.name AS owner_name
+               t.category, t.status AS task_status, u.username AS owner_name
         FROM applications a
-        JOIN tasks t ON a.task_id = t.id
-        JOIN users u ON t.created_by = u.id
-        WHERE a.user_id = ?
-        ORDER BY a.created_at DESC
+        JOIN tasks t ON a.task_id=t.id
+        JOIN users u ON t.created_by=u.id
+        WHERE a.user_id=? ORDER BY a.created_at DESC
     """, (user_id,))
 
 
-# ── Feedback ──────────────────────────────────────────────────
-def submit_feedback(from_id, to_id, rating, comment=""):
-    existing = db_fetchone(
-        "SELECT id FROM feedback WHERE from_user_id=? AND to_user_id=?", (from_id, to_id))
-    if existing:
-        return False, "You have already rated this user."
+def get_applications_for_task(task_id):
+    return db_fetchall("""
+        SELECT a.*, u.username, u.skills, u.trust_score, u.experience
+        FROM applications a JOIN users u ON a.user_id=u.id
+        WHERE a.task_id=? ORDER BY a.created_at DESC
+    """, (task_id,))
 
-    fid = str(uuid.uuid4())
-    db_insert("""
+
+def submit_feedback(from_id, to_id, rating, comment=""):
+    if db_fetchone("SELECT id FROM feedback WHERE from_user_id=? AND to_user_id=?", (from_id, to_id)):
+        return False, "You have already rated this user."
+    db_execute("""
         INSERT INTO feedback (id, from_user_id, to_user_id, rating, comment)
-        VALUES (?, ?, ?, ?, ?)
-    """, (fid, from_id, to_id, rating, comment))
+        VALUES (?,?,?,?,?)
+    """, (str(uuid.uuid4()), from_id, to_id, rating, comment))
     return True, "Feedback submitted!"
 
 
 def get_feedback_for_user(user_id):
     return db_fetchall("""
-        SELECT f.*, u.name AS from_name
-        FROM feedback f JOIN users u ON f.from_user_id = u.id
-        WHERE f.to_user_id = ?
-        ORDER BY f.created_at DESC
+        SELECT f.*, u.username AS from_name
+        FROM feedback f JOIN users u ON f.from_user_id=u.id
+        WHERE f.to_user_id=? ORDER BY f.created_at DESC
     """, (user_id,))
 
 
-# ── Notifications ─────────────────────────────────────────────
 def add_notification(user_id, title, message):
-    nid = str(uuid.uuid4())
-    db_insert("""
-        INSERT INTO notifications (id, user_id, title, message)
-        VALUES (?, ?, ?, ?)
-    """, (nid, user_id, title, message))
+    db_execute("""
+        INSERT INTO notifications (id, user_id, title, message) VALUES (?,?,?,?)
+    """, (str(uuid.uuid4()), user_id, title, message))
 
 
 def get_notifications(user_id):
