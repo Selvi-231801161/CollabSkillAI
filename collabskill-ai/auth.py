@@ -5,7 +5,7 @@ import bcrypt
 from database import db_fetchone, db_insert, db_execute, db_fetchall
 
 
-ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "admin@collabskill.com").lower()
+ADMIN_EMAIL = os.getenv("ADMIN_EMAIL", "selvithenraj876@gmail.com").lower()
 
 
 # ── Password helpers ──────────────────────────────────────────
