@@ -205,10 +205,10 @@ def page_landing():
 
     _,bc1,bc2,_ = st.columns([2,1,1,2])
     with bc1:
-        if st.button("🚀 Get Started", key="land_start", use_container_width=True):
+        if st.button(" Get Started", key="land_start", use_container_width=True):
             go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
     with bc2:
-        if st.button("🔍 Browse Tasks", key="land_browse", use_container_width=True):
+        if st.button(" Browse Tasks", key="land_browse", use_container_width=True):
             go("browse_tasks")
 
     st.markdown("<br>", unsafe_allow_html=True)
