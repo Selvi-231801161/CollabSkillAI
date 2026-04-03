@@ -2,25 +2,49 @@
 import uuid
 from database import db_fetchone, db_fetchall, db_execute
 
+# ── Categories for Task Mode ──────────────────────────────────
 CATEGORIES = [
     "Development", "Design", "Marketing", "Content Writing",
     "Data Science", "Video Editing", "SEO", "DevOps",
     "Machine Learning", "Other",
 ]
 
+# ── Topics for Knowledge Mode ─────────────────────────────────
+KNOWLEDGE_TOPICS = [
+    "Programming", "Web Development", "Data Science",
+    "Design", "Digital Marketing", "Video & Media",
+    "Business & Finance", "Language Learning",
+    "Mathematics", "Science", "Music", "Other",
+]
 
-def create_task(title, description, skills, category, deadline, priority, created_by):
+# ── Entry types ───────────────────────────────────────────────
+TYPE_TASK      = "task"
+TYPE_KNOWLEDGE = "knowledge"
+
+
+# ═══════════════════════════════════════════════════════════════
+#  TASK MODE  — unchanged existing functions, extended with type
+# ═══════════════════════════════════════════════════════════════
+
+def create_task(title, description, skills, category, deadline, priority, created_by,
+                entry_type=TYPE_TASK):
+    """Create a task OR knowledge request. entry_type = 'task' | 'knowledge'."""
     tid = str(uuid.uuid4())
     db_execute("""
-        INSERT INTO tasks (id, title, description, skills, category, deadline, priority, created_by)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?)
+        INSERT INTO tasks
+            (id, title, description, skills, category, deadline, priority, created_by, type)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (tid, title.strip(), description.strip(), skills.strip(),
-          category, deadline, priority, created_by))
+          category, deadline, priority, created_by, entry_type))
     return db_fetchone("SELECT * FROM tasks WHERE id=?", (tid,))
 
 
-def get_all_open_tasks(search="", category="", sort="newest"):
-    where, params = ["t.status='open'"], []
+def get_all_open_tasks(search="", category="", sort="newest",
+                       entry_type=TYPE_TASK):
+    """Fetch open tasks filtered by entry_type ('task' or 'knowledge')."""
+    where  = ["t.status='open'", "t.type=?"]
+    params = [entry_type]
+
     if search:
         where.append("(t.title LIKE ? OR t.description LIKE ? OR t.skills LIKE ?)")
         params += [f"%{search}%"] * 3
@@ -28,9 +52,10 @@ def get_all_open_tasks(search="", category="", sort="newest"):
         where.append("t.category=?")
         params.append(category)
 
-    order = {"oldest": "t.created_at ASC",
-             "priority": "CASE t.priority WHEN 'Urgent' THEN 1 WHEN 'Normal' THEN 2 ELSE 3 END"
-             }.get(sort, "t.created_at DESC")
+    order = {
+        "oldest":   "t.created_at ASC",
+        "priority": "CASE t.priority WHEN 'Urgent' THEN 1 WHEN 'Normal' THEN 2 ELSE 3 END",
+    }.get(sort, "t.created_at DESC")
 
     return db_fetchall(f"""
         SELECT t.*,
@@ -43,21 +68,44 @@ def get_all_open_tasks(search="", category="", sort="newest"):
     """, tuple(params))
 
 
-def get_my_tasks(user_id):
+def get_my_tasks(user_id, entry_type=None):
+    """
+    Fetch tasks for a user.
+    entry_type=None  → all types (used on profile / dashboard total count)
+    entry_type='task' | 'knowledge' → filtered
+    """
+    if entry_type:
+        return db_fetchall("""
+            SELECT t.*,
+                   (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
+            FROM tasks t
+            WHERE t.created_by=? AND t.type=?
+            ORDER BY t.created_at DESC
+        """, (user_id, entry_type))
     return db_fetchall("""
         SELECT t.*,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
-        FROM tasks t WHERE t.created_by=? ORDER BY t.created_at DESC
+        FROM tasks t
+        WHERE t.created_by=?
+        ORDER BY t.created_at DESC
     """, (user_id,))
 
 
-def get_all_tasks_admin():
-    return db_fetchall("""
+def get_all_tasks_admin(entry_type=None):
+    """Admin: fetch all tasks, optionally filtered by type."""
+    where  = "1=1"
+    params = []
+    if entry_type:
+        where  = "t.type=?"
+        params = [entry_type]
+
+    return db_fetchall(f"""
         SELECT t.*, u.username AS creator_name,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
         FROM tasks t JOIN users u ON t.created_by=u.id
+        WHERE {where}
         ORDER BY t.created_at DESC
-    """)
+    """, tuple(params))
 
 
 def update_task_status(task_id, status):
@@ -69,7 +117,8 @@ def delete_task(task_id):
 
 
 def apply_to_task(task_id, user_id, message=""):
-    if db_fetchone("SELECT id FROM applications WHERE task_id=? AND user_id=?", (task_id, user_id)):
+    if db_fetchone("SELECT id FROM applications WHERE task_id=? AND user_id=?",
+                   (task_id, user_id)):
         return False, "You have already applied."
     db_execute("""
         INSERT INTO applications (id, task_id, user_id, message) VALUES (?,?,?,?)
@@ -80,7 +129,9 @@ def apply_to_task(task_id, user_id, message=""):
 def get_my_applications(user_id):
     return db_fetchall("""
         SELECT a.*, t.title AS task_title, t.skills AS task_skills,
-               t.category, t.status AS task_status, u.username AS owner_name
+               t.category, t.status AS task_status,
+               t.type AS task_type,
+               u.username AS owner_name
         FROM applications a
         JOIN tasks t ON a.task_id=t.id
         JOIN users u ON t.created_by=u.id
@@ -96,8 +147,13 @@ def get_applications_for_task(task_id):
     """, (task_id,))
 
 
+# ═══════════════════════════════════════════════════════════════
+#  FEEDBACK
+# ═══════════════════════════════════════════════════════════════
+
 def submit_feedback(from_id, to_id, rating, comment=""):
-    if db_fetchone("SELECT id FROM feedback WHERE from_user_id=? AND to_user_id=?", (from_id, to_id)):
+    if db_fetchone("SELECT id FROM feedback WHERE from_user_id=? AND to_user_id=?",
+                   (from_id, to_id)):
         return False, "You have already rated this user."
     db_execute("""
         INSERT INTO feedback (id, from_user_id, to_user_id, rating, comment)
@@ -114,6 +170,10 @@ def get_feedback_for_user(user_id):
     """, (user_id,))
 
 
+# ═══════════════════════════════════════════════════════════════
+#  NOTIFICATIONS
+# ═══════════════════════════════════════════════════════════════
+
 def add_notification(user_id, title, message):
     db_execute("""
         INSERT INTO notifications (id, user_id, title, message) VALUES (?,?,?,?)
@@ -129,7 +189,8 @@ def get_notifications(user_id):
 
 def get_unread_count(user_id):
     r = db_fetchone(
-        "SELECT COUNT(*) AS c FROM notifications WHERE user_id=? AND is_read=0", (user_id,))
+        "SELECT COUNT(*) AS c FROM notifications WHERE user_id=? AND is_read=0",
+        (user_id,))
     return r["c"] if r else 0
 
 
