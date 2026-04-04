@@ -2,33 +2,131 @@
 import uuid
 from database import db_fetchone, db_fetchall, db_execute
 
-# ── Categories for Task Mode ──────────────────────────────────
+
+# ═══════════════════════════════════════════════════════════════
+#  SKILL CLASSIFICATION
+# ═══════════════════════════════════════════════════════════════
+
+SKILL_CATEGORIES = [
+    "Programming and Development",
+    "Design and Creative",
+    "Data and Analytics",
+    "Digital Marketing",
+    "Content and Writing",
+    "Media and Content Creation",
+    "Tutoring and Education",
+    "Career and Professional Skills",
+    "Productivity and Personal Development",
+]
+
+SKILLS_BY_CATEGORY = {
+    "Programming and Development": [
+        "Python Programming",
+        "Java Programming",
+        "C++ Programming",
+        "JavaScript",
+        "Web Development (HTML, CSS)",
+        "Frontend Development (React)",
+        "Backend Development (Node.js)",
+        "API Development",
+        "App Development",
+        "Git and GitHub",
+    ],
+    "Design and Creative": [
+        "UI/UX Design (Figma)",
+        "Wireframing and Prototyping",
+        "Graphic Design (Photoshop)",
+        "Graphic Design (Canva)",
+        "Logo Design",
+        "Branding Design",
+        "Presentation Design",
+        "Social Media Post Design",
+    ],
+    "Data and Analytics": [
+        "Data Analysis (Excel)",
+        "Data Analysis (Python)",
+        "SQL",
+        "Power BI",
+        "Data Visualization",
+        "Statistics Basics",
+        "Machine Learning Basics",
+    ],
+    "Digital Marketing": [
+        "SEO (Search Engine Optimization)",
+        "Social Media Marketing",
+        "Content Marketing",
+        "Email Marketing",
+        "Google Ads Basics",
+        "Instagram Growth Strategies",
+    ],
+    "Content and Writing": [
+        "Content Writing",
+        "Copywriting",
+        "Blog Writing",
+        "Technical Writing",
+        "Script Writing (YouTube/Reels)",
+        "Resume Writing",
+        "LinkedIn Content Writing",
+    ],
+    "Media and Content Creation": [
+        "Video Editing (Premiere Pro)",
+        "Video Editing (CapCut)",
+        "Animation Basics (After Effects)",
+        "YouTube Content Creation",
+        "Reels and Shorts Editing",
+        "Podcast Editing",
+    ],
+    "Tutoring and Education": [
+        "Programming Tutoring",
+        "Math Tutoring",
+        "Science Tutoring",
+        "Assignment Help",
+        "Exam Preparation Strategies",
+        "Concept Explanation Sessions",
+    ],
+    "Career and Professional Skills": [
+        "Resume Building",
+        "LinkedIn Profile Optimization",
+        "Interview Preparation",
+        "Portfolio Building",
+        "Freelancing Guidance",
+        "Personal Branding",
+    ],
+    "Productivity and Personal Development": [
+        "Time Management",
+        "Productivity Systems",
+        "Study Techniques",
+        "Goal Setting",
+        "Habit Building",
+        "Focus Improvement Techniques",
+    ],
+}
+
+# ── Legacy / browse categories ────────────────────────────────
 CATEGORIES = [
     "Development", "Design", "Marketing", "Content Writing",
     "Data Science", "Video Editing", "SEO", "DevOps",
     "Machine Learning", "Other",
 ]
 
-# ── Topics for Knowledge Mode ─────────────────────────────────
 KNOWLEDGE_TOPICS = [
     "Programming", "Web Development", "Data Science",
-    "Design", "Digital Marketing", "Video & Media",
-    "Business & Finance", "Language Learning",
+    "Design", "Digital Marketing", "Video and Media",
+    "Business and Finance", "Language Learning",
     "Mathematics", "Science", "Music", "Other",
 ]
 
-# ── Entry types ───────────────────────────────────────────────
+# ── Entry type constants ──────────────────────────────────────
 TYPE_TASK      = "task"
 TYPE_KNOWLEDGE = "knowledge"
 
 
 # ═══════════════════════════════════════════════════════════════
-#  TASK MODE  — unchanged existing functions, extended with type
+#  TASK CRUD
 # ═══════════════════════════════════════════════════════════════
 
-def create_task(title, description, skills, category, deadline, priority, created_by,
-                entry_type=TYPE_TASK):
-    """Create a task OR knowledge request. entry_type = 'task' | 'knowledge'."""
+def create_task(title, description, skills, category, deadline,
+                priority, created_by, entry_type=TYPE_TASK):
     tid = str(uuid.uuid4())
     db_execute("""
         INSERT INTO tasks
@@ -41,7 +139,6 @@ def create_task(title, description, skills, category, deadline, priority, create
 
 def get_all_open_tasks(search="", category="", sort="newest",
                        entry_type=TYPE_TASK):
-    """Fetch open tasks filtered by entry_type ('task' or 'knowledge')."""
     where  = ["t.status='open'", "t.type=?"]
     params = [entry_type]
 
@@ -69,11 +166,6 @@ def get_all_open_tasks(search="", category="", sort="newest",
 
 
 def get_my_tasks(user_id, entry_type=None):
-    """
-    Fetch tasks for a user.
-    entry_type=None  → all types (used on profile / dashboard total count)
-    entry_type='task' | 'knowledge' → filtered
-    """
     if entry_type:
         return db_fetchall("""
             SELECT t.*,
@@ -92,13 +184,11 @@ def get_my_tasks(user_id, entry_type=None):
 
 
 def get_all_tasks_admin(entry_type=None):
-    """Admin: fetch all tasks, optionally filtered by type."""
     where  = "1=1"
     params = []
     if entry_type:
         where  = "t.type=?"
         params = [entry_type]
-
     return db_fetchall(f"""
         SELECT t.*, u.username AS creator_name,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
@@ -116,14 +206,18 @@ def delete_task(task_id):
     db_execute("DELETE FROM tasks WHERE id=?", (task_id,))
 
 
+# ═══════════════════════════════════════════════════════════════
+#  APPLICATIONS
+# ═══════════════════════════════════════════════════════════════
+
 def apply_to_task(task_id, user_id, message=""):
     if db_fetchone("SELECT id FROM applications WHERE task_id=? AND user_id=?",
                    (task_id, user_id)):
-        return False, "You have already applied."
+        return False, "You have already applied to this post."
     db_execute("""
         INSERT INTO applications (id, task_id, user_id, message) VALUES (?,?,?,?)
     """, (str(uuid.uuid4()), task_id, user_id, message))
-    return True, "Application submitted!"
+    return True, "Application submitted successfully."
 
 
 def get_my_applications(user_id):
@@ -154,12 +248,12 @@ def get_applications_for_task(task_id):
 def submit_feedback(from_id, to_id, rating, comment=""):
     if db_fetchone("SELECT id FROM feedback WHERE from_user_id=? AND to_user_id=?",
                    (from_id, to_id)):
-        return False, "You have already rated this user."
+        return False, "You have already submitted a rating for this user."
     db_execute("""
         INSERT INTO feedback (id, from_user_id, to_user_id, rating, comment)
         VALUES (?,?,?,?,?)
     """, (str(uuid.uuid4()), from_id, to_id, rating, comment))
-    return True, "Feedback submitted!"
+    return True, "Rating submitted successfully."
 
 
 def get_feedback_for_user(user_id):
