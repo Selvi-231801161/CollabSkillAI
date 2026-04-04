@@ -1,3 +1,4 @@
+# app.py  —  CollabSkill AI  |  Professional Production Build
 import streamlit as st
 import pandas as pd
 from database import init_db, db_fetchone, db_fetchall, db_execute
@@ -6,17 +7,22 @@ from auth import (register_user, login_user, get_user,
 from tasks_db import (
     create_task, get_all_open_tasks, get_my_tasks, get_all_tasks_admin,
     update_task_status, delete_task, apply_to_task,
-    get_my_applications, get_applications_for_task,
-    submit_feedback, get_feedback_for_user,
-    add_notification, get_notifications,
+    get_my_applications, get_feedback_for_user,
+    submit_feedback, add_notification, get_notifications,
     get_unread_count, mark_all_read,
     CATEGORIES, KNOWLEDGE_TOPICS,
     TYPE_TASK, TYPE_KNOWLEDGE,
+    SKILL_CATEGORIES, SKILLS_BY_CATEGORY,
 )
 
 init_db()
 
-st.set_page_config(page_title="CollabSkill AI", page_icon="🚀", layout="wide")
+st.set_page_config(
+    page_title  = "CollabSkill AI",
+    page_icon   = "C",
+    layout      = "wide",
+    initial_sidebar_state = "collapsed",
+)
 
 # ── Session defaults ──────────────────────────────────────────
 for k, v in {
@@ -25,7 +31,7 @@ for k, v in {
     "history":    [],
     "ai_matches": [],
     "ai_done":    False,
-    "mode":       "work",      # "work" | "learn"  — persists across pages
+    "mode":       "work",
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -63,240 +69,466 @@ def is_admin():
 def logged_in():
     return st.session_state.user is not None
 
-def current_mode():
-    """Return 'work' or 'learn' — safe accessor."""
-    return st.session_state.get("mode", "work")
-
 def is_learn_mode():
-    return current_mode() == "learn"
+    return st.session_state.get("mode", "work") == "learn"
 
 
 # ═══════════════════════════════════════════════════════════════
-#  CSS  — unchanged from original
+#  CSS
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
-header,#MainMenu,footer{visibility:hidden;}
-.block-container{padding-top:0rem;}
-html,body,[class*="css"]{font-family:'Inter',sans-serif!important;background-color:#050816!important;}
-.stApp{background-color:#050816;}
-.stTextInput input,.stTextArea textarea{background-color:#1f2937!important;color:white!important;border:1px solid #374151!important;border-radius:10px!important;}
-.stTextInput input:focus,.stTextArea textarea:focus{border-color:#22d3ee!important;box-shadow:0 0 0 2px rgba(34,211,238,.15)!important;}
-label,.stTextInput label,.stTextArea label,.stSelectbox label,.stSlider label,.stCheckbox label{color:#fff!important;font-weight:500!important;}
-input::placeholder{color:#9ca3af!important;}
-.stSelectbox div{background-color:#1f2937!important;color:white!important;}
-.stButton>button{background:linear-gradient(90deg,#22d3ee,#7c3aed)!important;color:white!important;border-radius:10px!important;border:none!important;font-weight:600!important;transition:opacity .2s!important;}
-.stButton>button:hover{opacity:.85!important;}
-[data-testid="metric-container"]{background-color:#0f172a!important;border:1px solid #1e293b!important;border-radius:12px!important;padding:16px!important;}
-[data-testid="metric-container"] label{color:#64748b!important;font-size:12px!important;text-transform:uppercase!important;letter-spacing:.06em!important;}
-[data-testid="stMetricValue"]{color:#22d3ee!important;font-size:26px!important;font-weight:800!important;}
-.streamlit-expanderHeader{background-color:#0f172a!important;border:1px solid #1e293b!important;border-radius:10px!important;color:#e2e8f0!important;}
-[data-testid="stSidebar"]{background-color:#070d1f!important;border-right:1px solid #1e293b!important;}
-[data-testid="stSidebar"] *{color:#e2e8f0!important;}
-.center{text-align:center;margin-top:60px;}
-.light{color:#e5e7eb;font-size:72px;font-weight:900;line-height:1.1;}
-.gradient{font-size:72px;font-weight:900;line-height:1.1;background:linear-gradient(90deg,#22d3ee,#818cf8,#a855f7);-webkit-background-clip:text;color:transparent;}
-.sub{color:#94a3b8;font-size:17px;text-align:center;margin-top:18px;}
-.cs-card{background:#0f172a;border:1px solid #1e293b;border-radius:14px;padding:20px;margin-bottom:14px;}
-.cs-badge{display:inline-block;padding:3px 10px;border-radius:20px;font-size:11px;font-weight:600;margin:2px 3px 2px 0;}
-.badge-green{background:rgba(34,197,94,.1);color:#4ade80;border:1px solid rgba(34,197,94,.2);}
-.badge-amber{background:rgba(245,158,11,.1);color:#fbbf24;border:1px solid rgba(245,158,11,.2);}
-.badge-red{background:rgba(239,68,68,.1);color:#f87171;border:1px solid rgba(239,68,68,.2);}
-.badge-cyan{background:rgba(34,211,238,.1);color:#22d3ee;border:1px solid rgba(34,211,238,.2);}
-.badge-violet{background:rgba(124,58,237,.1);color:#a78bfa;border:1px solid rgba(124,58,237,.2);}
-.badge-slate{background:#1e293b;color:#64748b;border:1px solid #334155;}
-.badge-teal{background:rgba(20,184,166,.1);color:#2dd4bf;border:1px solid rgba(20,184,166,.2);}
-.page-title{font-size:26px;font-weight:900;color:#f1f5f9;letter-spacing:-.02em;margin-bottom:4px;}
-.page-sub{color:#475569;font-size:14px;margin-bottom:20px;}
-.trust-bar-bg{background:#1e293b;border-radius:4px;height:5px;margin-top:5px;}
-.trust-bar-fill{height:5px;border-radius:4px;background:linear-gradient(90deg,#22d3ee,#7c3aed);}
-.admin-only-banner{background:rgba(239,68,68,.07);border:1px solid rgba(239,68,68,.2);border-radius:10px;padding:10px 16px;color:#f87171;font-size:13px;margin-bottom:16px;}
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ── Mode Toggle ── */
-.mode-toggle-wrap{
-    display:flex;align-items:center;gap:0;
-    background:#0f172a;border:1px solid #1e293b;
-    border-radius:12px;padding:4px;width:fit-content;
+/* ── Reset & Base ── */
+header, #MainMenu, footer { visibility: hidden; }
+.block-container { padding-top: 0 !important; }
+html, body, [class*="css"] {
+    font-family: 'Inter', sans-serif !important;
+    background-color: #050816 !important;
+    color: #e2e8f0;
 }
-.mode-btn{
-    padding:8px 22px;border-radius:9px;font-size:13px;font-weight:700;
-    cursor:pointer;border:none;transition:all .2s;
-    letter-spacing:.01em;
+.stApp { background-color: #050816; }
+
+/* ── Inputs ── */
+.stTextInput input, .stTextArea textarea {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
+    font-size: 14px !important;
 }
-.mode-btn-active-work{
-    background:linear-gradient(135deg,#22d3ee,#7c3aed);
-    color:#fff;box-shadow:0 2px 10px rgba(34,211,238,.25);
+.stTextInput input:focus, .stTextArea textarea:focus {
+    border-color: #22d3ee !important;
+    box-shadow: 0 0 0 3px rgba(34,211,238,.08) !important;
 }
-.mode-btn-active-learn{
-    background:linear-gradient(135deg,#14b8a6,#6366f1);
-    color:#fff;box-shadow:0 2px 10px rgba(20,184,166,.25);
+input::placeholder { color: #334155 !important; }
+
+/* ── Select ── */
+.stSelectbox > div > div {
+    background-color: #0f172a !important;
+    color: #e2e8f0 !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 8px !important;
 }
-.mode-btn-inactive{
-    background:transparent;color:#475569;
+
+/* ── Labels ── */
+label, .stTextInput label, .stTextArea label,
+.stSelectbox label, .stSlider label, .stCheckbox label {
+    color: #64748b !important;
+    font-size: 12px !important;
+    font-weight: 600 !important;
+    letter-spacing: .06em !important;
+    text-transform: uppercase !important;
 }
-.mode-banner-work{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(34,211,238,.06);border:1px solid rgba(34,211,238,.15);
-    border-radius:10px;padding:7px 16px;color:#22d3ee;
-    font-size:12px;font-weight:700;letter-spacing:.04em;
-    margin-bottom:16px;
+
+/* ── Buttons ── */
+.stButton > button {
+    background: linear-gradient(135deg, #22d3ee, #7c3aed) !important;
+    color: #fff !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
+    letter-spacing: .01em !important;
+    transition: opacity .2s, transform .1s !important;
 }
-.mode-banner-learn{
-    display:inline-flex;align-items:center;gap:8px;
-    background:rgba(20,184,166,.06);border:1px solid rgba(20,184,166,.15);
-    border-radius:10px;padding:7px 16px;color:#2dd4bf;
-    font-size:12px;font-weight:700;letter-spacing:.04em;
-    margin-bottom:16px;
+.stButton > button:hover { opacity: .88 !important; transform: translateY(-1px) !important; }
+.stButton > button:active { transform: translateY(0) !important; }
+
+/* ── Metrics ── */
+[data-testid="metric-container"] {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 12px !important;
+    padding: 18px !important;
 }
-div[data-testid="stRadio"] > label{display:none;}
-div[data-testid="stRadio"] > div{
-    display:flex;flex-direction:row!important;gap:0!important;
-    background:#0f172a;border:1px solid #1e293b;
-    border-radius:12px;padding:4px;width:fit-content;
+[data-testid="metric-container"] label {
+    color: #475569 !important;
+    font-size: 11px !important;
+    text-transform: uppercase !important;
+    letter-spacing: .08em !important;
 }
-div[data-testid="stRadio"] > div > label{
-    padding:8px 24px!important;border-radius:9px!important;
-    font-size:13px!important;font-weight:700!important;
-    cursor:pointer!important;color:#475569!important;
-    border:none!important;margin:0!important;
+[data-testid="stMetricValue"] {
+    color: #22d3ee !important;
+    font-size: 26px !important;
+    font-weight: 800 !important;
 }
-div[data-testid="stRadio"] > div > label[data-baseweb="radio"]:has(input:checked){
-    background:linear-gradient(135deg,#22d3ee,#7c3aed)!important;
-    color:#fff!important;
+
+/* ── Expander ── */
+.streamlit-expanderHeader {
+    background: #0f172a !important;
+    border: 1px solid #1e293b !important;
+    border-radius: 10px !important;
+    color: #e2e8f0 !important;
+    font-weight: 600 !important;
+    font-size: 14px !important;
 }
+.streamlit-expanderContent {
+    background: #070d1f !important;
+    border: 1px solid #1e293b !important;
+    border-top: none !important;
+}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+    background: #070d1f !important;
+    border-right: 1px solid #1e293b !important;
+}
+[data-testid="stSidebar"] * { color: #e2e8f0 !important; }
+
+/* ── Tabs ── */
+.stTabs [data-baseweb="tab-list"] {
+    background: transparent !important;
+    border-bottom: 1px solid #1e293b !important;
+    gap: 0 !important;
+}
+.stTabs [data-baseweb="tab"] {
+    background: transparent !important;
+    color: #475569 !important;
+    font-weight: 600 !important;
+    font-size: 13px !important;
+    border-bottom: 2px solid transparent !important;
+    padding: 10px 20px !important;
+}
+.stTabs [aria-selected="true"] {
+    color: #22d3ee !important;
+    border-bottom-color: #22d3ee !important;
+}
+
+/* ── Checkbox ── */
+.stCheckbox > label > div { border-color: #334155 !important; }
+
+/* ── Divider ── */
+hr { border-color: #1e293b !important; margin: 16px 0 !important; }
+
+/* ═══════════════════════════════
+   CUSTOM COMPONENTS
+   ═══════════════════════════════ */
+
+/* Card */
+.cs-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 12px;
+    padding: 20px;
+    margin-bottom: 12px;
+    transition: border-color .2s;
+}
+.cs-card:hover { border-color: #334155; }
+
+/* Badge */
+.cs-badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    margin: 2px 3px 2px 0;
+}
+.badge-green  { background: rgba(34,197,94,.1);  color: #4ade80; border: 1px solid rgba(34,197,94,.2); }
+.badge-amber  { background: rgba(245,158,11,.1); color: #fbbf24; border: 1px solid rgba(245,158,11,.2); }
+.badge-red    { background: rgba(239,68,68,.1);  color: #f87171; border: 1px solid rgba(239,68,68,.2); }
+.badge-cyan   { background: rgba(34,211,238,.1); color: #22d3ee; border: 1px solid rgba(34,211,238,.2); }
+.badge-violet { background: rgba(124,58,237,.1); color: #a78bfa; border: 1px solid rgba(124,58,237,.2); }
+.badge-slate  { background: #1e293b;             color: #64748b; border: 1px solid #334155; }
+.badge-teal   { background: rgba(20,184,166,.1); color: #2dd4bf; border: 1px solid rgba(20,184,166,.2); }
+
+/* Page heading */
+.page-title {
+    font-size: 24px;
+    font-weight: 800;
+    color: #f1f5f9;
+    letter-spacing: -.02em;
+    margin-bottom: 4px;
+}
+.page-sub {
+    color: #475569;
+    font-size: 14px;
+    margin-bottom: 24px;
+}
+
+/* Trust bar */
+.trust-bar-bg   { background: #1e293b; border-radius: 3px; height: 4px; margin-top: 6px; }
+.trust-bar-fill { height: 4px; border-radius: 3px; background: linear-gradient(90deg, #22d3ee, #7c3aed); }
+
+/* Admin banner */
+.admin-only-banner {
+    background: rgba(239,68,68,.07);
+    border: 1px solid rgba(239,68,68,.2);
+    border-radius: 8px;
+    padding: 10px 16px;
+    color: #f87171;
+    font-size: 13px;
+    margin-bottom: 16px;
+}
+
+/* Mode badge — small inline pill */
+.mode-pill-work {
+    display: inline-flex; align-items: center;
+    background: rgba(34,211,238,.07);
+    border: 1px solid rgba(34,211,238,.15);
+    border-radius: 6px; padding: 4px 14px;
+    color: #22d3ee; font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; margin-bottom: 16px;
+}
+.mode-pill-learn {
+    display: inline-flex; align-items: center;
+    background: rgba(20,184,166,.07);
+    border: 1px solid rgba(20,184,166,.15);
+    border-radius: 6px; padding: 4px 14px;
+    color: #2dd4bf; font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; margin-bottom: 16px;
+}
+
+/* ═══════════════════════════════
+   LANDING PAGE SPECIFIC
+   ═══════════════════════════════ */
+
+.hero-wrap { text-align: center; padding: 72px 0 40px; }
+.hero-eyebrow {
+    display: inline-block;
+    font-size: 11px; font-weight: 700; letter-spacing: .14em;
+    text-transform: uppercase; color: #22d3ee;
+    background: rgba(34,211,238,.07);
+    border: 1px solid rgba(34,211,238,.15);
+    border-radius: 4px; padding: 5px 16px; margin-bottom: 28px;
+}
+.hero-h1 {
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 900; line-height: 1.06;
+    letter-spacing: -.04em; color: #f1f5f9;
+    margin-bottom: 0;
+}
+.hero-gradient {
+    font-size: clamp(40px, 6vw, 68px);
+    font-weight: 900; line-height: 1.06;
+    letter-spacing: -.04em;
+    background: linear-gradient(135deg, #22d3ee 0%, #818cf8 50%, #a855f7 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+}
+.hero-sub {
+    font-size: 16px; color: #475569; line-height: 1.7;
+    max-width: 520px; margin: 18px auto 0;
+}
+
+/* Mode choice cards on landing */
+.mode-card {
+    background: #0f172a;
+    border: 1px solid #1e293b;
+    border-radius: 14px;
+    padding: 36px 28px;
+    cursor: pointer;
+    transition: border-color .25s, transform .2s, box-shadow .25s;
+    text-align: center;
+}
+.mode-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 12px 40px rgba(0,0,0,.4);
+}
+.mode-card-work:hover  { border-color: #22d3ee; }
+.mode-card-learn:hover { border-color: #14b8a6; }
+.mode-card-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 22px; margin: 0 auto 18px;
+}
+.mode-card-title {
+    font-size: 20px; font-weight: 800; letter-spacing: -.02em;
+    color: #f1f5f9; margin-bottom: 8px;
+}
+.mode-card-desc {
+    font-size: 13px; color: #475569; line-height: 1.6;
+}
+.mode-card-cta {
+    display: inline-block; margin-top: 20px;
+    font-size: 12px; font-weight: 700;
+    letter-spacing: .04em; text-transform: uppercase;
+}
+.cta-work  { color: #22d3ee; }
+.cta-learn { color: #2dd4bf; }
+
+/* Stat strip */
+.stat-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border-top: 1px solid #1e293b; border-bottom: 1px solid #1e293b;
+    background: #0a0f1e; margin: 40px 0;
+}
+.stat-item { padding: 24px 0; text-align: center; border-right: 1px solid #1e293b; }
+.stat-item:last-child { border-right: none; }
+.stat-num  { font-size: 28px; font-weight: 900; color: #f1f5f9; line-height: 1; }
+.stat-lbl  { font-size: 11px; color: #475569; margin-top: 5px; letter-spacing: .06em; text-transform: uppercase; }
+
+/* Navbar */
+.navbar-logo {
+    font-size: 17px; font-weight: 800; color: #f1f5f9;
+    letter-spacing: -.01em;
+}
+.navbar-logo span { color: #22d3ee; }
 </style>
 """, unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  UI HELPERS  — all unchanged
+#  UI HELPERS
 # ═══════════════════════════════════════════════════════════════
 def status_badge(s):
-    c = {"open":"badge-green","in_progress":"badge-amber","closed":"badge-slate",
-         "pending":"badge-amber","accepted":"badge-green","rejected":"badge-red"}.get(s,"badge-slate")
-    return f"<span class='cs-badge {c}'>{s.replace('_',' ')}</span>"
+    c = {
+        "open": "badge-green", "in_progress": "badge-amber",
+        "closed": "badge-slate", "pending": "badge-amber",
+        "accepted": "badge-green", "rejected": "badge-red",
+    }.get(s, "badge-slate")
+    return f"<span class='cs-badge {c}'>{s.replace('_', ' ').title()}</span>"
 
 def priority_badge(p):
-    c = {"Urgent":"badge-red","Normal":"badge-cyan","Low":"badge-slate"}.get(p,"badge-slate")
+    c = {"Urgent": "badge-red", "Normal": "badge-cyan", "Low": "badge-slate"}.get(p, "badge-slate")
     return f"<span class='cs-badge {c}'>{p}</span>"
 
-def trust_bar(score):
-    pct = int((score/10)*100)
-    return f"<div class='trust-bar-bg'><div class='trust-bar-fill' style='width:{pct}%;'></div></div>"
+def type_badge(t):
+    if t == TYPE_KNOWLEDGE:
+        return "<span class='cs-badge badge-teal'>Knowledge</span>"
+    return "<span class='cs-badge badge-cyan'>Task</span>"
+
+def mode_pill():
+    if is_learn_mode():
+        st.markdown("<div class='mode-pill-learn'>Knowledge Exchange Mode</div>",
+                    unsafe_allow_html=True)
+    else:
+        st.markdown("<div class='mode-pill-work'>Task Collaboration Mode</div>",
+                    unsafe_allow_html=True)
 
 def mk_avatar(name, size=40):
     ini = "".join(w[0].upper() for w in (name or "U").split()[:2])
     return (f"<div style='width:{size}px;height:{size}px;border-radius:50%;"
             f"background:linear-gradient(135deg,#22d3ee,#7c3aed);"
             f"display:inline-flex;align-items:center;justify-content:center;"
-            f"font-size:{size//3}px;font-weight:700;color:#fff;'>{ini}</div>")
+            f"font-size:{size//3}px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>")
 
-def empty_state(icon, title, desc=""):
-    st.markdown(f"""<div class='cs-card' style='text-align:center;padding:44px;'>
-        <div style='font-size:44px;margin-bottom:10px;'>{icon}</div>
-        <div style='color:#f1f5f9;font-weight:700;font-size:15px;margin-bottom:5px;'>{title}</div>
-        <div style='color:#475569;font-size:13px;'>{desc}</div></div>""",
-        unsafe_allow_html=True)
+def empty_state(title, desc="", action_label=None, action_key=None, action_fn=None):
+    st.markdown(f"""
+    <div class='cs-card' style='text-align:center;padding:56px 32px;'>
+        <div style='width:48px;height:48px;border-radius:12px;background:#1e293b;
+            display:flex;align-items:center;justify-content:center;margin:0 auto 16px;'>
+            <svg width="20" height="20" fill="none" stroke="#475569" stroke-width="2"
+                viewBox="0 0 24 24"><path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0
+                002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2
+                2 0 012 2"/></svg>
+        </div>
+        <div style='font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:6px;'>{title}</div>
+        <div style='font-size:13px;color:#475569;'>{desc}</div>
+    </div>""", unsafe_allow_html=True)
+    if action_label and action_key:
+        _, c, _ = st.columns([2, 1, 2])
+        with c:
+            if st.button(action_label, key=action_key, use_container_width=True):
+                if action_fn:
+                    action_fn()
 
-def back_btn(label="← Back"):
+def back_btn(label="Back"):
     if st.button(label, key=f"back__{st.session_state.page}"):
         go_back()
 
 def breadcrumb(*parts):
-    html = " › ".join(
-        f"<span style='color:#475569;'>{p}</span>" if i < len(parts)-1
-        else f"<span style='color:#94a3b8;'>{p}</span>"
-        for i, p in enumerate(parts))
-    st.markdown(f"<div style='font-size:12px;margin-bottom:10px;'>{html}</div>",
-                unsafe_allow_html=True)
+    html = " / ".join(
+        f"<a href='#' style='color:#334155;text-decoration:none;'>{p}</a>"
+        if i < len(parts) - 1
+        else f"<span style='color:#64748b;'>{p}</span>"
+        for i, p in enumerate(parts)
+    )
+    st.markdown(
+        f"<div style='font-size:12px;color:#334155;margin-bottom:12px;'>{html}</div>",
+        unsafe_allow_html=True)
+
+def section_header(title, subtitle=""):
+    st.markdown(f"""
+    <div style='margin-bottom:20px;'>
+        <div class='page-title'>{title}</div>
+        {f"<div class='page-sub'>{subtitle}</div>" if subtitle else ""}
+    </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  MODE TOGGLE WIDGET
-#  Renders the Learn / Work segmented control and updates
-#  st.session_state.mode. Call this at the TOP of any page
-#  that supports both modes (dashboard, browse, post).
+#  SKILL DROPDOWN HELPER
+#  Returns (category, skill) selected by user
 # ═══════════════════════════════════════════════════════════════
-def render_mode_toggle(key_suffix=""):
+def skill_dropdown_widget(cat_key="skill_cat", skill_key="skill_val",
+                          default_cat=None, default_skill=None):
     """
-    Renders a clean segmented toggle.
-    Updates st.session_state.mode to 'work' or 'learn'.
-    Returns the selected mode string.
+    Renders two chained selectboxes: Category -> Skill.
+    Returns (selected_category, selected_skill_string).
     """
-    options = ["⚡ Work — Task Collaboration", "📚 Learn — Knowledge Exchange"]
-    default = 0 if current_mode() == "work" else 1
+    cat_options = ["Select a category"] + SKILL_CATEGORIES
+    default_cat_idx = 0
+    if default_cat and default_cat in SKILL_CATEGORIES:
+        default_cat_idx = SKILL_CATEGORIES.index(default_cat) + 1
 
-    choice = st.radio(
-        "",
-        options,
-        index=default,
-        horizontal=True,
-        key=f"mode_radio_{key_suffix}",
-        label_visibility="collapsed",
+    selected_cat = st.selectbox(
+        "Skill Category",
+        cat_options,
+        index=default_cat_idx,
+        key=cat_key,
     )
 
-    new_mode = "work" if choice == options[0] else "learn"
-    if new_mode != st.session_state.mode:
-        st.session_state.mode = new_mode
-        st.rerun()
+    if selected_cat == "Select a category":
+        st.selectbox("Skill", ["Select a category first"], key=skill_key, disabled=True)
+        return None, None
 
-    return new_mode
+    skill_options = SKILLS_BY_CATEGORY.get(selected_cat, []) + ["Other"]
+    default_skill_idx = 0
+    if default_skill and default_skill in skill_options:
+        default_skill_idx = skill_options.index(default_skill)
 
-
-def mode_banner():
-    """Shows a small inline label indicating the active mode."""
-    if is_learn_mode():
-        st.markdown(
-            "<div class='mode-banner-learn'>📚 Knowledge Exchange Mode</div>",
-            unsafe_allow_html=True)
-    else:
-        st.markdown(
-            "<div class='mode-banner-work'>⚡ Task Collaboration Mode</div>",
-            unsafe_allow_html=True)
+    selected_skill = st.selectbox(
+        "Skill",
+        skill_options,
+        index=default_skill_idx,
+        key=skill_key,
+    )
+    return selected_cat, selected_skill
 
 
 # ═══════════════════════════════════════════════════════════════
-#  NAVBAR  — unchanged
+#  NAVBAR
 # ═══════════════════════════════════════════════════════════════
 def render_navbar():
-    u = st.session_state.user
-    unread    = get_unread_count(u["id"]) if u else 0
-    notif_lbl = f"🔔({unread})" if unread else "🔔"
+    u      = st.session_state.user
+    unread = get_unread_count(u["id"]) if u else 0
+    notif_lbl = f"Notifications ({unread})" if unread else "Notifications"
 
     if is_admin():
-        cols   = st.columns([2.5,1,1,1,1,1,1])
-        labels = ["📊 Admin","👥 Users","📋 Tasks","🌐 Browse",notif_lbl,"👤 Profile","🚪 Out"]
-        pages  = ["admin_dashboard","admin_users","admin_tasks","browse_tasks",
-                  "notifications","profile","__logout__"]
+        cols   = st.columns([3, 1, 1, 1, 1, 1, 1])
+        labels = ["Dashboard", "Users", "Tasks", "Browse", notif_lbl, "Profile", "Sign Out"]
+        pages  = ["admin_dashboard", "admin_users", "admin_tasks", "browse_tasks",
+                  "notifications", "profile", "__logout__"]
     elif logged_in():
-        cols   = st.columns([2.5,1,1,1,1,1,1])
-        labels = ["🏠 Home","🗂 Dashboard","🔍 Browse","➕ Post",notif_lbl,"👤 Profile","🚪 Out"]
-        pages  = ["landing","dashboard","browse_tasks","post_task",
-                  "notifications","profile","__logout__"]
+        cols   = st.columns([3, 1, 1, 1, 1, 1, 1])
+        labels = ["Home", "Dashboard", "Browse", "Post", notif_lbl, "Profile", "Sign Out"]
+        pages  = ["landing", "dashboard", "browse_tasks", "post_task",
+                  "notifications", "profile", "__logout__"]
     else:
-        cols = st.columns([6,1,1])
+        cols = st.columns([5, 1, 1])
         with cols[0]:
-            st.markdown("<h3 style='color:#e5e7eb;padding-top:8px;margin:0;'>🚀 CollabSkill AI</h3>",
-                        unsafe_allow_html=True)
+            st.markdown(
+                "<div class='navbar-logo' style='padding-top:10px;'>"
+                "Collab<span>Skill</span> AI</div>",
+                unsafe_allow_html=True)
         with cols[1]:
-            if st.button("Login",   key="nav_login_guest"):  go("login")
+            if st.button("Sign In", key="nav_login_guest"):  go("login")
         with cols[2]:
             if st.button("Sign Up", key="nav_signup_guest"): go("register")
-        st.markdown("<hr style='border-color:#1e293b;margin:6px 0 18px;'/>",
-                    unsafe_allow_html=True)
+        st.markdown("<hr/>", unsafe_allow_html=True)
         return
 
     admin_pill = (
         " <span style='font-size:10px;background:rgba(34,211,238,.1);"
-        "color:#22d3ee;border:1px solid rgba(34,211,238,.2);"
-        "border-radius:20px;padding:1px 9px;'>ADMIN</span>"
+        "color:#22d3ee;border:1px solid rgba(34,211,238,.15);"
+        "border-radius:4px;padding:2px 8px;letter-spacing:.04em;'>ADMIN</span>"
         if is_admin() else ""
     )
     with cols[0]:
         st.markdown(
-            f"<h3 style='color:#e5e7eb;padding-top:8px;margin:0;'>"
-            f"🚀 CollabSkill AI{admin_pill}</h3>",
+            f"<div class='navbar-logo' style='padding-top:10px;'>"
+            f"Collab<span>Skill</span> AI{admin_pill}</div>",
             unsafe_allow_html=True)
 
     for col, lbl, pg in zip(cols[1:], labels, pages):
@@ -309,159 +541,311 @@ def render_navbar():
                 else:
                     go(pg)
 
-    st.markdown("<hr style='border-color:#1e293b;margin:6px 0 18px;'/>",
-                unsafe_allow_html=True)
+    st.markdown("<hr/>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  LANDING  — unchanged
+#  LANDING PAGE
+#  Two prominent cards: LEARN and WORK
+#  Both lead to login / register
 # ═══════════════════════════════════════════════════════════════
 def page_landing():
     render_navbar()
+
+    # ── Hero ─────────────────────────────────────────────────
+    st.markdown("""
+    <div class='hero-wrap'>
+        <div class='hero-eyebrow'>AI-Powered Skill Exchange Platform</div>
+        <div class='hero-h1'>Connect. Collaborate.</div>
+        <div class='hero-gradient'>Exchange Skills Smarter.</div>
+        <div class='hero-sub'>
+            An intelligent platform that matches you with the right people —
+            connecting skill providers with those who need them, instantly.
+        </div>
+    </div>""", unsafe_allow_html=True)
+
+    # ── Mode Selection Cards ──────────────────────────────────
     st.markdown(
-        '<div class="center"><div class="light">Connect.<br>Collaborate.</div>'
-        '<div class="gradient">Exchange Skills</div>'
-        '<div class="gradient">Smarter.</div></div>',
+        "<div style='text-align:center;font-size:11px;font-weight:700;"
+        "letter-spacing:.12em;text-transform:uppercase;color:#475569;"
+        "margin-bottom:20px;'>Choose how you want to get started</div>",
         unsafe_allow_html=True)
-    st.markdown(
-        '<div class="sub">An intelligent platform that matches you with the right people — '
-        'using AI to connect digital skill providers with those who need them instantly.</div>',
-        unsafe_allow_html=True)
-    st.markdown("<br>", unsafe_allow_html=True)
 
-    _, bc1, bc2, _ = st.columns([2,1,1,2])
-    with bc1:
-        if st.button("🚀 Get Started", key="land_start", use_container_width=True):
-            go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
-    with bc2:
-        if st.button("🔍 Browse", key="land_browse", use_container_width=True):
-            go("browse_tasks")
+    lc, rc = st.columns([1, 1], gap="large")
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    with lc:
+        st.markdown("""
+        <div class='mode-card mode-card-work'>
+            <div class='mode-card-icon'
+                style='background:rgba(34,211,238,.08);'>
+                <svg width="24" height="24" fill="none" stroke="#22d3ee" stroke-width="2"
+                    viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/><path
+                    d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/><line x1="12" y1="12"
+                    x2="12" y2="16"/><line x1="10" y1="14" x2="14" y2="14"/></svg>
+            </div>
+            <div class='mode-card-title'>Work</div>
+            <div class='mode-card-desc'>
+                Post tasks, find collaborators, and get things done.
+                Connect with skilled professionals ready to help with real projects.
+            </div>
+            <div class='mode-card-cta cta-work'>Task Collaboration &rarr;</div>
+        </div>""", unsafe_allow_html=True)
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        if st.button("Get Started with Work", key="land_work", use_container_width=True):
+            st.session_state.mode = "work"
+            if logged_in():
+                go("admin_dashboard" if is_admin() else "dashboard")
+            else:
+                go("register")
 
+    with rc:
+        st.markdown("""
+        <div class='mode-card mode-card-learn'>
+            <div class='mode-card-icon'
+                style='background:rgba(20,184,166,.08);'>
+                <svg width="24" height="24" fill="none" stroke="#2dd4bf" stroke-width="2"
+                    viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+            </div>
+            <div class='mode-card-title'>Learn</div>
+            <div class='mode-card-desc'>
+                Request tutoring, share knowledge, and grow your skills.
+                Connect with experts who can guide your learning journey.
+            </div>
+            <div class='mode-card-cta cta-learn'>Knowledge Exchange &rarr;</div>
+        </div>""", unsafe_allow_html=True)
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        if st.button("Get Started with Learn", key="land_learn", use_container_width=True):
+            st.session_state.mode = "learn"
+            if logged_in():
+                go("admin_dashboard" if is_admin() else "dashboard")
+            else:
+                go("register")
+
+    # ── Stats strip ───────────────────────────────────────────
     total_users = db_fetchone("SELECT COUNT(*) AS c FROM users")["c"]
     total_tasks = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE type='task'")["c"]
     open_tasks  = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE status='open' AND type='task'")["c"]
     total_know  = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE type='knowledge'")["c"]
 
-    m1, m2, m3, m4 = st.columns(4)
-    m1.metric("👥 Members",      total_users)
-    m2.metric("📋 Tasks",        total_tasks)
-    m3.metric("🟢 Open",         open_tasks)
-    m4.metric("📚 Knowledge",    total_know)
+    st.markdown(f"""
+    <div class='stat-strip'>
+        <div class='stat-item'>
+            <div class='stat-num'>{total_users}</div>
+            <div class='stat-lbl'>Members</div>
+        </div>
+        <div class='stat-item'>
+            <div class='stat-num'>{total_tasks}</div>
+            <div class='stat-lbl'>Tasks Posted</div>
+        </div>
+        <div class='stat-item'>
+            <div class='stat-num'>{open_tasks}</div>
+            <div class='stat-lbl'>Open Tasks</div>
+        </div>
+        <div class='stat-item'>
+            <div class='stat-num'>{total_know}</div>
+            <div class='stat-lbl'>Knowledge Posts</div>
+        </div>
+    </div>""", unsafe_allow_html=True)
 
-    st.markdown("<br>", unsafe_allow_html=True)
+    # ── Feature grid ─────────────────────────────────────────
     st.markdown(
-        "<div style='text-align:center;color:#475569;font-size:11px;font-weight:700;"
-        "letter-spacing:.12em;text-transform:uppercase;margin-bottom:16px;'>WHAT WE OFFER</div>",
+        "<div style='text-align:center;font-size:11px;font-weight:700;"
+        "letter-spacing:.12em;text-transform:uppercase;color:#475569;"
+        "margin-bottom:20px;'>Platform Features</div>",
         unsafe_allow_html=True)
 
-    f1, f2, f3, f4 = st.columns(4)
-    feats = [
-        ("🤖","rgba(34,211,238,.08)","AI Matching","Smart AI finds top 3 collaborators instantly."),
-        ("📚","rgba(20,184,166,.08)","Knowledge Exchange","Learn from experts, share what you know."),
-        ("📋","rgba(34,197,94,.08)","Task Board","Post tasks, browse, filter by skill."),
-        ("🌐","rgba(245,158,11,.08)","Community","Connect with creators worldwide."),
+    cols = st.columns(3)
+    features = [
+        ("AI Matching",
+         "Our AI engine reads task requirements and user profiles to surface the best matches automatically.",
+         "rgba(34,211,238,.08)", "#22d3ee"),
+        ("Trust Score System",
+         "Every collaboration builds your reputation. Peer-reviewed ratings form a verified trust score.",
+         "rgba(124,58,237,.08)", "#a78bfa"),
+        ("Dual Mode Platform",
+         "Switch between Task Collaboration and Knowledge Exchange to find exactly what you need.",
+         "rgba(20,184,166,.08)", "#2dd4bf"),
     ]
-    for col, (icon, bg, title, desc) in zip([f1,f2,f3,f4], feats):
-        col.markdown(f"""<div class='cs-card' style='text-align:center;min-height:160px;'>
-            <div style='width:42px;height:42px;border-radius:11px;background:{bg};
-                display:flex;align-items:center;justify-content:center;font-size:20px;margin:0 auto 12px;'>{icon}</div>
-            <div style='color:#f1f5f9;font-weight:700;font-size:13px;margin-bottom:6px;'>{title}</div>
-            <div style='color:#475569;font-size:12px;line-height:1.6;'>{desc}</div>
+    for col, (title, desc, bg, accent) in zip(cols, features):
+        col.markdown(f"""
+        <div class='cs-card' style='min-height:180px;'>
+            <div style='width:38px;height:38px;border-radius:9px;background:{bg};
+                display:flex;align-items:center;justify-content:center;margin-bottom:14px;'>
+                <div style='width:16px;height:16px;border-radius:50%;background:{accent};'></div>
+            </div>
+            <div style='font-weight:700;font-size:14px;color:#f1f5f9;margin-bottom:7px;'>{title}</div>
+            <div style='font-size:13px;color:#475569;line-height:1.65;'>{desc}</div>
         </div>""", unsafe_allow_html=True)
+
+    # ── How it works ──────────────────────────────────────────
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown(
+        "<div style='text-align:center;font-size:11px;font-weight:700;"
+        "letter-spacing:.12em;text-transform:uppercase;color:#475569;"
+        "margin-bottom:24px;'>How It Works</div>",
+        unsafe_allow_html=True)
+
+    s1, s2, s3, s4 = st.columns(4)
+    steps = [
+        ("01", "Create your account", "Register and build your profile with your skills and experience level."),
+        ("02", "Choose your mode",    "Select Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or browse",      "Post what you need or discover opportunities that match your skills."),
+        ("04", "Collaborate",         "Connect, complete tasks or sessions, rate each other, and grow."),
+    ]
+    for col, (num, title, desc) in zip([s1, s2, s3, s4], steps):
+        col.markdown(f"""
+        <div class='cs-card'>
+            <div style='font-size:32px;font-weight:900;color:#1e293b;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:6px;'>{title}</div>
+            <div style='font-size:12px;color:#475569;line-height:1.6;'>{desc}</div>
+        </div>""", unsafe_allow_html=True)
+
+    # Footer
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #1e293b;'>
+        <div style='font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:4px;'>
+            CollabSkill AI
+        </div>
+        <div style='font-size:12px;color:#334155;'>
+            Connecting skilled people with those who need them.
+        </div>
+    </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  LOGIN  — unchanged
+#  LOGIN
 # ═══════════════════════════════════════════════════════════════
 def page_login():
     render_navbar()
-    back_btn("← Home")
+    back_btn("Back to Home")
 
-    _, center, _ = st.columns([1,2,1])
+    _, center, _ = st.columns([1, 1.4, 1])
     with center:
-        st.markdown("""<div style="background-color:#0f172a;padding:40px;
-            border-radius:15px;box-shadow:0 0 30px rgba(0,0,0,.5);">""",
-            unsafe_allow_html=True)
-        st.markdown("<h2 style='color:#e5e7eb;text-align:center;'>Login</h2>",
-                    unsafe_allow_html=True)
-        username = st.text_input("Username", key="lp_username")
-        password = st.text_input("Password", type="password", key="lp_password")
+        st.markdown("<div style='height:24px;'></div>", unsafe_allow_html=True)
+        st.markdown("""
+        <div style='background:#0f172a;border:1px solid #1e293b;border-radius:16px;padding:40px 36px;'>
+        """, unsafe_allow_html=True)
 
-        if st.button("Login →", key="lp_submit", use_container_width=True):
+        mode_label = "Knowledge Exchange" if is_learn_mode() else "Task Collaboration"
+        st.markdown(
+            f"<div style='text-align:center;margin-bottom:28px;'>"
+            f"<div style='font-size:22px;font-weight:800;color:#f1f5f9;margin-bottom:6px;'>Sign in</div>"
+            f"<div style='font-size:13px;color:#475569;'>{mode_label} Mode</div>"
+            f"</div>",
+            unsafe_allow_html=True)
+
+        username = st.text_input("Username", placeholder="Enter your username", key="lp_username")
+        password = st.text_input("Password", type="password", placeholder="Enter your password", key="lp_password")
+        st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+
+        if st.button("Sign In", key="lp_submit", use_container_width=True):
             if not username or not password:
-                st.warning("Please fill both fields.")
+                st.warning("Please enter both username and password.")
             else:
                 user = login_user(username, password)
                 if user:
                     st.session_state.user    = user
                     st.session_state.history = []
-                    st.success(f"Welcome back, {user['username']}! 👋")
-                    go("admin_dashboard" if user["role"]=="admin" else "dashboard")
+                    go("admin_dashboard" if user["role"] == "admin" else "dashboard")
                 else:
                     st.error("Invalid username or password.")
 
-        st.markdown("<p style='color:#9ca3af;margin-top:12px;text-align:center;'>"
-                    "Don't have an account?</p>", unsafe_allow_html=True)
-        if st.button("Create Account", key="lp_to_register", use_container_width=True):
+        st.markdown("""
+        <div style='text-align:center;margin-top:20px;padding-top:20px;
+            border-top:1px solid #1e293b;font-size:13px;color:#475569;'>
+            Do not have an account?
+        </div>""", unsafe_allow_html=True)
+
+        if st.button("Create an Account", key="lp_to_register", use_container_width=True):
             go("register")
+
         st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  REGISTER  — unchanged
+#  REGISTER  — with cascading skill dropdowns
 # ═══════════════════════════════════════════════════════════════
 def page_register():
     render_navbar()
-    back_btn("← Home")
+    back_btn("Back to Home")
 
-    st.markdown("<h1 style='color:#e5e7eb;'>Create Your Profile</h1>", unsafe_allow_html=True)
-    st.markdown("<p style='color:#9ca3af;'>Join the skill exchange community</p>",
-                unsafe_allow_html=True)
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+    section_header("Create Your Account",
+                   "Join the CollabSkill AI community and start collaborating.")
 
-    col1, col2 = st.columns(2)
-    with col1:
-        username   = st.text_input("Username",                           key="rp_username")
-        email      = st.text_input("Email",                              key="rp_email")
-        password   = st.text_input("Password", type="password",          key="rp_password")
-    with col2:
-        skills     = st.text_input("Skills (e.g. Python, UI Design)",    key="rp_skills")
-        experience = st.selectbox("Experience Level",
-                                  ["Beginner","Intermediate","Advanced","Expert"],
-                                  key="rp_experience")
-        portfolio  = st.text_input("Portfolio / GitHub Link (optional)", key="rp_portfolio")
+    with st.form("register_form", clear_on_submit=False):
+        col1, col2 = st.columns(2)
 
-    bio   = st.text_area("Short Bio", key="rp_bio")
-    agree = st.checkbox("I agree to Terms & Conditions", key="rp_agree")
+        with col1:
+            st.markdown("**Account Details**")
+            username   = st.text_input("Username",          placeholder="Choose a unique username",  key="rp_user")
+            email      = st.text_input("Email Address",     placeholder="your@email.com",            key="rp_email")
+            password   = st.text_input("Password",          type="password",
+                                       placeholder="Minimum 6 characters",                           key="rp_pass")
+            confirm    = st.text_input("Confirm Password",  type="password",
+                                       placeholder="Repeat your password",                           key="rp_confirm")
 
-    if st.button("Create Account", key="rp_submit", use_container_width=True):
+        with col2:
+            st.markdown("**Profile Details**")
+            experience = st.selectbox("Experience Level",
+                                      ["Beginner", "Intermediate", "Advanced", "Expert"],
+                                      key="rp_exp")
+            portfolio  = st.text_input("Portfolio / GitHub URL (optional)",
+                                       placeholder="https://github.com/yourname",                   key="rp_port")
+            bio        = st.text_area("Short Bio",
+                                      placeholder="Tell others about yourself and your goals...",
+                                      height=90,                                                     key="rp_bio")
+
+        # ── Skill selection ───────────────────────────────────
+        st.markdown("<div style='margin-top:4px;'></div>", unsafe_allow_html=True)
+        st.markdown("**Primary Skill**")
+        sc1, sc2 = st.columns(2)
+        with sc1:
+            cat_opts = ["Select a category"] + SKILL_CATEGORIES
+            sel_cat  = st.selectbox("Skill Category", cat_opts, key="rp_skill_cat")
+        with sc2:
+            if sel_cat == "Select a category":
+                st.selectbox("Skill", ["Select a category first"], key="rp_skill_val", disabled=True)
+                sel_skill = None
+            else:
+                skill_opts = SKILLS_BY_CATEGORY.get(sel_cat, []) + ["Other"]
+                sel_skill  = st.selectbox("Skill", skill_opts, key="rp_skill_val")
+
+        agree = st.checkbox("I agree to the Terms & Conditions", key="rp_agree")
+        st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+        submitted = st.form_submit_button("Create Account", use_container_width=True)
+
+    if submitted:
+        skill_str = f"{sel_cat} - {sel_skill}" if sel_cat and sel_cat != "Select a category" and sel_skill else ""
         if not agree:
-            st.warning("Please accept the Terms & Conditions.")
-        elif not (username and email and password and skills):
-            st.warning("Please fill all required fields.")
+            st.warning("Please accept the Terms & Conditions to continue.")
+        elif not all([username, email, password, skill_str]):
+            st.warning("Please complete all required fields including your skill selection.")
         elif len(password) < 6:
             st.warning("Password must be at least 6 characters.")
+        elif password != confirm:
+            st.error("Passwords do not match.")
         else:
             success, result = register_user(
-                username, email, password, skills, bio, portfolio, experience)
+                username, email, password, skill_str, bio, portfolio, experience)
             if success:
                 st.session_state.user    = result
                 st.session_state.history = []
-                st.success("Account created successfully 🎉")
-                st.balloons()
-                go("admin_dashboard" if result["role"]=="admin" else "dashboard")
+                st.success("Account created successfully. Welcome to CollabSkill AI.")
+                go("admin_dashboard" if result["role"] == "admin" else "dashboard")
             else:
                 st.error(result)
 
-    st.markdown("<p style='color:#9ca3af;margin-top:10px;'>Already have an account?</p>",
+    st.markdown("<div style='font-size:13px;color:#475569;margin-top:12px;'>Already have an account?</div>",
                 unsafe_allow_html=True)
-    if st.button("Go to Login", key="rp_to_login"):
+    if st.button("Sign In Instead", key="rp_to_login"):
         go("login")
 
 
 # ═══════════════════════════════════════════════════════════════
-#  USER DASHBOARD  — extended with Learn/Work toggle
+#  USER DASHBOARD
 # ═══════════════════════════════════════════════════════════════
 def page_dashboard():
     require_login()
@@ -471,589 +855,605 @@ def page_dashboard():
     u = get_user(st.session_state.user["id"]) or st.session_state.user
     st.session_state.user = u
 
-    breadcrumb("Home","Dashboard")
-    st.markdown(f"<div class='page-title'>Hello, {u['username']}! 👋</div>",
-                unsafe_allow_html=True)
+    breadcrumb("Home", "Dashboard")
 
-    # ── MODE TOGGLE ───────────────────────────────────────────
-    render_mode_toggle("dashboard")
-    mode_banner()
+    # Greeting + mode context
+    mode_label = "Knowledge Exchange" if is_learn_mode() else "Task Collaboration"
+    st.markdown(
+        f"<div class='page-title'>Welcome, {u['username']}</div>"
+        f"<div class='page-sub'>{mode_label} — your personal workspace</div>",
+        unsafe_allow_html=True)
+    mode_pill()
 
-    # ── Mode-aware description ────────────────────────────────
-    if is_learn_mode():
-        st.markdown("<div class='page-sub'>Knowledge Exchange — share what you know, learn what you need</div>",
-                    unsafe_allow_html=True)
-    else:
-        st.markdown("<div class='page-sub'>Task Collaboration — your personal workspace</div>",
-                    unsafe_allow_html=True)
-
-    # ── Stats — always personal, mode-aware labels ────────────
-    mode_type  = TYPE_KNOWLEDGE if is_learn_mode() else TYPE_TASK
-    my_tasks   = get_my_tasks(u["id"], entry_type=mode_type)
-    my_tasks_all = get_my_tasks(u["id"])          # total across both modes
-    my_apps    = get_my_applications(u["id"])
-    open_cnt   = sum(1 for t in my_tasks if t["status"]=="open")
-
-    if is_learn_mode():
-        task_label = "📚 My Knowledge Posts"
-        open_label = "🟢 Active"
-    else:
-        task_label = "📋 My Tasks"
-        open_label = "🟢 Open"
+    # Stats
+    mode_type    = TYPE_KNOWLEDGE if is_learn_mode() else TYPE_TASK
+    my_entries   = get_my_tasks(u["id"], entry_type=mode_type)
+    my_apps      = get_my_applications(u["id"])
+    open_cnt     = sum(1 for t in my_entries if t["status"] == "open")
 
     m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric(task_label,         len(my_tasks))
-    m2.metric(open_label,         open_cnt)
-    m3.metric("📩 Applications",  len(my_apps))
-    m4.metric("⭐ Trust Score",   f"{u['trust_score']}/10")
-    m5.metric("📊 Ratings",       u["total_ratings"])
+    m1.metric("My Posts",         len(my_entries))
+    m2.metric("Active",           open_cnt)
+    m3.metric("Applications",     len(my_apps))
+    m4.metric("Trust Score",      f"{u['trust_score']}/10")
+    m5.metric("Ratings",          u["total_ratings"])
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Profile banner ────────────────────────────────────────
-    pc1, pc2 = st.columns([5,1])
+    # Profile banner
+    pc1, pc2 = st.columns([5, 1])
     with pc1:
-        st.markdown(f"""<div class='cs-card' style='display:flex;align-items:center;gap:16px;'>
-            {mk_avatar(u['username'],54)}
+        st.markdown(f"""
+        <div class='cs-card' style='display:flex;align-items:center;gap:18px;'>
+            {mk_avatar(u['username'], 52)}
             <div>
-                <div style='font-size:16px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
-                <div style='color:#475569;font-size:13px;margin-top:2px;'>{u['skills'] or 'No skills added'}</div>
-                <div style='color:#64748b;font-size:12px;margin-top:1px;'>{u['experience']}</div>
-            </div></div>""", unsafe_allow_html=True)
+                <div style='font-size:15px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
+                <div style='font-size:12px;color:#475569;margin-top:3px;'>{u['skills'] or 'No skills added'}</div>
+                <div style='font-size:11px;color:#334155;margin-top:2px;'>{u['experience']}</div>
+            </div>
+        </div>""", unsafe_allow_html=True)
     with pc2:
-        if st.button("✏️ Edit Profile", key="dash_edit", use_container_width=True):
+        if st.button("Edit Profile", key="dash_edit", use_container_width=True):
             go("profile")
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # ── Tabs — labels change per mode ─────────────────────────
+    # Tabs
     if is_learn_mode():
-        tab1_label = "📚 My Knowledge Posts"
-        tab1_empty = ("📭","No knowledge posts yet",
-                      "Share what you know or post a learning request.")
-        tab1_post_label = "➕ Post Knowledge Request"
-        tab1_post_key   = "dash_post_know"
+        t1_label = "My Knowledge Posts"
     else:
-        tab1_label = "📋 My Tasks"
-        tab1_empty = ("📭","No tasks yet","Post your first task to find collaborators.")
-        tab1_post_label = "➕ Post a Task"
-        tab1_post_key   = "dash_post_task"
+        t1_label = "My Tasks"
 
-    tab1, tab2, tab3 = st.tabs([tab1_label, "📩 My Applications", "⚡ Quick Actions"])
+    tab1, tab2, tab3 = st.tabs([t1_label, "My Applications", "Quick Actions"])
 
     with tab1:
-        if not my_tasks:
-            empty_state(*tab1_empty)
-            if st.button(tab1_post_label, key=tab1_post_key):
-                go("post_task")
+        if not my_entries:
+            desc = "Share what you know or post a learning request." if is_learn_mode() \
+                   else "Post your first task to start finding collaborators."
+            empty_state(
+                "No posts yet", desc,
+                action_label="Post Now",
+                action_key="dash_post_empty",
+                action_fn=lambda: go("post_task"))
         else:
-            for t in my_tasks:
-                _render_task_expander(t, owner=True, mode=mode_type)
+            for t in my_entries:
+                _render_entry_card(t, owner=True)
 
     with tab2:
         if not my_apps:
-            empty_state("📩","No applications yet","Browse and apply to help others.")
-            if st.button("🔍 Browse", key="dash_browse"): go("browse_tasks")
+            empty_state(
+                "No applications yet",
+                "Browse and apply to help others.",
+                action_label="Browse Now",
+                action_key="dash_browse_empty",
+                action_fn=lambda: go("browse_tasks"))
         else:
             for a in my_apps:
-                type_pill = (
-                    "<span class='cs-badge badge-teal'>📚 Knowledge</span>"
-                    if a.get("task_type") == TYPE_KNOWLEDGE
-                    else "<span class='cs-badge badge-cyan'>📋 Task</span>"
-                )
-                st.markdown(f"""<div class='cs-card' style='padding:14px;'>
-                    <div style='font-weight:600;color:#f1f5f9;'>{a['task_title']}</div>
-                    <div style='margin-top:6px;'>{status_badge(a['status'])} {type_pill}
+                tp = type_badge(a.get("task_type", TYPE_TASK))
+                st.markdown(f"""
+                <div class='cs-card' style='padding:14px;'>
+                    <div style='font-weight:600;color:#f1f5f9;margin-bottom:6px;'>{a['task_title']}</div>
+                    <div>{status_badge(a['status'])} {tp}
                         <span class='cs-badge badge-violet'>{a['category']}</span>
-                        <span class='cs-badge badge-cyan'>🛠 {a['task_skills']}</span>
-                        <span class='cs-badge badge-slate'>👤 {a['owner_name']}</span>
+                        <span class='cs-badge badge-slate'>{a['owner_name']}</span>
                     </div>
-                    <div style='color:#475569;font-size:11px;margin-top:5px;'>{a['created_at']}</div>
+                    <div style='color:#334155;font-size:11px;margin-top:6px;'>{a['created_at']}</div>
                 </div>""", unsafe_allow_html=True)
 
     with tab3:
         q1, q2, q3, q4 = st.columns(4)
         with q1:
-            lbl = "➕ Post Knowledge" if is_learn_mode() else "➕ Post a Task"
+            lbl = "Post Knowledge" if is_learn_mode() else "Post a Task"
             if st.button(lbl, key="qa_post", use_container_width=True): go("post_task")
         with q2:
-            lbl2 = "🔍 Browse Knowledge" if is_learn_mode() else "🔍 Browse Tasks"
+            lbl2 = "Browse Knowledge" if is_learn_mode() else "Browse Tasks"
             if st.button(lbl2, key="qa_browse", use_container_width=True): go("browse_tasks")
         with q3:
-            if st.button("🤖 AI Match", key="qa_ai", use_container_width=True): go("ai_match")
+            if st.button("AI Matching", key="qa_ai", use_container_width=True): go("ai_match")
         with q4:
-            if st.button("👥 Community", key="qa_community", use_container_width=True): go("community")
+            if st.button("Community", key="qa_community", use_container_width=True): go("community")
 
 
 # ═══════════════════════════════════════════════════════════════
-#  SHARED TASK/KNOWLEDGE CARD RENDERER
+#  SHARED ENTRY CARD RENDERER
 # ═══════════════════════════════════════════════════════════════
-def _render_task_expander(t, owner=False, mode=TYPE_TASK):
-    """Renders an expander card for a task or knowledge post."""
-    is_know = (mode == TYPE_KNOWLEDGE or t.get("type") == TYPE_KNOWLEDGE)
+def _render_entry_card(t, owner=False):
+    is_know = t.get("type") == TYPE_KNOWLEDGE
+    header  = f"{t['title']}  —  {t['status'].upper()}"
 
-    icon     = "📚" if is_know else "📌"
-    label    = "KNOWLEDGE" if is_know else t['status'].upper()
-    expander_title = f"{icon}  {t['title']}  [{label}]"
-
-    with st.expander(expander_title):
-        c1, c2 = st.columns([3,1])
+    with st.expander(header):
+        c1, c2 = st.columns([3, 1])
         with c1:
-            skill_label = "📖 Topic" if is_know else "🛠"
-            type_pill   = (
-                "<span class='cs-badge badge-teal'>📚 Knowledge Exchange</span>"
-                if is_know else
-                "<span class='cs-badge badge-cyan'>📋 Task Collaboration</span>"
-            )
             st.markdown(f"""
-            <div style='color:#94a3b8;font-size:13px;margin-bottom:8px;'>{t['description']}</div>
-            {type_pill} {status_badge(t['status'])} {priority_badge(t.get('priority','Normal'))}
+            <div style='color:#94a3b8;font-size:13px;margin-bottom:10px;line-height:1.7;'>
+                {t['description']}</div>
+            {type_badge(t.get('type', TYPE_TASK))}
+            {status_badge(t['status'])}
+            {priority_badge(t.get('priority', 'Normal'))}
             <span class='cs-badge badge-violet'>{t.get('category','')}</span>
-            <span class='cs-badge badge-cyan'>{skill_label} {t['skills']}</span>
-            <span class='cs-badge badge-slate'>👥 {t.get('applicant_count',0)} {'interested' if is_know else 'applicants'}</span>
+            <span class='cs-badge badge-slate'>{t['skills']}</span>
+            <span class='cs-badge badge-slate'>{t.get('applicant_count', 0)} {'interested' if is_know else 'applicants'}</span>
             """, unsafe_allow_html=True)
         with c2:
             if owner:
                 if t["status"] == "open":
-                    if st.button("✅ Close",  key=f"tc_{t['id']}"): update_task_status(t["id"],"closed"); st.rerun()
+                    if st.button("Close", key=f"tc_{t['id']}"):
+                        update_task_status(t["id"], "closed"); st.rerun()
                 else:
-                    if st.button("🔄 Reopen", key=f"to_{t['id']}"): update_task_status(t["id"],"open");   st.rerun()
-                if st.button("🗑 Delete", key=f"td_{t['id']}"): delete_task(t["id"]); st.success("Deleted."); st.rerun()
+                    if st.button("Reopen", key=f"to_{t['id']}"):
+                        update_task_status(t["id"], "open"); st.rerun()
+                if st.button("Delete", key=f"td_{t['id']}"):
+                    delete_task(t["id"]); st.success("Deleted."); st.rerun()
 
 
 # ═══════════════════════════════════════════════════════════════
-#  BROWSE  — one page, toggle switches content
+#  BROWSE
 # ═══════════════════════════════════════════════════════════════
 def page_browse_tasks():
     render_navbar()
     back_btn()
 
-    # ── MODE TOGGLE ───────────────────────────────────────────
-    render_mode_toggle("browse")
+    entry_type = TYPE_KNOWLEDGE if is_learn_mode() else TYPE_TASK
+    is_know    = is_learn_mode()
 
-    if is_learn_mode():
-        breadcrumb("Home","Browse Knowledge")
-        st.markdown("<div class='page-title'>📚 Browse Knowledge Exchange</div>",
-                    unsafe_allow_html=True)
-        st.markdown("<div class='page-sub'>Find knowledge requests or experts to learn from</div>",
-                    unsafe_allow_html=True)
-        mode_banner()
-        _browse_entries(entry_type=TYPE_KNOWLEDGE)
+    if is_know:
+        breadcrumb("Home", "Browse Knowledge")
+        section_header("Browse Knowledge Exchange",
+                       "Discover learning opportunities and knowledge experts.")
     else:
-        breadcrumb("Home","Browse Tasks")
-        st.markdown("<div class='page-title'>🔍 Browse Tasks</div>", unsafe_allow_html=True)
-        st.markdown("<div class='page-sub'>Find tasks that match your skills</div>",
-                    unsafe_allow_html=True)
-        mode_banner()
-        _browse_entries(entry_type=TYPE_TASK)
+        breadcrumb("Home", "Browse Tasks")
+        section_header("Browse Tasks",
+                       "Find tasks that match your skills and start collaborating.")
 
+    mode_pill()
 
-def _browse_entries(entry_type):
-    """Shared browse logic for both modes."""
-    is_know = (entry_type == TYPE_KNOWLEDGE)
-    topic_list = KNOWLEDGE_TOPICS if is_know else CATEGORIES
-    search_ph  = "🔍 Search knowledge topics…" if is_know else "🔍 Search tasks…"
-    post_lbl   = "➕ Post Knowledge Request" if is_know else "➕ Post a Task"
-    apply_lbl  = "📖 I Can Help Teach!" if is_know else "🙋 I Can Help!"
-
-    fc1, fc2, fc3 = st.columns([3,1.5,1.5])
+    # Filters
+    fc1, fc2, fc3 = st.columns([3, 1.5, 1.5])
     with fc1:
-        search   = st.text_input("", placeholder=search_ph,
-                                 key=f"br_search_{entry_type}", label_visibility="collapsed")
+        search = st.text_input(
+            "", placeholder="Search by title, skill or keyword...",
+            key=f"br_search_{entry_type}", label_visibility="collapsed")
     with fc2:
-        category = st.selectbox("", ["All"] + topic_list,
-                                key=f"br_cat_{entry_type}", label_visibility="collapsed")
+        topic_list = KNOWLEDGE_TOPICS if is_know else CATEGORIES
+        category   = st.selectbox("", ["All"] + topic_list,
+                                  key=f"br_cat_{entry_type}", label_visibility="collapsed")
     with fc3:
-        sort_by  = st.selectbox("", ["newest","oldest","priority"],
-                                key=f"br_sort_{entry_type}", label_visibility="collapsed")
+        sort_by = st.selectbox("", ["Newest First", "Oldest First", "Priority"],
+                               key=f"br_sort_{entry_type}", label_visibility="collapsed")
+
+    sort_map = {"Newest First": "newest", "Oldest First": "oldest", "Priority": "priority"}
 
     if logged_in():
-        if st.button(post_lbl, key=f"br_post_{entry_type}"): go("post_task")
+        post_lbl = "Post Knowledge Request" if is_know else "Post a Task"
+        if st.button(post_lbl, key=f"br_post_{entry_type}"):
+            go("post_task")
 
-    entries = get_all_open_tasks(search, category, sort_by, entry_type=entry_type)
-    count_label = "knowledge request(s)" if is_know else "task(s)"
+    entries = get_all_open_tasks(
+        search, category, sort_map.get(sort_by, "newest"), entry_type=entry_type)
+
+    count_noun = "knowledge request(s)" if is_know else "task(s)"
     st.markdown(
-        f"<div style='color:#475569;font-size:13px;margin-bottom:10px;'>"
-        f"{len(entries)} {count_label} found</div>",
+        f"<div style='color:#475569;font-size:13px;margin-bottom:14px;'>"
+        f"{len(entries)} {count_noun} found</div>",
         unsafe_allow_html=True)
 
     if not entries:
-        icon = "📚" if is_know else "📭"
-        msg  = "No knowledge posts found." if is_know else "No tasks found."
-        empty_state(icon, msg, "Be the first to post one!")
+        msg = "No knowledge posts found." if is_know else "No tasks found."
+        empty_state(msg, "Be the first to post one.",
+                    action_label="Post Now",
+                    action_key=f"br_empty_post_{entry_type}",
+                    action_fn=lambda: go("post_task"))
         return
 
     for t in entries:
-        skill_label   = "📖 Topic" if is_know else "🛠 Skills"
-        apply_key     = f"apply_{t['id']}"
-        login_key     = f"la_{t['id']}"
-        creator_label = t.get("creator_name","")
-        type_pill     = (
-            "<span class='cs-badge badge-teal'>📚 Knowledge Exchange</span>"
-            if is_know else
-            "<span class='cs-badge badge-cyan'>📋 Task Collaboration</span>"
-        )
-
-        header = (f"📚  {t['title']}  —  by {creator_label}"
-                  if is_know else
-                  f"📌  {t['title']}  —  by {creator_label}  [{t['category']}]")
+        creator = t.get("creator_name", "")
+        header  = f"{t['title']}  —  {creator}"
+        apply_lbl = "I Can Help Teach" if is_know else "I Can Help"
 
         with st.expander(header):
-            c1, c2 = st.columns([3,1])
+            c1, c2 = st.columns([3, 1])
             with c1:
                 st.markdown(f"""
-                <div style='color:#94a3b8;font-size:13px;line-height:1.7;margin-bottom:8px;'>
+                <div style='color:#94a3b8;font-size:13px;line-height:1.7;margin-bottom:10px;'>
                     {t['description']}</div>
-                {type_pill} {status_badge(t['status'])} {priority_badge(t.get('priority','Normal'))}
+                {type_badge(t.get('type', TYPE_TASK))}
+                {status_badge(t['status'])}
+                {priority_badge(t.get('priority', 'Normal'))}
                 <span class='cs-badge badge-violet'>{t['category']}</span>
-                <span class='cs-badge badge-cyan'>{skill_label}: {t['skills']}</span>
-                {'<span class="cs-badge badge-slate">⏰ '+t["deadline"]+"</span>" if t.get("deadline") else ""}
-                <span class='cs-badge badge-slate'>👤 {creator_label}</span>
-                <span class='cs-badge badge-slate'>⭐ {t.get('creator_trust',0)}/10</span>
-                <span class='cs-badge badge-slate'>👥 {t.get('applicant_count',0)} {'interested' if is_know else 'applied'}</span>
-                <div style='color:#334155;font-size:11px;margin-top:6px;'>
-                    Posted: {str(t.get('created_at',''))[:10]}</div>
+                <span class='cs-badge badge-slate'>{t['skills']}</span>
+                {'<span class="cs-badge badge-slate">Deadline: ' + t["deadline"] + '</span>' if t.get("deadline") else ''}
+                <span class='cs-badge badge-slate'>Posted by {creator}</span>
+                <span class='cs-badge badge-slate'>Trust {t.get('creator_trust', 0)}/10</span>
+                <span class='cs-badge badge-slate'>{t.get('applicant_count', 0)} {'interested' if is_know else 'applied'}</span>
+                <div style='color:#334155;font-size:11px;margin-top:8px;'>
+                    Posted {str(t.get('created_at', ''))[:10]}</div>
                 """, unsafe_allow_html=True)
             with c2:
                 if logged_in() and st.session_state.user["id"] != t["created_by"]:
-                    if st.button(apply_lbl, key=apply_key):
+                    if st.button(apply_lbl, key=f"apply_{t['id']}"):
                         ok, msg = apply_to_task(t["id"], st.session_state.user["id"])
                         if ok:
-                            notif_title = ("New Interest in Your Knowledge Post! 📚"
-                                           if is_know else "New Application! 🙋")
-                            notif_msg   = (f"{st.session_state.user['username']} is interested in: \"{t['title']}\""
-                                           if is_know else
-                                           f"{st.session_state.user['username']} applied to: \"{t['title']}\"")
-                            add_notification(t["created_by"], notif_title, notif_msg)
+                            ntitle = "New Interest in Your Post" if is_know else "New Application Received"
+                            nmsg   = (f"{st.session_state.user['username']} is interested in: {t['title']}"
+                                      if is_know else
+                                      f"{st.session_state.user['username']} applied to: {t['title']}")
+                            add_notification(t["created_by"], ntitle, nmsg)
                             st.success(msg)
                         else:
                             st.warning(msg)
                 elif not logged_in():
-                    if st.button("Login to Apply", key=login_key): go("login")
+                    if st.button("Sign In to Apply", key=f"la_{t['id']}"):
+                        go("login")
 
 
 # ═══════════════════════════════════════════════════════════════
-#  POST  — one page, toggle switches form labels & type
+#  POST
 # ═══════════════════════════════════════════════════════════════
 def page_post_task():
     require_login()
     render_navbar()
     back_btn()
 
-    # ── MODE TOGGLE ───────────────────────────────────────────
-    render_mode_toggle("post")
+    entry_type = TYPE_KNOWLEDGE if is_learn_mode() else TYPE_TASK
+    is_know    = is_learn_mode()
 
-    if is_learn_mode():
-        breadcrumb("Home","Dashboard","Post Knowledge Request")
-        st.markdown("<div class='page-title'>📚 Post a Knowledge Request</div>",
-                    unsafe_allow_html=True)
-        st.markdown(
-            "<div class='page-sub'>Share something you can teach, or request help learning a topic</div>",
-            unsafe_allow_html=True)
-        mode_banner()
-        _post_form(entry_type=TYPE_KNOWLEDGE)
+    if is_know:
+        breadcrumb("Home", "Dashboard", "Post Knowledge Request")
+        section_header("Post a Knowledge Request",
+                       "Share what you can teach, or request help learning a topic.")
     else:
-        breadcrumb("Home","Dashboard","Post a Task")
-        st.markdown("<div class='page-title'>📋 Post a Task</div>", unsafe_allow_html=True)
-        st.markdown(
-            "<div class='page-sub'>Describe what you need and find the perfect collaborator</div>",
-            unsafe_allow_html=True)
-        mode_banner()
-        _post_form(entry_type=TYPE_TASK)
+        breadcrumb("Home", "Dashboard", "Post a Task")
+        section_header("Post a Task",
+                       "Describe what you need and find the right collaborator.")
 
+    mode_pill()
 
-def _post_form(entry_type):
-    """Shared post form — adapts labels based on entry_type."""
-    is_know = (entry_type == TYPE_KNOWLEDGE)
-
-    c_form, c_tip = st.columns([2,1])
+    c_form, c_tip = st.columns([2, 1])
 
     with c_form:
-        form_key = f"post_form_{entry_type}"
-        with st.form(form_key):
-            title_ph = ("e.g. Teach me Python from scratch"
+        with st.form(f"post_form_{entry_type}"):
+            title_ph = ("e.g., Teach me Python from scratch" if is_know
+                        else "e.g., React developer needed for dashboard project")
+            desc_ph  = ("Describe what you want to learn, your current level, and your goals..."
                         if is_know else
-                        "e.g. Need a React developer for a dashboard")
-            desc_ph  = ("Describe what you want to learn or what you can teach…"
-                        if is_know else
-                        "Describe the task in detail…")
-            skill_ph = ("e.g. Python, Data Science, Machine Learning"
-                        if is_know else
-                        "e.g. React, TailwindCSS, Figma")
-            title_lbl  = "Request Title *"          if is_know else "Task Title *"
-            skill_lbl  = "Skill / Topic *"          if is_know else "Required Skills *"
-            cat_lbl    = "Topic Category"            if is_know else "Category"
-            topic_list = KNOWLEDGE_TOPICS            if is_know else CATEGORIES
+                        "Describe the task requirements, expected output, and tools needed...")
+            skill_ph = ("e.g., Python, Data Science" if is_know else "e.g., React, Node.js, Figma")
 
-            title       = st.text_input(title_lbl,  placeholder=title_ph)
-            description = st.text_area("Description *", placeholder=desc_ph, height=130)
+            title       = st.text_input("Title" + (" *" if True else ""),
+                                        placeholder=title_ph)
+            description = st.text_area("Description *", placeholder=desc_ph, height=140)
 
             sk1, sk2 = st.columns(2)
             with sk1:
-                skills   = st.text_input(skill_lbl, placeholder=skill_ph)
-                deadline = st.text_input("Deadline / Timeframe",
-                                         placeholder="e.g. Within 1 week")
+                skills   = st.text_input("Required Skills / Topic *", placeholder=skill_ph)
+                deadline = st.text_input(
+                    "Timeframe / Deadline", placeholder="e.g., Within 2 weeks")
             with sk2:
-                category = st.selectbox(cat_lbl, topic_list)
-                priority = st.selectbox("Priority", ["Normal","Urgent","Low"])
+                cat_list = KNOWLEDGE_TOPICS if is_know else CATEGORIES
+                cat_lbl  = "Topic Category" if is_know else "Category"
+                category = st.selectbox(cat_lbl, cat_list)
+                priority = st.selectbox("Priority", ["Normal", "Urgent", "Low"])
 
-            submit_lbl = "📚 Post Knowledge Request" if is_know else "🚀 Post Task"
+            submit_lbl = "Post Knowledge Request" if is_know else "Post Task"
             if st.form_submit_button(submit_lbl, use_container_width=True):
                 if not all([title, description, skills]):
-                    st.warning("Please fill Title, Description and Skills/Topic.")
+                    st.warning("Please fill in the title, description, and skills.")
                 else:
                     create_task(title, description, skills, category,
                                 deadline, priority,
                                 st.session_state.user["id"],
                                 entry_type=entry_type)
-                    success_msg = "✅ Knowledge request posted!" if is_know else "✅ Task posted successfully!"
+                    success_msg = ("Knowledge request posted successfully."
+                                   if is_know else "Task posted successfully.")
                     st.success(success_msg)
-                    st.balloons()
                     go("dashboard")
 
     with c_tip:
         if is_know:
-            st.markdown("""<div class='cs-card'>
-                <div style='color:#2dd4bf;font-weight:700;font-size:14px;margin-bottom:10px;'>
-                    💡 Knowledge Request Tips</div>
-                <div style='color:#64748b;font-size:13px;line-height:2;'>
-                ✅ State clearly what you want to learn<br>
-                ✅ Mention your current level<br>
-                ✅ Pick the most relevant topic<br>
-                ✅ Set a realistic timeframe<br>
-                ✅ Be open about your goals
-                </div></div>""", unsafe_allow_html=True)
+            st.markdown("""
+            <div class='cs-card'>
+                <div style='font-size:13px;font-weight:700;color:#2dd4bf;
+                    margin-bottom:12px;letter-spacing:.02em;'>
+                    Tips for a Good Knowledge Request
+                </div>
+                <div style='font-size:13px;color:#475569;line-height:2.1;'>
+                    State your current knowledge level clearly<br>
+                    Specify what outcome you expect<br>
+                    Mention preferred learning format<br>
+                    Set a realistic timeframe<br>
+                    Be open about your availability
+                </div>
+            </div>""", unsafe_allow_html=True)
         else:
-            st.markdown("""<div class='cs-card'>
-                <div style='color:#22d3ee;font-weight:700;font-size:14px;margin-bottom:10px;'>
-                    💡 Task Post Tips</div>
-                <div style='color:#64748b;font-size:13px;line-height:2;'>
-                ✅ Be specific about what you need<br>
-                ✅ List exact skills required<br>
-                ✅ Set a realistic deadline<br>
-                ✅ Describe the expected output<br>
-                ✅ Choose the right category
-                </div></div>""", unsafe_allow_html=True)
+            st.markdown("""
+            <div class='cs-card'>
+                <div style='font-size:13px;font-weight:700;color:#22d3ee;
+                    margin-bottom:12px;letter-spacing:.02em;'>
+                    Tips for a Good Task Post
+                </div>
+                <div style='font-size:13px;color:#475569;line-height:2.1;'>
+                    Be specific about deliverables<br>
+                    List the exact skills required<br>
+                    Provide a clear deadline<br>
+                    Describe the expected output<br>
+                    Choose the correct category
+                </div>
+            </div>""", unsafe_allow_html=True)
 
-        # Recent posts in this mode
         mode_type = TYPE_KNOWLEDGE if is_know else TYPE_TASK
-        recent = get_my_tasks(st.session_state.user["id"], entry_type=mode_type)[:4]
+        recent    = get_my_tasks(st.session_state.user["id"], entry_type=mode_type)[:5]
         if recent:
             st.markdown(
-                "<div style='color:#94a3b8;font-size:13px;font-weight:600;margin-bottom:8px;'>"
-                "📌 My Recent Posts</div>",
+                "<div style='font-size:12px;font-weight:700;color:#475569;"
+                "text-transform:uppercase;letter-spacing:.06em;margin-bottom:10px;'>"
+                "My Recent Posts</div>",
                 unsafe_allow_html=True)
             for t in recent:
-                dot = "🟢" if t["status"]=="open" else "🔴"
-                icon = "📚 " if is_know else ""
+                dot = "open" if t["status"] == "open" else "closed"
+                color = "#4ade80" if dot == "open" else "#475569"
                 st.markdown(
-                    f"<div style='color:#64748b;font-size:12px;padding:5px 0;"
-                    f"border-bottom:1px solid #1e293b;'>{dot} {icon}{t['title']}</div>",
+                    f"<div style='font-size:12px;color:#64748b;padding:6px 0;"
+                    f"border-bottom:1px solid #1e293b;display:flex;align-items:center;gap:8px;'>"
+                    f"<span style='width:6px;height:6px;border-radius:50%;background:{color};"
+                    f"flex-shrink:0;display:inline-block;'></span>{t['title']}</div>",
                     unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  PROFILE  — unchanged except My Tasks tab shows mode split
+#  PROFILE
 # ═══════════════════════════════════════════════════════════════
 def page_profile():
     require_login()
     render_navbar()
     back_btn()
-    breadcrumb("Home","Dashboard","Profile")
+    breadcrumb("Home", "Dashboard", "Profile")
 
     u = get_user(st.session_state.user["id"]) or st.session_state.user
     st.session_state.user = u
 
-    st.markdown("<div class='page-title'>👤 My Profile</div>", unsafe_allow_html=True)
-    st.markdown("<div class='page-sub'>Your public profile and reputation</div>",
-                unsafe_allow_html=True)
+    section_header("My Profile", "Manage your account and view your activity.")
 
-    sidebar, main = st.columns([1,2])
+    sidebar, main = st.columns([1, 2])
 
     with sidebar:
         ini = "".join(w[0].upper() for w in (u["username"] or "U").split()[:2])
-        st.markdown(f"""<div style='text-align:center;'>
-            <div style='width:72px;height:72px;border-radius:50%;
+
+        st.markdown(f"""
+        <div style='text-align:center;'>
+            <div style='width:80px;height:80px;border-radius:50%;
                 background:linear-gradient(135deg,#22d3ee,#7c3aed);
                 display:inline-flex;align-items:center;justify-content:center;
-                font-size:26px;font-weight:700;color:#fff;'>{ini}</div>
+                font-size:28px;font-weight:700;color:#fff;'>{ini}</div>
         </div>""", unsafe_allow_html=True)
 
-        st.markdown(f"""<div style='text-align:center;margin-top:10px;'>
-            <div style='font-size:18px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
-            <div style='color:#475569;font-size:12px;margin-top:3px;'>{u['email']}</div>
+        st.markdown(f"""
+        <div style='text-align:center;margin-top:12px;margin-bottom:4px;'>
+            <div style='font-size:17px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
+            <div style='font-size:12px;color:#475569;margin-top:4px;'>{u['email']}</div>
         </div>""", unsafe_allow_html=True)
 
-        admin_b = '<span class="cs-badge badge-cyan">Admin</span>' if u["role"]=="admin" else ""
-        st.markdown(f"""<div style='text-align:center;margin:10px 0;'>
-            <span class='cs-badge badge-violet'>{u['experience']}</span>{admin_b}
+        admin_badge = '<span class="cs-badge badge-cyan">Admin</span>' if u["role"] == "admin" else ""
+        st.markdown(f"""
+        <div style='text-align:center;margin:10px 0;'>
+            <span class='cs-badge badge-violet'>{u['experience']}</span>{admin_badge}
         </div>""", unsafe_allow_html=True)
 
-        st.markdown(f"""<div style='color:#94a3b8;font-size:13px;line-height:1.6;
-            text-align:center;margin-bottom:10px;'>{u['bio'] or 'No bio added.'}</div>""",
-            unsafe_allow_html=True)
+        if u.get("bio"):
+            st.markdown(f"""
+            <div style='font-size:13px;color:#64748b;line-height:1.65;
+                text-align:center;margin-bottom:12px;'>{u['bio']}</div>""",
+                unsafe_allow_html=True)
 
         if u.get("portfolio"):
             st.markdown(
-                f"<div style='text-align:center;margin-bottom:10px;'>"
+                f"<div style='text-align:center;margin-bottom:12px;'>"
                 f"<a href='{u['portfolio']}' target='_blank' "
-                f"style='color:#22d3ee;font-size:13px;'>🔗 Portfolio</a></div>",
+                f"style='font-size:12px;color:#22d3ee;font-weight:600;'>Portfolio / GitHub</a></div>",
                 unsafe_allow_html=True)
 
-        trust_pct = int((u["trust_score"]/10)*100)
-        st.markdown(f"""<div style='margin-bottom:6px;'>
+        trust_pct = int((u["trust_score"] / 10) * 100)
+        st.markdown(f"""
+        <div style='margin-bottom:6px;'>
             <div style='display:flex;justify-content:space-between;
-                color:#475569;font-size:11px;margin-bottom:4px;'>
-                <span>Trust Score</span><span>{u['trust_score']}/10</span>
+                color:#475569;font-size:11px;margin-bottom:5px;'>
+                <span>Trust Score</span><span>{u['trust_score']} / 10</span>
             </div>
             <div class='trust-bar-bg'>
                 <div class='trust-bar-fill' style='width:{trust_pct}%;'></div>
             </div>
-            <div style='color:#475569;font-size:11px;margin-top:4px;'>
-                {u['total_ratings']} ratings received</div>
+            <div style='font-size:11px;color:#334155;margin-top:5px;'>
+                Based on {u['total_ratings']} ratings</div>
         </div>""", unsafe_allow_html=True)
 
         if u.get("skills"):
             tags = "".join(
                 f"<span class='cs-badge badge-cyan'>{s.strip()}</span>"
-                for s in u["skills"].split(",") if s.strip())
-            st.markdown(f"""<div style='margin-top:10px;border-top:1px solid #1e293b;padding-top:12px;'>
-                <div style='color:#94a3b8;font-size:11px;font-weight:700;
-                    text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;'>SKILLS</div>
-                {tags}</div>""", unsafe_allow_html=True)
+                for s in u["skills"].split(",") if s.strip()
+            )
+            st.markdown(f"""
+            <div style='margin-top:12px;padding-top:12px;border-top:1px solid #1e293b;'>
+                <div style='font-size:11px;font-weight:700;text-transform:uppercase;
+                    letter-spacing:.08em;color:#334155;margin-bottom:8px;'>Skills</div>
+                {tags}
+            </div>""", unsafe_allow_html=True)
 
     with main:
-        t1, t2, t3, t4, t5 = st.tabs([
-            "✏️ Edit Profile",
-            "📋 My Tasks",
-            "📚 My Knowledge",
-            "⭐ Feedback",
-            "🌟 Give Rating",
+        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+            "Edit Profile", "My Tasks", "My Knowledge Posts", "Feedback Received", "Give Rating",
         ])
 
-        with t1:
+        with tab1:
             with st.form("edit_profile_form"):
-                n_user = st.text_input("Username",   value=u["username"])
-                n_sk   = st.text_input("Skills",     value=u["skills"] or "")
-                n_exp  = st.selectbox("Experience",
-                    ["Beginner","Intermediate","Advanced","Expert"],
-                    index=["Beginner","Intermediate","Advanced","Expert"].index(u["experience"])
-                          if u["experience"] in ["Beginner","Intermediate","Advanced","Expert"] else 0)
-                n_port = st.text_input("Portfolio", value=u["portfolio"] or "")
-                n_bio  = st.text_area("Bio",        value=u["bio"] or "", height=90)
-                if st.form_submit_button("Save Changes ✅", use_container_width=True):
-                    update_profile(u["id"], n_user, n_sk, n_exp, n_bio, n_port)
+                eu1, eu2 = st.columns(2)
+                with eu1:
+                    n_user = st.text_input("Username",   value=u["username"])
+                    n_port = st.text_input("Portfolio",  value=u["portfolio"] or "")
+                with eu2:
+                    n_exp  = st.selectbox(
+                        "Experience Level",
+                        ["Beginner", "Intermediate", "Advanced", "Expert"],
+                        index=["Beginner","Intermediate","Advanced","Expert"].index(u["experience"])
+                              if u["experience"] in ["Beginner","Intermediate","Advanced","Expert"] else 0)
+
+                n_bio = st.text_area("Bio", value=u["bio"] or "", height=80)
+
+                # Skill update with dropdown
+                st.markdown("**Update Primary Skill**")
+                existing_parts = u["skills"].split(" - ") if " - " in (u["skills"] or "") else [None, None]
+                ec1, ec2 = st.columns(2)
+                with ec1:
+                    cat_opts     = ["Select a category"] + SKILL_CATEGORIES
+                    def_cat_idx  = (SKILL_CATEGORIES.index(existing_parts[0]) + 1
+                                    if existing_parts[0] in SKILL_CATEGORIES else 0)
+                    new_cat      = st.selectbox("Skill Category", cat_opts,
+                                               index=def_cat_idx, key="ep_skill_cat")
+                with ec2:
+                    if new_cat == "Select a category":
+                        st.selectbox("Skill", ["Select category first"],
+                                     key="ep_skill_val", disabled=True)
+                        new_skill = None
+                    else:
+                        skill_opts = SKILLS_BY_CATEGORY.get(new_cat, []) + ["Other"]
+                        def_sk_idx = (skill_opts.index(existing_parts[1])
+                                      if len(existing_parts) > 1 and existing_parts[1] in skill_opts
+                                      else 0)
+                        new_skill = st.selectbox("Skill", skill_opts,
+                                                index=def_sk_idx, key="ep_skill_val")
+
+                if st.form_submit_button("Save Changes", use_container_width=True):
+                    new_skills = (f"{new_cat} - {new_skill}"
+                                  if new_cat and new_cat != "Select a category" and new_skill
+                                  else u["skills"])
+                    update_profile(u["id"], n_user, new_skills, n_exp, n_bio, n_port)
                     fresh = get_user(u["id"])
                     st.session_state.user = fresh
-                    st.success("Profile updated!")
+                    st.success("Profile updated successfully.")
                     st.rerun()
 
-        with t2:
+        with tab2:
             my_tasks = get_my_tasks(u["id"], entry_type=TYPE_TASK)
-            if not my_tasks: empty_state("📭","No tasks posted yet")
+            if not my_tasks:
+                empty_state("No tasks posted yet", "Post your first task to find collaborators.")
             for t in my_tasks:
-                st.markdown(f"""<div class='cs-card' style='padding:12px;'>
-                    <div style='display:flex;justify-content:space-between;'>
-                        <div style='color:#f1f5f9;font-weight:600;'>{t['title']}</div>
+                st.markdown(f"""
+                <div class='cs-card' style='padding:14px;'>
+                    <div style='display:flex;justify-content:space-between;align-items:center;'>
+                        <div style='font-weight:600;color:#f1f5f9;'>{t['title']}</div>
                         {status_badge(t['status'])}
                     </div>
-                    <div style='margin-top:5px;'>
-                        <span class='cs-badge badge-cyan'>🛠 {t['skills']}</span>
+                    <div style='margin-top:6px;'>
+                        <span class='cs-badge badge-slate'>{t['skills']}</span>
                         <span class='cs-badge badge-violet'>{t['category']}</span>
                     </div>
-                    <div style='color:#475569;font-size:11px;margin-top:4px;'>
+                    <div style='font-size:11px;color:#334155;margin-top:6px;'>
                         {str(t['created_at'])[:10]}</div>
                 </div>""", unsafe_allow_html=True)
 
-        with t3:
+        with tab3:
             my_know = get_my_tasks(u["id"], entry_type=TYPE_KNOWLEDGE)
             if not my_know:
-                empty_state("📚","No knowledge posts yet",
-                            "Share what you know or post a learning request.")
+                empty_state("No knowledge posts yet",
+                            "Share your expertise or request help learning a topic.")
             for t in my_know:
-                st.markdown(f"""<div class='cs-card' style='padding:12px;'>
-                    <div style='display:flex;justify-content:space-between;'>
-                        <div style='color:#f1f5f9;font-weight:600;'>📚 {t['title']}</div>
+                st.markdown(f"""
+                <div class='cs-card' style='padding:14px;'>
+                    <div style='display:flex;justify-content:space-between;align-items:center;'>
+                        <div style='font-weight:600;color:#f1f5f9;'>{t['title']}</div>
                         {status_badge(t['status'])}
                     </div>
-                    <div style='margin-top:5px;'>
-                        <span class='cs-badge badge-teal'>📖 {t['skills']}</span>
+                    <div style='margin-top:6px;'>
+                        <span class='cs-badge badge-teal'>{t['skills']}</span>
                         <span class='cs-badge badge-violet'>{t['category']}</span>
                     </div>
-                    <div style='color:#475569;font-size:11px;margin-top:4px;'>
+                    <div style='font-size:11px;color:#334155;margin-top:6px;'>
                         {str(t['created_at'])[:10]}</div>
                 </div>""", unsafe_allow_html=True)
 
-        with t4:
+        with tab4:
             fbs = get_feedback_for_user(u["id"])
-            if not fbs: empty_state("⭐","No feedback received yet")
+            if not fbs:
+                empty_state("No feedback received yet",
+                            "Collaborate with others to receive ratings.")
             else:
-                avg = round(sum(f["rating"] for f in fbs)/len(fbs), 1)
-                st.markdown(f"""<div class='cs-card' style='text-align:center;padding:18px;margin-bottom:12px;'>
-                    <div style='color:#f59e0b;font-size:26px;'>{"⭐"*round(avg)}</div>
-                    <div style='color:#f1f5f9;font-size:22px;font-weight:800;'>{avg}/5</div>
-                    <div style='color:#475569;font-size:13px;'>from {len(fbs)} reviews</div>
+                avg = round(sum(f["rating"] for f in fbs) / len(fbs), 1)
+                st.markdown(f"""
+                <div class='cs-card' style='text-align:center;padding:20px;margin-bottom:14px;'>
+                    <div style='font-size:32px;font-weight:900;color:#22d3ee;'>{avg}</div>
+                    <div style='font-size:13px;color:#475569;margin-top:4px;'>
+                        Average Rating / 5 &nbsp;&middot;&nbsp; {len(fbs)} reviews</div>
                 </div>""", unsafe_allow_html=True)
                 for f in fbs:
-                    st.markdown(f"""<div class='cs-card' style='padding:12px;'>
-                        <div style='display:flex;justify-content:space-between;'>
-                            <span style='color:#f1f5f9;font-weight:600;'>👤 {f['from_name']}</span>
-                            <span>{"⭐"*f['rating']}</span>
+                    stars = "★" * f['rating'] + "☆" * (5 - f['rating'])
+                    st.markdown(f"""
+                    <div class='cs-card' style='padding:14px;'>
+                        <div style='display:flex;justify-content:space-between;align-items:center;'>
+                            <span style='font-weight:600;color:#f1f5f9;font-size:13px;'>
+                                {f['from_name']}</span>
+                            <span style='color:#f59e0b;font-size:14px;letter-spacing:1px;'>
+                                {stars}</span>
                         </div>
-                        <div style='color:#64748b;font-size:13px;margin-top:5px;'>{f['comment'] or '—'}</div>
-                        <div style='color:#334155;font-size:11px;margin-top:4px;'>
+                        <div style='font-size:13px;color:#64748b;margin-top:6px;'>
+                            {f['comment'] or 'No comment left.'}</div>
+                        <div style='font-size:11px;color:#334155;margin-top:5px;'>
                             {str(f['created_at'])[:10]}</div>
                     </div>""", unsafe_allow_html=True)
 
-        with t5:
+        with tab5:
             others = db_fetchall(
-                "SELECT id,username,skills,trust_score FROM users "
-                "WHERE id!=? AND is_active=1 AND role='user'", (u["id"],))
-            if not others: empty_state("👥","No other users yet")
+                "SELECT id, username, skills, trust_score FROM users "
+                "WHERE id != ? AND is_active = 1 AND role = 'user'",
+                (u["id"],))
+            if not others:
+                empty_state("No other users yet",
+                            "Once more users join, you can rate them here.")
             else:
-                opts   = [f"{x['username']} ({x['skills'] or 'no skills'})" for x in others]
+                opts   = [f"{x['username']} ({x['skills'] or 'no skills listed'})" for x in others]
                 chosen = st.selectbox("Select a collaborator to rate", opts, key="gr_select")
                 to_id  = others[opts.index(chosen)]["id"]
-                rating = st.slider("Rating (1–5)", 1, 5, 4, key="gr_slider")
-                st.markdown(f"<div style='font-size:22px;'>{'⭐'*rating}</div>",
-                            unsafe_allow_html=True)
-                comment = st.text_area("Comment (optional)", key="gr_comment")
-                if st.button("Submit Feedback ✅", key="gr_submit", use_container_width=True):
+                rating = st.slider("Rating (1 to 5)", 1, 5, 4, key="gr_slider")
+                stars_preview = "★" * rating + "☆" * (5 - rating)
+                st.markdown(
+                    f"<div style='font-size:20px;color:#f59e0b;letter-spacing:2px;margin:4px 0;'>"
+                    f"{stars_preview}</div>",
+                    unsafe_allow_html=True)
+                comment = st.text_area("Comment (optional)",
+                                       placeholder="Describe your experience collaborating...",
+                                       key="gr_comment")
+                if st.button("Submit Rating", key="gr_submit", use_container_width=True):
                     ok, msg = submit_feedback(u["id"], to_id, rating, comment)
                     if ok:
                         update_trust_score(to_id, rating)
-                        add_notification(to_id, "New Rating! ⭐",
-                                         f"{u['username']} gave you {rating}/5 stars.")
-                        st.success(msg); st.balloons()
+                        add_notification(to_id, "New Rating Received",
+                                         f"{u['username']} rated you {rating} out of 5.")
+                        st.success(msg)
                     else:
                         st.warning(msg)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  AI MATCH  — unchanged
+#  AI MATCH
 # ═══════════════════════════════════════════════════════════════
 def page_ai_match():
     require_login()
     render_navbar()
     back_btn()
-    breadcrumb("Home","AI Skill Matching")
-    st.markdown("<div class='page-title'>🤖 AI Skill Matching</div>", unsafe_allow_html=True)
-    st.markdown("<div class='page-sub'>Let AI find the best collaborators for your task</div>",
-                unsafe_allow_html=True)
+    breadcrumb("Home", "AI Skill Matching")
+    section_header("AI Skill Matching",
+                   "Describe your task and let the AI surface the best collaborators.")
 
-    left, right = st.columns([3,2])
+    left, right = st.columns([3, 2])
     with left:
         with st.form("ai_match_form"):
-            ai_title  = st.text_input("Task Title",    placeholder="e.g. Build a data dashboard")
-            ai_desc   = st.text_area("Description",    placeholder="Describe what you need…", height=110)
-            ai_skills = st.text_input("Skills Needed", placeholder="e.g. Python, Plotly, Pandas")
-            run       = st.form_submit_button("🤖 Find Best Matches", use_container_width=True)
+            ai_title  = st.text_input("Task Title",       placeholder="e.g., Build a data dashboard")
+            ai_desc   = st.text_area("Description",        placeholder="Describe what you need...", height=110)
+            ai_skills = st.text_input("Skills Required",  placeholder="e.g., Python, Plotly, Pandas")
+            run = st.form_submit_button("Find Best Matches", use_container_width=True)
 
         if run:
             if not all([ai_title, ai_desc, ai_skills]):
-                st.warning("Please fill all three fields.")
+                st.warning("Please fill in all three fields.")
             else:
-                with st.spinner("🤖 AI is analyzing all profiles…"):
+                with st.spinner("Analyzing profiles..."):
                     try:
                         from ai_matching import match_users_to_task
                         matches = match_users_to_task(
@@ -1063,198 +1463,235 @@ def page_ai_match():
                         st.session_state.ai_done    = True
                     except Exception as e:
                         st.session_state.ai_done = False
-                        st.error(f"AI Error: {e}")
-                        st.info("Set OPENAI_API_KEY in Streamlit Cloud → Manage app → Settings → Secrets")
+                        st.error(f"Matching error: {e}")
+                        st.info("Set OPENAI_API_KEY in Streamlit Cloud Secrets to enable AI matching.")
 
     with right:
-        st.markdown("""<div class='cs-card'>
-            <div style='color:#22d3ee;font-weight:700;font-size:14px;margin-bottom:10px;'>⚡ How it works</div>
-            <div style='color:#64748b;font-size:13px;line-height:2;'>
-            1️⃣ Describe your task<br>2️⃣ AI reads all user profiles<br>
-            3️⃣ Compares skills &amp; experience<br>4️⃣ Factors in trust scores<br>
-            5️⃣ Returns top 3 best matches<br>6️⃣ Notify them &amp; collaborate!
-            </div></div>""", unsafe_allow_html=True)
+        st.markdown("""
+        <div class='cs-card'>
+            <div style='font-size:13px;font-weight:700;color:#22d3ee;
+                margin-bottom:14px;letter-spacing:.02em;'>How AI Matching Works</div>
+            <div style='font-size:13px;color:#475569;line-height:2.2;'>
+                1. Describe your task requirements<br>
+                2. The AI reads all user profiles<br>
+                3. Skills and experience are compared<br>
+                4. Trust scores are factored in<br>
+                5. Top 3 matches are returned<br>
+                6. Notify and start collaborating
+            </div>
+        </div>""", unsafe_allow_html=True)
 
     if st.session_state.ai_done and st.session_state.ai_matches:
         matches = st.session_state.ai_matches
         st.markdown(
-            f"<br><div style='color:#22d3ee;font-weight:700;font-size:17px;margin-bottom:12px;'>"
-            f"✅ Top {len(matches)} Matches</div>", unsafe_allow_html=True)
-        medals = ["🥇","🥈","🥉"]
+            f"<br><div style='font-size:15px;font-weight:700;color:#f1f5f9;margin-bottom:14px;'>"
+            f"Top {len(matches)} Matches</div>",
+            unsafe_allow_html=True)
+
+        ranks = ["#1", "#2", "#3"]
         for i, m in enumerate(matches, 1):
             score = m.get("match_score", 0)
-            sc    = "#22d3ee" if score>=80 else "#f59e0b" if score>=60 else "#f87171"
+            sc    = "#22d3ee" if score >= 80 else "#f59e0b" if score >= 60 else "#94a3b8"
             row   = db_fetchone("SELECT * FROM users WHERE username=?", (m["name"],))
             u_sk  = row["skills"]      if row else "N/A"
             u_exp = row["experience"]  if row else "N/A"
             u_tr  = row["trust_score"] if row else 0
             u_pt  = row["portfolio"]   if row else ""
 
-            mc1, mc2 = st.columns([4,1])
+            mc1, mc2 = st.columns([4, 1])
             with mc1:
-                st.markdown(f"""<div style='background:linear-gradient(135deg,#0f172a,#130f2a);
-                    border:1px solid #312e81;border-radius:14px;padding:20px;margin-bottom:10px;'>
-                    <div style='font-size:18px;font-weight:800;color:#f1f5f9;margin-bottom:7px;'>
-                        {medals[i-1] if i<=3 else '👤'} {m['name']}</div>
-                    <div style='margin-bottom:8px;'>
-                        <span class='cs-badge badge-cyan'>🛠 {u_sk}</span>
-                        <span class='cs-badge badge-violet'>{u_exp}</span>
+                st.markdown(f"""
+                <div class='cs-card' style='border-color:#1e293b;'>
+                    <div style='display:flex;align-items:center;gap:14px;margin-bottom:12px;'>
+                        <div style='font-size:13px;font-weight:700;color:#334155;'>{ranks[i-1] if i<=3 else ""}</div>
+                        {mk_avatar(m['name'], 42)}
+                        <div>
+                            <div style='font-size:15px;font-weight:800;color:#f1f5f9;'>{m['name']}</div>
+                            <div style='font-size:12px;color:#475569;margin-top:2px;'>{u_exp}</div>
+                        </div>
                     </div>
-                    <div style='color:#64748b;font-size:13px;line-height:1.6;'>{m.get('reason','')}</div>
-                    {'<div style="margin-top:8px;"><a href="'+u_pt+'" target="_blank" style="color:#22d3ee;font-size:12px;">🔗 Portfolio</a></div>' if u_pt else ''}
+                    <div style='margin-bottom:8px;'>
+                        <span class='cs-badge badge-slate'>{u_sk}</span>
+                    </div>
+                    <div style='font-size:13px;color:#64748b;line-height:1.6;'>{m.get('reason', '')}</div>
+                    {'<div style="margin-top:10px;"><a href="' + u_pt + '" target="_blank" style="font-size:12px;color:#22d3ee;font-weight:600;">Portfolio / GitHub</a></div>' if u_pt else ''}
                 </div>""", unsafe_allow_html=True)
             with mc2:
-                st.markdown(f"""<div style='text-align:center;padding:10px;'>
-                    <div style='color:{sc};font-size:30px;font-weight:900;'>{score}%</div>
-                    <div style='color:#334155;font-size:10px;'>Match</div>
-                    <div style='color:#22d3ee;font-size:17px;font-weight:800;margin-top:8px;'>⭐ {u_tr}</div>
-                    <div style='color:#334155;font-size:10px;'>Trust</div>
+                st.markdown(f"""
+                <div style='text-align:center;padding:12px;'>
+                    <div style='font-size:28px;font-weight:900;color:{sc};line-height:1;'>{score}%</div>
+                    <div style='font-size:10px;color:#334155;margin-top:3px;'>Match</div>
+                    <div style='font-size:18px;font-weight:800;color:#22d3ee;margin-top:10px;'>{u_tr}</div>
+                    <div style='font-size:10px;color:#334155;'>Trust</div>
                 </div>""", unsafe_allow_html=True)
             if row:
-                if st.button(f"📩 Notify {m['name']}", key=f"notify_{i}"):
-                    add_notification(row["id"],"AI Matched You! 🤖",
-                        f"{st.session_state.user['username']} wants to collaborate!")
-                    st.success(f"✅ {m['name']} notified!")
+                if st.button(f"Notify {m['name']}", key=f"notify_{i}"):
+                    add_notification(row["id"], "AI Match Alert",
+                        f"{st.session_state.user['username']} wants to collaborate with you.")
+                    st.success(f"{m['name']} has been notified.")
 
     elif st.session_state.ai_done and not st.session_state.ai_matches:
-        st.warning("No matches found. Invite more people to register!")
+        st.info("No matches found. Invite more people to join the platform.")
 
 
 # ═══════════════════════════════════════════════════════════════
-#  COMMUNITY  — unchanged
+#  COMMUNITY
 # ═══════════════════════════════════════════════════════════════
 def page_community():
     require_login()
     render_navbar()
     back_btn()
-    breadcrumb("Home","Community")
-    st.markdown("<div class='page-title'>👥 Community</div>", unsafe_allow_html=True)
-    st.markdown("<div class='page-sub'>Discover all members and explore their skills</div>",
-                unsafe_allow_html=True)
+    breadcrumb("Home", "Community")
+    section_header("Community", "Browse all members and explore their skills.")
 
-    sc1, sc2 = st.columns([3,1])
+    sc1, sc2 = st.columns([3, 1])
     with sc1:
-        search = st.text_input("", placeholder="🔍 Search members…",
+        search = st.text_input("", placeholder="Search by name or skill...",
                                key="cm_search", label_visibility="collapsed")
     with sc2:
         exp_f = st.selectbox("", ["All Levels","Beginner","Intermediate","Advanced","Expert"],
                              key="cm_exp", label_visibility="collapsed")
 
     uid = st.session_state.user["id"]
-    where, params = ["role='user'","is_active=1",f"id!='{uid}'"], []
+    where, params = ["role='user'", "is_active=1", f"id!='{uid}'"], []
     if search:
         where.append("(username LIKE ? OR skills LIKE ?)")
-        params += [f"%{search}%"]*2
+        params += [f"%{search}%"] * 2
     if exp_f != "All Levels":
         where.append("experience=?"); params.append(exp_f)
 
     users = db_fetchall(
         f"SELECT * FROM users WHERE {' AND '.join(where)} ORDER BY trust_score DESC",
         tuple(params))
+
     st.markdown(
-        f"<div style='color:#475569;font-size:13px;margin-bottom:14px;'>{len(users)} member(s)</div>",
+        f"<div style='color:#475569;font-size:13px;margin-bottom:16px;'>"
+        f"{len(users)} member(s)</div>",
         unsafe_allow_html=True)
 
-    if not users: empty_state("👥","No members found"); return
+    if not users:
+        empty_state("No members found", "Try adjusting your search filters.")
+        return
 
-    exp_c = {"Beginner":"badge-cyan","Intermediate":"badge-violet",
-             "Advanced":"badge-amber","Expert":"badge-red"}
+    exp_badge = {
+        "Beginner":     "badge-cyan",
+        "Intermediate": "badge-violet",
+        "Advanced":     "badge-amber",
+        "Expert":       "badge-red",
+    }
 
     for i in range(0, len(users), 3):
         cols = st.columns(3)
         for col, u in zip(cols, users[i:i+3]):
-            pct  = int((u["trust_score"]/10)*100)
+            pct  = int((u["trust_score"] / 10) * 100)
             ini  = "".join(w[0].upper() for w in u["username"].split()[:2])
             tags = "".join(
-                f"<span class='cs-badge badge-cyan' style='font-size:10px;'>{s.strip()}</span>"
-                for s in (u["skills"] or "").split(",")[:3] if s.strip())
-            port = (f'<div style="margin-top:8px;"><a href="{u["portfolio"]}" target="_blank" '
-                    f'style="color:#22d3ee;font-size:12px;">🔗 Portfolio</a></div>'
-                    if u.get("portfolio") else "")
-            col.markdown(f"""<div class='cs-card'>
-                <div style='display:flex;align-items:center;gap:10px;margin-bottom:10px;'>
-                    <div style='width:44px;height:44px;border-radius:50%;
+                f"<span class='cs-badge badge-slate' style='font-size:10px;'>{s.strip()}</span>"
+                for s in (u["skills"] or "").split(",")[:2] if s.strip()
+            )
+            port = (
+                f'<div style="margin-top:10px;">'
+                f'<a href="{u["portfolio"]}" target="_blank" '
+                f'style="font-size:12px;color:#22d3ee;font-weight:600;">Portfolio</a></div>'
+                if u.get("portfolio") else ""
+            )
+            col.markdown(f"""
+            <div class='cs-card'>
+                <div style='display:flex;align-items:center;gap:12px;margin-bottom:12px;'>
+                    <div style='width:42px;height:42px;border-radius:50%;
                         background:linear-gradient(135deg,#22d3ee,#7c3aed);
                         display:inline-flex;align-items:center;justify-content:center;
-                        font-size:16px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                        font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
                     <div style='flex:1;min-width:0;'>
-                        <div style='font-weight:700;color:#f1f5f9;font-size:13px;'>{u['username']}</div>
-                        <span class='cs-badge {exp_c.get(u["experience"],"badge-slate")}' style='font-size:9px;'>{u['experience']}</span>
+                        <div style='font-weight:700;color:#f1f5f9;font-size:13px;
+                            white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'>
+                            {u['username']}</div>
+                        <span class='cs-badge {exp_badge.get(u["experience"], "badge-slate")}'
+                            style='font-size:10px;'>{u['experience']}</span>
                     </div>
-                    <div style='text-align:right;'>
-                        <div style='color:#22d3ee;font-weight:800;font-size:17px;'>{u['trust_score']}</div>
-                        <div style='color:#334155;font-size:10px;'>trust</div>
+                    <div style='text-align:right;flex-shrink:0;'>
+                        <div style='font-size:18px;font-weight:800;color:#22d3ee;'>{u['trust_score']}</div>
+                        <div style='font-size:10px;color:#334155;'>trust</div>
                     </div>
                 </div>
-                <div style='color:#475569;font-size:12px;line-height:1.5;margin-bottom:8px;'>
-                    {(u['bio'] or 'No bio.')[:80]}…</div>
+                <div style='font-size:12px;color:#475569;line-height:1.55;margin-bottom:10px;'>
+                    {(u['bio'] or 'No bio provided.')[:90]}...</div>
                 <div>{tags}</div>
-                <div class='trust-bar-bg'><div class='trust-bar-fill' style='width:{pct}%;'></div></div>
-                <div style='color:#334155;font-size:10px;margin-top:3px;'>{u['total_ratings']} ratings</div>
+                <div class='trust-bar-bg'>
+                    <div class='trust-bar-fill' style='width:{pct}%;'></div>
+                </div>
+                <div style='font-size:10px;color:#334155;margin-top:4px;'>
+                    {u['total_ratings']} ratings received</div>
                 {port}
             </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  NOTIFICATIONS  — unchanged
+#  NOTIFICATIONS
 # ═══════════════════════════════════════════════════════════════
 def page_notifications():
     require_login()
     render_navbar()
     back_btn()
     mark_all_read(st.session_state.user["id"])
-    st.markdown("<div class='page-title'>🔔 Notifications</div>", unsafe_allow_html=True)
+    section_header("Notifications", "Your latest activity and alerts.")
 
     notifs = get_notifications(st.session_state.user["id"])
     if not notifs:
-        empty_state("🔔","No notifications yet","Start collaborating to see activity here.")
+        empty_state("No notifications", "Start collaborating to see activity here.")
         return
 
     for n in notifs:
-        bg     = "#0d1f3c" if not n["is_read"] else "#0f172a"
-        border = "#1e4080"  if not n["is_read"] else "#1e293b"
-        dot    = (" <span style='width:7px;height:7px;background:#22d3ee;"
-                  "border-radius:50%;display:inline-block;'></span>"
-                  if not n["is_read"] else "")
-        st.markdown(f"""<div style='background:{bg};border:1px solid {border};
-            border-radius:12px;padding:14px 18px;margin-bottom:8px;'>
-            <div style='display:flex;justify-content:space-between;'>
-                <div style='color:#e2e8f0;font-weight:600;font-size:13px;'>{n['title']}{dot}</div>
-                <div style='color:#334155;font-size:11px;'>{str(n['created_at'])[:16]}</div>
+        bg     = "#0d1829" if not n["is_read"] else "#0f172a"
+        border = "#1e3a5f"  if not n["is_read"] else "#1e293b"
+        unread_dot = (
+            "<span style='width:6px;height:6px;background:#22d3ee;border-radius:50%;"
+            "display:inline-block;margin-left:6px;vertical-align:middle;'></span>"
+            if not n["is_read"] else ""
+        )
+        st.markdown(f"""
+        <div style='background:{bg};border:1px solid {border};border-radius:10px;
+            padding:14px 18px;margin-bottom:8px;'>
+            <div style='display:flex;justify-content:space-between;align-items:flex-start;'>
+                <div style='font-weight:600;font-size:13px;color:#e2e8f0;'>
+                    {n['title']}{unread_dot}</div>
+                <div style='font-size:11px;color:#334155;white-space:nowrap;margin-left:12px;'>
+                    {str(n['created_at'])[:16]}</div>
             </div>
-            <div style='color:#64748b;font-size:13px;margin-top:5px;'>{n['message']}</div>
+            <div style='font-size:13px;color:#64748b;margin-top:5px;line-height:1.5;'>
+                {n['message']}</div>
         </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  ADMIN SIDEBAR  — unchanged
+#  ADMIN SIDEBAR
 # ═══════════════════════════════════════════════════════════════
 def admin_sidebar():
     with st.sidebar:
-        st.markdown("## 🛡️ Admin Panel")
-        st.markdown(f"**{st.session_state.user['username']}**")
+        st.markdown("**Admin Panel**")
+        st.markdown(f"Signed in as: *{st.session_state.user['username']}*")
         st.markdown("---")
-        if st.button("📊 Dashboard", key="asb_dash",   use_container_width=True): go("admin_dashboard")
-        if st.button("👥 Users",     key="asb_users",  use_container_width=True): go("admin_users")
-        if st.button("📋 All Tasks", key="asb_tasks",  use_container_width=True): go("admin_tasks")
-        if st.button("🌐 Browse",    key="asb_browse", use_container_width=True): go("browse_tasks")
+        if st.button("Dashboard",  key="asb_dash",   use_container_width=True): go("admin_dashboard")
+        if st.button("Users",      key="asb_users",  use_container_width=True): go("admin_users")
+        if st.button("All Posts",  key="asb_tasks",  use_container_width=True): go("admin_tasks")
+        if st.button("Browse",     key="asb_browse", use_container_width=True): go("browse_tasks")
         st.markdown("---")
-        if st.button("🚪 Logout",   key="asb_logout",  use_container_width=True):
+        if st.button("Sign Out",   key="asb_logout", use_container_width=True):
             st.session_state.user = None; go("landing")
 
 
 # ═══════════════════════════════════════════════════════════════
-#  ADMIN DASHBOARD  — extended with knowledge counts
+#  ADMIN DASHBOARD
 # ═══════════════════════════════════════════════════════════════
 def page_admin_dashboard():
     require_admin()
     render_navbar()
     admin_sidebar()
-    breadcrumb("Admin","Dashboard")
-    st.markdown("<div class='admin-only-banner'>🛡️ ADMIN ONLY — This data is NOT visible to regular users.</div>",
+    breadcrumb("Admin", "Dashboard")
+
+    st.markdown("<div class='admin-only-banner'>Admin View — This data is not visible to regular users.</div>",
                 unsafe_allow_html=True)
-    st.markdown("<div class='page-title'>📊 Admin Dashboard</div>", unsafe_allow_html=True)
-    st.markdown("<div class='page-sub'>Full platform analytics</div>", unsafe_allow_html=True)
+    section_header("Admin Dashboard", "Platform-wide analytics and management.")
 
     total_users  = db_fetchone("SELECT COUNT(*) AS c FROM users")["c"]
     total_admins = db_fetchone("SELECT COUNT(*) AS c FROM users WHERE role='admin'")["c"]
@@ -1266,97 +1703,107 @@ def page_admin_dashboard():
     open_know    = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE status='open' AND type='knowledge'")["c"]
     total_apps   = db_fetchone("SELECT COUNT(*) AS c FROM applications")["c"]
 
-    st.markdown("### 👥 Users")
+    st.markdown("#### Users")
     m1, m2, m3, m4 = st.columns(4)
-    m1.metric("Total Users",   total_users)
-    m2.metric("Admins",        total_admins)
-    m3.metric("Active",        active_users)
-    m4.metric("New This Week", new_week)
+    m1.metric("Total Users",    total_users)
+    m2.metric("Admins",         total_admins)
+    m3.metric("Active Users",   active_users)
+    m4.metric("New This Week",  new_week)
 
-    st.markdown("### 📋 Task Collaboration")
+    st.markdown("#### Task Collaboration")
     t1, t2, t3, t4 = st.columns(4)
-    t1.metric("Total Tasks",  total_tasks)
-    t2.metric("Open",         open_tasks)
-    t3.metric("Applications", total_apps)
-    t4.metric("Closed",       total_tasks - open_tasks)
+    t1.metric("Total Tasks",    total_tasks)
+    t2.metric("Open",           open_tasks)
+    t3.metric("Closed",         total_tasks - open_tasks)
+    t4.metric("Applications",   total_apps)
 
-    st.markdown("### 📚 Knowledge Exchange")
+    st.markdown("#### Knowledge Exchange")
     k1, k2, k3, _ = st.columns(4)
-    k1.metric("Total Knowledge Posts", total_know)
-    k2.metric("Active",                open_know)
-    k3.metric("Completed",             total_know - open_know)
+    k1.metric("Total Posts",    total_know)
+    k2.metric("Active",         open_know)
+    k3.metric("Completed",      total_know - open_know)
 
     st.markdown("<br>", unsafe_allow_html=True)
     col1, col2 = st.columns(2)
 
     with col1:
-        st.markdown("#### 📁 Tasks by Category")
+        st.markdown("#### Posts by Category")
         cat_data = db_fetchall(
-            "SELECT category, COUNT(*) AS cnt FROM tasks WHERE type='task' "
+            "SELECT category, COUNT(*) AS cnt FROM tasks "
             "GROUP BY category ORDER BY cnt DESC")
         if cat_data:
-            df = pd.DataFrame(cat_data); df.columns = ["Category","Count"]
+            df = pd.DataFrame(cat_data); df.columns = ["Category", "Count"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
-            empty_state("📁","No tasks yet")
+            st.markdown("<div style='color:#475569;font-size:13px;'>No data yet.</div>",
+                        unsafe_allow_html=True)
 
     with col2:
-        st.markdown("#### ⚡ Recent Activity")
-        rec_u = db_fetchall("SELECT username AS name,'Joined' AS action,created_at FROM users ORDER BY created_at DESC LIMIT 5")
-        rec_t = db_fetchall("SELECT title AS name,'Task posted' AS action,created_at FROM tasks WHERE type='task' ORDER BY created_at DESC LIMIT 3")
-        rec_k = db_fetchall("SELECT title AS name,'Knowledge posted' AS action,created_at FROM tasks WHERE type='knowledge' ORDER BY created_at DESC LIMIT 3")
-        activity = sorted(rec_u + rec_t + rec_k, key=lambda x: x["created_at"], reverse=True)[:10]
+        st.markdown("#### Recent Activity")
+        rec_u = db_fetchall("SELECT username AS name, 'User registered' AS action, created_at FROM users ORDER BY created_at DESC LIMIT 5")
+        rec_t = db_fetchall("SELECT title AS name, 'Task posted' AS action, created_at FROM tasks WHERE type='task' ORDER BY created_at DESC LIMIT 3")
+        rec_k = db_fetchall("SELECT title AS name, 'Knowledge posted' AS action, created_at FROM tasks WHERE type='knowledge' ORDER BY created_at DESC LIMIT 3")
+        activity = sorted(rec_u + rec_t + rec_k,
+                          key=lambda x: x["created_at"], reverse=True)[:10]
         for a in activity:
-            dot_c = ("#22d3ee" if a["action"]=="Joined" else
-                     "#2dd4bf" if a["action"]=="Knowledge posted" else "#a78bfa")
-            st.markdown(f"""<div style='display:flex;align-items:flex-start;gap:10px;
-                padding:7px 0;border-bottom:1px solid #1e293b;'>
-                <div style='width:7px;height:7px;border-radius:50%;background:{dot_c};margin-top:5px;flex-shrink:0;'></div>
+            dot_c = ("#22d3ee" if "registered" in a["action"]
+                     else "#2dd4bf" if "Knowledge" in a["action"]
+                     else "#a78bfa")
+            st.markdown(f"""
+            <div style='display:flex;gap:10px;padding:7px 0;border-bottom:1px solid #1e293b;'>
+                <div style='width:6px;height:6px;border-radius:50%;background:{dot_c};
+                    margin-top:5px;flex-shrink:0;'></div>
                 <div>
-                    <div style='color:#e2e8f0;font-size:13px;'>{a['action']}: <b>{a['name']}</b></div>
-                    <div style='color:#334155;font-size:11px;'>{str(a['created_at'])[:16]}</div>
-                </div></div>""", unsafe_allow_html=True)
+                    <div style='font-size:13px;color:#e2e8f0;'>
+                        {a['action']}: <strong>{a['name']}</strong></div>
+                    <div style='font-size:11px;color:#334155;'>{str(a['created_at'])[:16]}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
 
-    st.markdown("#### 🏆 Top Users by Trust Score")
+    st.markdown("#### Leaderboard — Top Users by Trust Score")
     top    = get_top_users(8)
-    medals = ["🥇","🥈","🥉","4️⃣","5️⃣","6️⃣","7️⃣","8️⃣"]
+    medals = ["1st", "2nd", "3rd", "4th", "5th", "6th", "7th", "8th"]
     lc1, lc2 = st.columns(2)
     for i, u in enumerate(top):
-        col = lc1 if i%2==0 else lc2
-        col.markdown(f"""<div class='cs-card' style='padding:12px;'>
+        col = lc1 if i % 2 == 0 else lc2
+        col.markdown(f"""
+        <div class='cs-card' style='padding:14px;'>
             <div style='display:flex;justify-content:space-between;align-items:center;'>
                 <div>
-                    <div style='color:#f1f5f9;font-weight:600;font-size:13px;'>{medals[i]} {u['username']}</div>
-                    <div style='color:#475569;font-size:11px;'>{u['skills'] or '—'}</div>
+                    <div style='font-size:12px;color:#334155;font-weight:700;
+                        text-transform:uppercase;letter-spacing:.04em;'>{medals[i]}</div>
+                    <div style='font-size:14px;font-weight:700;color:#f1f5f9;'>{u['username']}</div>
+                    <div style='font-size:11px;color:#475569;'>{u['skills'] or '—'}</div>
                 </div>
                 <div style='text-align:right;'>
-                    <div style='color:#22d3ee;font-weight:800;font-size:17px;'>{u['trust_score']}</div>
-                    <div style='color:#334155;font-size:10px;'>{u['total_ratings']} ratings</div>
+                    <div style='font-size:20px;font-weight:900;color:#22d3ee;'>{u['trust_score']}</div>
+                    <div style='font-size:10px;color:#334155;'>{u['total_ratings']} ratings</div>
                 </div>
-            </div></div>""", unsafe_allow_html=True)
+            </div>
+        </div>""", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  ADMIN USERS  — unchanged
+#  ADMIN USERS
 # ═══════════════════════════════════════════════════════════════
 def page_admin_users():
     require_admin()
     render_navbar(); admin_sidebar()
-    breadcrumb("Admin","Manage Users"); back_btn()
-    st.markdown("<div class='page-title'>👥 Manage Users</div>", unsafe_allow_html=True)
+    breadcrumb("Admin", "Manage Users"); back_btn()
+    section_header("Manage Users", "View, search and manage all registered users.")
 
-    sc1, sc2 = st.columns([3,1])
+    sc1, sc2 = st.columns([3, 1])
     with sc1:
-        search = st.text_input("", placeholder="🔍 Search…",
+        search = st.text_input("", placeholder="Search by username or email...",
                                key="au_search", label_visibility="collapsed")
     with sc2:
-        role_f = st.selectbox("", ["All","user","admin"],
+        role_f = st.selectbox("", ["All Roles", "user", "admin"],
                               key="au_role", label_visibility="collapsed")
 
     where, params = ["1=1"], []
     if search:
-        where.append("(username LIKE ? OR email LIKE ?)"); params += [f"%{search}%"]*2
-    if role_f != "All":
+        where.append("(username LIKE ? OR email LIKE ?)"); params += [f"%{search}%"] * 2
+    if role_f != "All Roles":
         where.append("role=?"); params.append(role_f)
 
     users = db_fetchall(
@@ -1367,99 +1814,113 @@ def page_admin_users():
         unsafe_allow_html=True)
 
     for u in users:
-        with st.expander(f"👤 {u['username']}  [{u['role'].upper()}]  —  {u['email']}"):
-            c1, c2, c3 = st.columns([2,2,1])
+        with st.expander(f"{u['username']}   [{u['role'].upper()}]   {u['email']}"):
+            c1, c2, c3 = st.columns([2, 2, 1])
             with c1:
-                st.markdown(f"""<div style='font-size:13px;color:#94a3b8;line-height:2;'>
-                    <b style='color:#f1f5f9;'>Role:</b> {u['role']}<br>
-                    <b style='color:#f1f5f9;'>Skills:</b> {u['skills'] or '—'}<br>
-                    <b style='color:#f1f5f9;'>Level:</b> {u['experience']}<br>
-                    <b style='color:#f1f5f9;'>Trust:</b> {u['trust_score']}/10
+                st.markdown(f"""
+                <div style='font-size:13px;color:#64748b;line-height:2.1;'>
+                    <strong style='color:#94a3b8;'>Role</strong><br>{u['role']}<br>
+                    <strong style='color:#94a3b8;'>Skills</strong><br>{u['skills'] or '—'}<br>
+                    <strong style='color:#94a3b8;'>Level</strong><br>{u['experience']}
                 </div>""", unsafe_allow_html=True)
             with c2:
-                tc = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE created_by=? AND type='task'", (u["id"],))["c"]
+                tc = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE created_by=? AND type='task'",      (u["id"],))["c"]
                 kc = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE created_by=? AND type='knowledge'", (u["id"],))["c"]
-                rc = db_fetchone("SELECT COUNT(*) AS c FROM feedback WHERE to_user_id=?", (u["id"],))["c"]
-                st.markdown(f"""<div style='font-size:13px;color:#94a3b8;line-height:2;'>
-                    <b style='color:#f1f5f9;'>Tasks:</b> {tc} &nbsp; <b style='color:#f1f5f9;'>Knowledge:</b> {kc}<br>
-                    <b style='color:#f1f5f9;'>Ratings received:</b> {rc}<br>
-                    <b style='color:#f1f5f9;'>Status:</b> {'🟢 Active' if u['is_active'] else '🔴 Inactive'}<br>
-                    <b style='color:#f1f5f9;'>Joined:</b> {str(u['created_at'])[:10]}
+                rc = db_fetchone("SELECT COUNT(*) AS c FROM feedback WHERE to_user_id=?",                   (u["id"],))["c"]
+                st.markdown(f"""
+                <div style='font-size:13px;color:#64748b;line-height:2.1;'>
+                    <strong style='color:#94a3b8;'>Tasks / Knowledge</strong><br>{tc} / {kc}<br>
+                    <strong style='color:#94a3b8;'>Ratings Received</strong><br>{rc}<br>
+                    <strong style='color:#94a3b8;'>Status</strong><br>
+                    {'Active' if u['is_active'] else 'Inactive'}<br>
+                    <strong style='color:#94a3b8;'>Joined</strong><br>{str(u['created_at'])[:10]}
                 </div>""", unsafe_allow_html=True)
             with c3:
                 if u["role"] != "admin":
                     if u["is_active"]:
-                        if st.button("🔴 Deactivate", key=f"deact_{u['id']}"):
-                            db_execute("UPDATE users SET is_active=0 WHERE id=?", (u["id"],)); st.success("Deactivated."); st.rerun()
+                        if st.button("Deactivate", key=f"deact_{u['id']}"):
+                            db_execute("UPDATE users SET is_active=0 WHERE id=?", (u["id"],))
+                            st.success("User deactivated."); st.rerun()
                     else:
-                        if st.button("🟢 Activate", key=f"act_{u['id']}"):
-                            db_execute("UPDATE users SET is_active=1 WHERE id=?", (u["id"],)); st.success("Activated."); st.rerun()
+                        if st.button("Activate", key=f"act_{u['id']}"):
+                            db_execute("UPDATE users SET is_active=1 WHERE id=?", (u["id"],))
+                            st.success("User activated."); st.rerun()
 
 
 # ═══════════════════════════════════════════════════════════════
-#  ADMIN TASKS  — extended with type filter
+#  ADMIN TASKS
 # ═══════════════════════════════════════════════════════════════
 def page_admin_tasks():
     require_admin()
     render_navbar(); admin_sidebar()
-    breadcrumb("Admin","Manage Tasks"); back_btn()
-    st.markdown("<div class='page-title'>📋 All Tasks & Knowledge Posts</div>",
-                unsafe_allow_html=True)
+    breadcrumb("Admin", "All Posts"); back_btn()
+    section_header("All Tasks and Knowledge Posts",
+                   "Monitor and moderate all platform content.")
 
     sc1, sc2, sc3, sc4 = st.columns([2.5, 1.2, 1.2, 1.2])
     with sc1:
-        search   = st.text_input("", placeholder="🔍 Search…",
+        search   = st.text_input("", placeholder="Search...",
                                  key="at_search", label_visibility="collapsed")
     with sc2:
-        type_f   = st.selectbox("", ["All Types","task","knowledge"],
-                                key="at_type", label_visibility="collapsed")
+        type_f   = st.selectbox("", ["All Types", "Tasks Only", "Knowledge Only"],
+                                key="at_type",   label_visibility="collapsed")
     with sc3:
-        status_f = st.selectbox("", ["All Status","open","closed","in_progress"],
+        status_f = st.selectbox("", ["All Status", "open", "closed"],
                                 key="at_status", label_visibility="collapsed")
     with sc4:
-        cat_f    = st.selectbox("", ["All"] + CATEGORIES,
-                                key="at_cat", label_visibility="collapsed")
+        cat_f    = st.selectbox("", ["All Categories"] + CATEGORIES,
+                                key="at_cat",    label_visibility="collapsed")
 
-    entry_type = None if type_f == "All Types" else type_f
+    type_map = {"Tasks Only": TYPE_TASK, "Knowledge Only": TYPE_KNOWLEDGE}
+    entry_type = type_map.get(type_f, None)
     tasks = get_all_tasks_admin(entry_type=entry_type)
 
     if search:
         s = search.lower()
-        tasks = [t for t in tasks if s in t["title"].lower() or s in (t["skills"] or "").lower()]
+        tasks = [t for t in tasks
+                 if s in t["title"].lower() or s in (t["skills"] or "").lower()]
     if status_f != "All Status":
         tasks = [t for t in tasks if t["status"] == status_f]
-    if cat_f != "All":
+    if cat_f != "All Categories":
         tasks = [t for t in tasks if t["category"] == cat_f]
 
     st.markdown(
-        f"<div style='color:#475569;font-size:13px;margin-bottom:14px;'>{len(tasks)} entry(ies)</div>",
+        f"<div style='color:#475569;font-size:13px;margin-bottom:14px;'>"
+        f"{len(tasks)} record(s)</div>",
         unsafe_allow_html=True)
 
-    if not tasks: empty_state("📋","No entries found"); return
+    if not tasks:
+        empty_state("No records found", "Try adjusting the filters.")
+        return
 
     for t in tasks:
-        is_know  = t.get("type") == TYPE_KNOWLEDGE
-        type_pill= ("<span class='cs-badge badge-teal'>📚 Knowledge</span>"
-                    if is_know else
-                    "<span class='cs-badge badge-cyan'>📋 Task</span>")
-        icon     = "📚" if is_know else "📌"
+        is_know = t.get("type") == TYPE_KNOWLEDGE
+        header  = f"{'[K] ' if is_know else '[T] '}{t['title']}  —  {t['creator_name']}  —  {t['status'].upper()}"
 
-        with st.expander(f"{icon} {t['title']}  [{t['status'].upper()}]  —  {t['creator_name']}"):
-            tc1, tc2 = st.columns([3,1])
+        with st.expander(header):
+            tc1, tc2 = st.columns([3, 1])
             with tc1:
-                st.markdown(f"""<div style='color:#94a3b8;font-size:13px;line-height:1.7;margin-bottom:8px;'>{t['description']}</div>
-                    {type_pill} {status_badge(t['status'])} {priority_badge(t.get('priority','Normal'))}
-                    <span class='cs-badge badge-violet'>{t['category']}</span>
-                    <span class='cs-badge badge-cyan'>🛠 {t['skills']}</span>
-                    <span class='cs-badge badge-slate'>👥 {t.get('applicant_count',0)} {'interested' if is_know else 'applied'}</span>
-                    <div style='color:#334155;font-size:11px;margin-top:6px;'>Posted: {str(t['created_at'])[:10]}</div>
+                st.markdown(f"""
+                <div style='color:#64748b;font-size:13px;line-height:1.7;margin-bottom:8px;'>
+                    {t['description']}</div>
+                {type_badge(t.get('type', TYPE_TASK))}
+                {status_badge(t['status'])}
+                {priority_badge(t.get('priority', 'Normal'))}
+                <span class='cs-badge badge-violet'>{t['category']}</span>
+                <span class='cs-badge badge-slate'>{t['skills']}</span>
+                <span class='cs-badge badge-slate'>{t.get('applicant_count', 0)} interested</span>
+                <div style='font-size:11px;color:#334155;margin-top:6px;'>
+                    Posted {str(t['created_at'])[:10]}</div>
                 """, unsafe_allow_html=True)
             with tc2:
-                new_s = st.selectbox("Status", ["open","in_progress","closed"],
-                    index=["open","in_progress","closed"].index(t["status"]),
+                new_s = st.selectbox(
+                    "Status", ["open", "in_progress", "closed"],
+                    index=["open", "in_progress", "closed"].index(t["status"]),
                     key=f"at_stat_{t['id']}")
-                if st.button("Update", key=f"at_upd_{t['id']}"): update_task_status(t["id"], new_s); st.success("Updated."); st.rerun()
-                if st.button("🗑 Delete", key=f"at_del_{t['id']}"): delete_task(t["id"]); st.success("Deleted."); st.rerun()
+                if st.button("Update", key=f"at_upd_{t['id']}"):
+                    update_task_status(t["id"], new_s); st.success("Updated."); st.rerun()
+                if st.button("Delete", key=f"at_del_{t['id']}"):
+                    delete_task(t["id"]); st.success("Deleted."); st.rerun()
 
 
 # ═══════════════════════════════════════════════════════════════
