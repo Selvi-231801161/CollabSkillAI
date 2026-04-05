@@ -2,7 +2,6 @@
 import uuid
 from database import db_fetchone, db_fetchall, db_execute
 
-
 # ═══════════════════════════════════════════════════════════════
 #  SKILL CLASSIFICATION
 # ═══════════════════════════════════════════════════════════════
@@ -21,102 +20,61 @@ SKILL_CATEGORIES = [
 
 SKILLS_BY_CATEGORY = {
     "Programming and Development": [
-        "Python Programming",
-        "Java Programming",
-        "C++ Programming",
-        "JavaScript",
-        "Web Development (HTML, CSS)",
-        "Frontend Development (React)",
-        "Backend Development (Node.js)",
-        "API Development",
-        "App Development",
-        "Git and GitHub",
+        "Python Programming", "Java Programming", "C++ Programming",
+        "JavaScript", "Web Development (HTML, CSS)", "Frontend Development (React)",
+        "Backend Development (Node.js)", "API Development", "App Development", "Git and GitHub",
     ],
     "Design and Creative": [
-        "UI/UX Design (Figma)",
-        "Wireframing and Prototyping",
-        "Graphic Design (Photoshop)",
-        "Graphic Design (Canva)",
-        "Logo Design",
-        "Branding Design",
-        "Presentation Design",
-        "Social Media Post Design",
+        "UI/UX Design (Figma)", "Wireframing and Prototyping",
+        "Graphic Design (Photoshop)", "Graphic Design (Canva)",
+        "Logo Design", "Branding Design", "Presentation Design", "Social Media Post Design",
     ],
     "Data and Analytics": [
-        "Data Analysis (Excel)",
-        "Data Analysis (Python)",
-        "SQL",
-        "Power BI",
-        "Data Visualization",
-        "Statistics Basics",
-        "Machine Learning Basics",
+        "Data Analysis (Excel)", "Data Analysis (Python)", "SQL",
+        "Power BI", "Data Visualization", "Statistics Basics", "Machine Learning Basics",
     ],
     "Digital Marketing": [
-        "SEO (Search Engine Optimization)",
-        "Social Media Marketing",
-        "Content Marketing",
-        "Email Marketing",
-        "Google Ads Basics",
-        "Instagram Growth Strategies",
+        "SEO (Search Engine Optimization)", "Social Media Marketing",
+        "Content Marketing", "Email Marketing", "Google Ads Basics", "Instagram Growth Strategies",
     ],
     "Content and Writing": [
-        "Content Writing",
-        "Copywriting",
-        "Blog Writing",
-        "Technical Writing",
-        "Script Writing (YouTube/Reels)",
-        "Resume Writing",
-        "LinkedIn Content Writing",
+        "Content Writing", "Copywriting", "Blog Writing", "Technical Writing",
+        "Script Writing (YouTube/Reels)", "Resume Writing", "LinkedIn Content Writing",
     ],
     "Media and Content Creation": [
-        "Video Editing (Premiere Pro)",
-        "Video Editing (CapCut)",
-        "Animation Basics (After Effects)",
-        "YouTube Content Creation",
-        "Reels and Shorts Editing",
-        "Podcast Editing",
+        "Video Editing (Premiere Pro)", "Video Editing (CapCut)",
+        "Animation Basics (After Effects)", "YouTube Content Creation",
+        "Reels and Shorts Editing", "Podcast Editing",
     ],
     "Tutoring and Education": [
-        "Programming Tutoring",
-        "Math Tutoring",
-        "Science Tutoring",
-        "Assignment Help",
-        "Exam Preparation Strategies",
-        "Concept Explanation Sessions",
+        "Programming Tutoring", "Math Tutoring", "Science Tutoring",
+        "Assignment Help", "Exam Preparation Strategies", "Concept Explanation Sessions",
     ],
     "Career and Professional Skills": [
-        "Resume Building",
-        "LinkedIn Profile Optimization",
-        "Interview Preparation",
-        "Portfolio Building",
-        "Freelancing Guidance",
-        "Personal Branding",
+        "Resume Building", "LinkedIn Profile Optimization", "Interview Preparation",
+        "Portfolio Building", "Freelancing Guidance", "Personal Branding",
     ],
     "Productivity and Personal Development": [
-        "Time Management",
-        "Productivity Systems",
-        "Study Techniques",
-        "Goal Setting",
-        "Habit Building",
-        "Focus Improvement Techniques",
+        "Time Management", "Productivity Systems", "Study Techniques",
+        "Goal Setting", "Habit Building", "Focus Improvement Techniques",
     ],
 }
 
-# ── Legacy / browse categories ────────────────────────────────
 CATEGORIES = [
     "Development", "Design", "Marketing", "Content Writing",
-    "Data Science", "Video Editing", "SEO", "DevOps",
-    "Machine Learning", "Other",
+    "Data Science", "Video Editing", "SEO", "DevOps", "Machine Learning", "Other",
 ]
 
 KNOWLEDGE_TOPICS = [
-    "Programming", "Web Development", "Data Science",
-    "Design", "Digital Marketing", "Video and Media",
-    "Business and Finance", "Language Learning",
-    "Mathematics", "Science", "Music", "Other",
+    "Programming", "Web Development", "Data Science", "Design",
+    "Digital Marketing", "Video and Media", "Business and Finance",
+    "Language Learning", "Mathematics", "Science", "Music", "Other",
 ]
 
-# ── Entry type constants ──────────────────────────────────────
+# knowledge_intent values
+INTENT_LEARN  = "learn"   # user wants to learn / needs help
+INTENT_TEACH  = "teach"   # user wants to teach / can help others
+
 TYPE_TASK      = "task"
 TYPE_KNOWLEDGE = "knowledge"
 
@@ -126,22 +84,27 @@ TYPE_KNOWLEDGE = "knowledge"
 # ═══════════════════════════════════════════════════════════════
 
 def create_task(title, description, skills, category, deadline,
-                priority, created_by, entry_type=TYPE_TASK):
+                priority, created_by, entry_type=TYPE_TASK,
+                knowledge_intent=""):
     tid = str(uuid.uuid4())
     db_execute("""
         INSERT INTO tasks
-            (id, title, description, skills, category, deadline, priority, created_by, type)
-        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)
+            (id, title, description, skills, category, deadline, priority,
+             created_by, type, knowledge_intent)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
     """, (tid, title.strip(), description.strip(), skills.strip(),
-          category, deadline, priority, created_by, entry_type))
+          category, deadline, priority, created_by, entry_type, knowledge_intent))
     return db_fetchone("SELECT * FROM tasks WHERE id=?", (tid,))
 
 
 def get_all_open_tasks(search="", category="", sort="newest",
-                       entry_type=TYPE_TASK):
+                       entry_type=TYPE_TASK, knowledge_intent=""):
     where  = ["t.status='open'", "t.type=?"]
     params = [entry_type]
 
+    if knowledge_intent:
+        where.append("t.knowledge_intent=?")
+        params.append(knowledge_intent)
     if search:
         where.append("(t.title LIKE ? OR t.description LIKE ? OR t.skills LIKE ?)")
         params += [f"%{search}%"] * 3
@@ -159,6 +122,7 @@ def get_all_open_tasks(search="", category="", sort="newest",
                u.username AS creator_name,
                u.trust_score AS creator_trust,
                u.experience AS creator_experience,
+               u.avatar_color AS creator_avatar_color,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
         FROM tasks t JOIN users u ON t.created_by=u.id
         WHERE {" AND ".join(where)} ORDER BY {order}
@@ -170,15 +134,13 @@ def get_my_tasks(user_id, entry_type=None):
         return db_fetchall("""
             SELECT t.*,
                    (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
-            FROM tasks t
-            WHERE t.created_by=? AND t.type=?
+            FROM tasks t WHERE t.created_by=? AND t.type=?
             ORDER BY t.created_at DESC
         """, (user_id, entry_type))
     return db_fetchall("""
         SELECT t.*,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
-        FROM tasks t
-        WHERE t.created_by=?
+        FROM tasks t WHERE t.created_by=?
         ORDER BY t.created_at DESC
     """, (user_id,))
 
@@ -193,8 +155,7 @@ def get_all_tasks_admin(entry_type=None):
         SELECT t.*, u.username AS creator_name,
                (SELECT COUNT(*) FROM applications a WHERE a.task_id=t.id) AS applicant_count
         FROM tasks t JOIN users u ON t.created_by=u.id
-        WHERE {where}
-        ORDER BY t.created_at DESC
+        WHERE {where} ORDER BY t.created_at DESC
     """, tuple(params))
 
 
@@ -223,8 +184,7 @@ def apply_to_task(task_id, user_id, message=""):
 def get_my_applications(user_id):
     return db_fetchall("""
         SELECT a.*, t.title AS task_title, t.skills AS task_skills,
-               t.category, t.status AS task_status,
-               t.type AS task_type,
+               t.category, t.status AS task_status, t.type AS task_type,
                u.username AS owner_name
         FROM applications a
         JOIN tasks t ON a.task_id=t.id
