@@ -83,6 +83,11 @@ def update_avatar_color(user_id, color):
     db_execute("UPDATE users SET avatar_color=? WHERE id=?", (color, user_id))
 
 
+def update_avatar_photo(user_id, photo_bytes):
+    """Store raw image bytes (JPEG/PNG) in the DB. Pass None to remove."""
+    db_execute("UPDATE users SET avatar_photo=? WHERE id=?", (photo_bytes, user_id))
+
+
 def update_trust_score(user_id, new_rating):
     user = db_fetchone("SELECT trust_score, total_ratings FROM users WHERE id=?", (user_id,))
     if not user:
