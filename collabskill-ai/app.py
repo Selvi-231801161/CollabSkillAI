@@ -77,351 +77,476 @@ def is_learn_mode():
 
 
 # ═══════════════════════════════════════════════════════════════
-#  CSS  —  Professional dark theme, NO gradient on every button
+#  CSS  —  Professional White SaaS Light Theme
 # ═══════════════════════════════════════════════════════════════
 st.markdown("""
 <style>
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&display=swap');
 
-/* ── Reset ── */
+/* ══════════════════════════════════════
+   PAGE LOAD FADE-IN
+   ══════════════════════════════════════ */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(6px); }
+    to   { opacity: 1; transform: translateY(0); }
+}
+.main .block-container { animation: fadeIn 0.3s ease-in-out; }
+
+/* ══════════════════════════════════════
+   BASE & RESET
+   ══════════════════════════════════════ */
 header, #MainMenu, footer { visibility: hidden; }
-.block-container { padding-top: 0 !important; max-width: 1280px; }
+.block-container {
+    padding-top: 0 !important;
+    max-width: 1280px;
+    padding-bottom: 40px !important;
+}
 html, body, [class*="css"] {
     font-family: 'Inter', sans-serif !important;
-    background-color: #080e1e !important;
-    color: #cbd5e1;
+    background-color: #F8FAFC !important;
+    color: #0F172A !important;
 }
-.stApp { background-color: #080e1e; }
+.stApp { background-color: #F8FAFC !important; }
 
-/* ── Inputs ── */
+/* ══════════════════════════════════════
+   INPUTS
+   ══════════════════════════════════════ */
 .stTextInput input, .stTextArea textarea {
-    background: #0d1526 !important;
-    color: #e2e8f0 !important;
-    border: 1px solid #1e2d45 !important;
-    border-radius: 8px !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
     font-size: 14px !important;
+    font-weight: 400 !important;
     padding: 10px 14px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04) !important;
+    transition: all 0.2s ease-in-out !important;
 }
 .stTextInput input:focus, .stTextArea textarea:focus {
-    border-color: #38bdf8 !important;
-    box-shadow: 0 0 0 3px rgba(56,189,248,.08) !important;
+    border-color: #2563EB !important;
+    box-shadow: 0 0 0 3px rgba(37,99,235,.10) !important;
+    outline: none !important;
 }
-input::placeholder, textarea::placeholder { color: #2d3f57 !important; }
+input::placeholder, textarea::placeholder { color: #94A3B8 !important; }
 
-/* ── Select ── */
+/* ══════════════════════════════════════
+   SELECTBOX
+   ══════════════════════════════════════ */
 .stSelectbox > div > div {
-    background: #0d1526 !important;
-    color: #e2e8f0 !important;
-    border: 1px solid #1e2d45 !important;
-    border-radius: 8px !important;
+    background: #FFFFFF !important;
+    color: #0F172A !important;
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.04) !important;
 }
-/* FIX: Remove disabled cursor on selectbox — was causing "not allowed" cursor */
-.stSelectbox [data-baseweb="select"] { cursor: pointer !important; }
+.stSelectbox [data-baseweb="select"]   { cursor: pointer !important; }
 .stSelectbox [data-baseweb="select"] * { cursor: pointer !important; }
 
-/* ── Labels ── */
+/* Dropdown menu */
+[data-baseweb="popover"] { background: #FFFFFF !important; border: 1px solid #E2E8F0 !important; border-radius: 10px !important; box-shadow: 0 8px 24px rgba(0,0,0,.08) !important; }
+[data-baseweb="option"]  { color: #0F172A !important; background: #FFFFFF !important; }
+[data-baseweb="option"]:hover { background: #EFF6FF !important; color: #2563EB !important; }
+
+/* ══════════════════════════════════════
+   LABELS
+   ══════════════════════════════════════ */
 label, .stTextInput label, .stTextArea label,
 .stSelectbox label, .stSlider label, .stCheckbox label {
-    color: #475569 !important;
+    color: #64748B !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     letter-spacing: .08em !important;
     text-transform: uppercase !important;
 }
 
-/* ── PRIMARY button (form submits, CTAs only) ── */
-.stButton > button[kind="primary"],
+/* ══════════════════════════════════════
+   BUTTONS
+   ══════════════════════════════════════ */
+
+/* Form submit (primary) */
 .stFormSubmitButton > button {
-    background: #1d4ed8 !important;
-    color: #fff !important;
+    background: #2563EB !important;
+    color: #FFFFFF !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 10px !important;
     font-weight: 600 !important;
     font-size: 14px !important;
-    padding: 10px 20px !important;
-    transition: background .2s, transform .1s !important;
+    padding: 10px 22px !important;
+    height: 42px !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 2px 8px rgba(37,99,235,.25) !important;
 }
-.stFormSubmitButton > button:hover { background: #1e40af !important; }
+.stFormSubmitButton > button:hover {
+    background: #1D4ED8 !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 14px rgba(37,99,235,.35) !important;
+}
 
-/* ── ALL other buttons — ghost / neutral style ── */
+/* All regular buttons — clean white ghost */
 .stButton > button {
-    background: #0d1526 !important;
-    color: #94a3b8 !important;
-    border: 1px solid #1e2d45 !important;
-    border-radius: 8px !important;
+    background: #FFFFFF !important;
+    color: #334155 !important;
+    border: 1.5px solid #E2E8F0 !important;
+    border-radius: 10px !important;
     font-weight: 500 !important;
     font-size: 13px !important;
     padding: 8px 16px !important;
-    transition: background .15s, color .15s, border-color .15s !important;
-    letter-spacing: .01em !important;
+    height: 38px !important;
+    line-height: 1.2 !important;
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    height: 38px !important;
-    line-height: 1.2 !important;
+    transition: all 0.2s ease-in-out !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
 .stButton > button:hover {
-    background: #131f35 !important;
-    color: #e2e8f0 !important;
-    border-color: #334155 !important;
+    background: #F1F5F9 !important;
+    color: #0F172A !important;
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
 }
 
-/* ── Accent button helper — wrap in div.btn-accent ── */
+/* Accent — blue primary action */
 .btn-accent .stButton > button {
-    background: #1d4ed8 !important;
-    color: #fff !important;
+    background: #2563EB !important;
+    color: #FFFFFF !important;
     border: none !important;
     font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(37,99,235,.25) !important;
 }
-.btn-accent .stButton > button:hover { background: #1e40af !important; }
+.btn-accent .stButton > button:hover {
+    background: #1D4ED8 !important;
+    transform: scale(1.02) !important;
+    box-shadow: 0 4px 14px rgba(37,99,235,.35) !important;
+}
 
-/* ── Danger button ── */
+/* Danger — soft red */
 .btn-danger .stButton > button {
-    background: rgba(239,68,68,.08) !important;
-    color: #f87171 !important;
-    border: 1px solid rgba(239,68,68,.2) !important;
+    background: #FFF5F5 !important;
+    color: #DC2626 !important;
+    border: 1.5px solid #FECACA !important;
+    box-shadow: none !important;
 }
 .btn-danger .stButton > button:hover {
-    background: rgba(239,68,68,.15) !important;
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
 }
 
-/* ── Metrics ── */
+/* ══════════════════════════════════════
+   METRICS
+   ══════════════════════════════════════ */
 [data-testid="metric-container"] {
-    background: #0d1526 !important;
-    border: 1px solid #1e2d45 !important;
-    border-radius: 10px !important;
-    padding: 16px 20px !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 14px !important;
+    padding: 18px 20px !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+[data-testid="metric-container"]:hover {
+    box-shadow: 0 6px 20px rgba(0,0,0,.09) !important;
+    transform: translateY(-2px) !important;
 }
 [data-testid="metric-container"] label {
-    color: #334155 !important;
+    color: #64748B !important;
     font-size: 11px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
     letter-spacing: .08em !important;
 }
 [data-testid="stMetricValue"] {
-    color: #38bdf8 !important;
-    font-size: 24px !important;
+    color: #2563EB !important;
+    font-size: 26px !important;
     font-weight: 800 !important;
 }
 
-/* ── Expander ── */
+/* ══════════════════════════════════════
+   EXPANDER
+   ══════════════════════════════════════ */
 .streamlit-expanderHeader {
-    background: #0d1526 !important;
-    border: 1px solid #1e2d45 !important;
-    border-radius: 10px !important;
-    color: #cbd5e1 !important;
+    background: #FFFFFF !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 12px !important;
+    color: #0F172A !important;
     font-weight: 600 !important;
     font-size: 13px !important;
-    padding: 12px 16px !important;
+    padding: 12px 18px !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.05) !important;
+    transition: all 0.2s ease-in-out !important;
+}
+.streamlit-expanderHeader:hover {
+    border-color: #CBD5E1 !important;
+    box-shadow: 0 3px 10px rgba(0,0,0,.08) !important;
 }
 .streamlit-expanderContent {
-    background: #080e1e !important;
-    border: 1px solid #1e2d45 !important;
+    background: #F8FAFC !important;
+    border: 1px solid #E2E8F0 !important;
     border-top: none !important;
-    border-radius: 0 0 10px 10px !important;
+    border-radius: 0 0 12px 12px !important;
 }
 
-/* ── Sidebar ── */
+/* ══════════════════════════════════════
+   SIDEBAR
+   ══════════════════════════════════════ */
 [data-testid="stSidebar"] {
-    background: #060c18 !important;
-    border-right: 1px solid #1e2d45 !important;
+    background: #FFFFFF !important;
+    border-right: 1px solid #E2E8F0 !important;
+    box-shadow: 2px 0 12px rgba(0,0,0,.05) !important;
 }
-[data-testid="stSidebar"] * { color: #94a3b8 !important; }
+[data-testid="stSidebar"] * { color: #334155 !important; }
 
-/* ── Tabs ── */
+/* ══════════════════════════════════════
+   TABS
+   ══════════════════════════════════════ */
 .stTabs [data-baseweb="tab-list"] {
     background: transparent !important;
-    border-bottom: 1px solid #1e2d45 !important;
+    border-bottom: 2px solid #E2E8F0 !important;
     gap: 0 !important;
 }
 .stTabs [data-baseweb="tab"] {
     background: transparent !important;
-    color: #334155 !important;
+    color: #64748B !important;
     font-weight: 600 !important;
     font-size: 13px !important;
     border-bottom: 2px solid transparent !important;
-    padding: 10px 18px !important;
+    padding: 10px 20px !important;
+    transition: all 0.2s ease-in-out !important;
 }
+.stTabs [data-baseweb="tab"]:hover { color: #2563EB !important; }
 .stTabs [aria-selected="true"] {
-    color: #38bdf8 !important;
-    border-bottom-color: #38bdf8 !important;
+    color: #2563EB !important;
+    border-bottom-color: #2563EB !important;
 }
 
-/* ── Checkbox ── */
-.stCheckbox > label > div { border-color: #1e2d45 !important; }
+/* ══════════════════════════════════════
+   CHECKBOX / SLIDER / DIVIDER
+   ══════════════════════════════════════ */
+.stCheckbox > label > div { border-color: #CBD5E1 !important; }
+hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
+.stSlider [data-baseweb="slider"] { background: #E2E8F0 !important; }
 
-/* ── Divider ── */
-hr { border-color: #1a2740 !important; margin: 20px 0 !important; }
+/* ══════════════════════════════════════
+   DATAFRAME
+   ══════════════════════════════════════ */
+.stDataFrame { border-radius: 10px !important; overflow: hidden !important; border: 1px solid #E2E8F0 !important; }
 
-/* ── Slider ── */
-.stSlider [data-baseweb="slider"] { background: #1e2d45 !important; }
-
-/* ══════════════════════════════
-   COMPONENT CLASSES
-   ══════════════════════════════ */
-
+/* ══════════════════════════════════════
+   CARDS
+   ══════════════════════════════════════ */
 .cs-card {
-    background: #0d1526;
-    border: 1px solid #1e2d45;
-    border-radius: 12px;
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
     padding: 20px 22px;
     margin-bottom: 12px;
-    transition: border-color .2s;
+    box-shadow: 0 2px 10px rgba(0,0,0,.05);
+    transition: all 0.2s ease-in-out;
 }
-.cs-card:hover { border-color: #2d4060; }
+.cs-card:hover {
+    border-color: #CBD5E1;
+    box-shadow: 0 6px 24px rgba(0,0,0,.09);
+    transform: translateY(-2px);
+}
 
+/* ══════════════════════════════════════
+   BADGES — pill style
+   ══════════════════════════════════════ */
 .cs-badge {
     display: inline-block;
-    padding: 2px 9px;
-    border-radius: 4px;
+    padding: 3px 11px;
+    border-radius: 999px;
     font-size: 11px;
     font-weight: 600;
     letter-spacing: .02em;
     margin: 2px 3px 2px 0;
 }
-.badge-green  { background: rgba(34,197,94,.1);  color: #4ade80; border: 1px solid rgba(34,197,94,.15); }
-.badge-amber  { background: rgba(245,158,11,.1); color: #fbbf24; border: 1px solid rgba(245,158,11,.15); }
-.badge-red    { background: rgba(239,68,68,.1);  color: #f87171; border: 1px solid rgba(239,68,68,.15); }
-.badge-cyan   { background: rgba(56,189,248,.1); color: #38bdf8; border: 1px solid rgba(56,189,248,.15); }
-.badge-violet { background: rgba(124,58,237,.1); color: #a78bfa; border: 1px solid rgba(124,58,237,.15); }
-.badge-slate  { background: #0d1f35; color: #475569; border: 1px solid #1e2d45; }
-.badge-teal   { background: rgba(20,184,166,.1); color: #2dd4bf; border: 1px solid rgba(20,184,166,.15); }
-.badge-blue   { background: rgba(29,78,216,.15); color: #60a5fa; border: 1px solid rgba(29,78,216,.25); }
-.badge-learn  { background: rgba(20,184,166,.12); color: #2dd4bf; border: 1px solid rgba(20,184,166,.2); }
-.badge-teach  { background: rgba(168,85,247,.12); color: #c084fc; border: 1px solid rgba(168,85,247,.2); }
+.badge-green  { background: #DCFCE7; color: #16A34A; border: 1px solid #BBF7D0; }
+.badge-amber  { background: #FEF9C3; color: #CA8A04; border: 1px solid #FEF08A; }
+.badge-red    { background: #FEE2E2; color: #DC2626; border: 1px solid #FECACA; }
+.badge-cyan   { background: #E0F2FE; color: #0284C7; border: 1px solid #BAE6FD; }
+.badge-violet { background: #EDE9FE; color: #7C3AED; border: 1px solid #DDD6FE; }
+.badge-slate  { background: #F1F5F9; color: #64748B; border: 1px solid #E2E8F0; }
+.badge-teal   { background: #CCFBF1; color: #0D9488; border: 1px solid #99F6E4; }
+.badge-blue   { background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE; }
+.badge-learn  { background: #CCFBF1; color: #0D9488; border: 1px solid #99F6E4; }
+.badge-teach  { background: #F3E8FF; color: #9333EA; border: 1px solid #E9D5FF; }
 
+/* ══════════════════════════════════════
+   TYPOGRAPHY
+   ══════════════════════════════════════ */
 .page-title {
     font-size: 22px;
     font-weight: 800;
-    color: #f1f5f9;
+    color: #0F172A;
     letter-spacing: -.02em;
     margin-bottom: 4px;
 }
-.page-sub { color: #334155; font-size: 13px; margin-bottom: 20px; }
+.page-sub { color: #64748B; font-size: 13px; margin-bottom: 20px; }
 
-.trust-bar-bg   { background: #1e2d45; border-radius: 3px; height: 3px; margin-top: 6px; }
-.trust-bar-fill { height: 3px; border-radius: 3px; background: linear-gradient(90deg,#38bdf8,#6366f1); }
+/* ══════════════════════════════════════
+   TRUST BAR
+   ══════════════════════════════════════ */
+.trust-bar-bg   { background: #E2E8F0; border-radius: 999px; height: 6px; margin-top: 6px; }
+.trust-bar-fill { height: 6px; border-radius: 999px; background: linear-gradient(90deg, #2563EB, #4F46E5); }
 
+/* ══════════════════════════════════════
+   ADMIN BANNER
+   ══════════════════════════════════════ */
 .admin-banner {
-    background: rgba(239,68,68,.06);
-    border: 1px solid rgba(239,68,68,.18);
-    border-radius: 8px;
+    background: #FFF1F2;
+    border: 1px solid #FECDD3;
+    border-radius: 10px;
     padding: 10px 16px;
-    color: #f87171;
+    color: #BE123C;
     font-size: 12px;
+    font-weight: 500;
     margin-bottom: 16px;
 }
 
+/* ══════════════════════════════════════
+   MODE PILLS
+   ══════════════════════════════════════ */
 .mode-pill-work {
     display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(56,189,248,.07);
-    border: 1px solid rgba(56,189,248,.15);
-    border-radius: 5px; padding: 4px 12px;
-    color: #38bdf8; font-size: 11px; font-weight: 700;
+    background: #EFF6FF; border: 1px solid #BFDBFE;
+    border-radius: 999px; padding: 5px 14px;
+    color: #2563EB; font-size: 11px; font-weight: 700;
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 .mode-pill-learn {
     display: inline-flex; align-items: center; gap: 6px;
-    background: rgba(20,184,166,.07);
-    border: 1px solid rgba(20,184,166,.15);
-    border-radius: 5px; padding: 4px 12px;
-    color: #2dd4bf; font-size: 11px; font-weight: 700;
+    background: #CCFBF1; border: 1px solid #99F6E4;
+    border-radius: 999px; padding: 5px 14px;
+    color: #0D9488; font-size: 11px; font-weight: 700;
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 
-/* ── Navbar ── */
-.navbar-wrap {
-    display: flex; align-items: center; justify-content: space-between;
-    padding: 14px 0 10px; border-bottom: 1px solid #1a2740; margin-bottom: 20px;
-}
-.navbar-logo {
-    font-size: 16px; font-weight: 800; color: #f1f5f9; letter-spacing: -.01em;
-}
-.navbar-logo span { color: #38bdf8; }
+/* ══════════════════════════════════════
+   NAVBAR
+   ══════════════════════════════════════ */
+.navbar-logo { font-size: 16px; font-weight: 800; color: #0F172A; letter-spacing: -.01em; }
+.navbar-logo span { color: #2563EB; }
 
-/* ── Hero ── */
-.hero-wrap { text-align: center; padding: 64px 0 36px; }
+/* ══════════════════════════════════════
+   HERO SECTION
+   ══════════════════════════════════════ */
+.hero-wrap { text-align: center; padding: 60px 0 32px; }
 .hero-eyebrow {
     display: inline-block;
     font-size: 10px; font-weight: 700; letter-spacing: .16em;
-    text-transform: uppercase; color: #38bdf8;
-    background: rgba(56,189,248,.07);
-    border: 1px solid rgba(56,189,248,.15);
-    border-radius: 4px; padding: 5px 14px; margin-bottom: 24px;
+    text-transform: uppercase; color: #2563EB;
+    background: #EFF6FF; border: 1px solid #BFDBFE;
+    border-radius: 999px; padding: 5px 16px; margin-bottom: 24px;
 }
 .hero-h1 {
-    font-size: clamp(36px,5.5vw,62px);
+    font-size: clamp(34px, 5.5vw, 60px);
     font-weight: 900; line-height: 1.07;
-    letter-spacing: -.04em; color: #f1f5f9; margin: 0;
+    letter-spacing: -.04em; color: #0F172A; margin: 0;
 }
 .hero-gradient {
-    font-size: clamp(36px,5.5vw,62px);
+    font-size: clamp(34px, 5.5vw, 60px);
     font-weight: 900; line-height: 1.07; letter-spacing: -.04em;
-    background: linear-gradient(135deg,#38bdf8 0%,#818cf8 55%,#a855f7 100%);
+    background: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
     -webkit-background-clip: text; -webkit-text-fill-color: transparent;
 }
-.hero-sub { font-size: 15px; color: #334155; line-height: 1.7; max-width: 480px; margin: 16px auto 0; }
+.hero-sub { font-size: 15px; color: #64748B; line-height: 1.7; max-width: 480px; margin: 16px auto 0; }
 
-/* ── Mode cards (landing) ── */
+/* ══════════════════════════════════════
+   MODE CARDS (LANDING)
+   ══════════════════════════════════════ */
 .mode-card {
-    background: #0d1526; border: 1px solid #1e2d45;
-    border-radius: 14px; padding: 32px 26px;
-    transition: border-color .22s, transform .18s, box-shadow .22s;
-    text-align: center; height: 100%;
-}
-.mode-card:hover { transform: translateY(-2px); box-shadow: 0 10px 32px rgba(0,0,0,.35); }
-.mode-card-work:hover  { border-color: #38bdf8; }
-.mode-card-learn:hover { border-color: #14b8a6; }
-.mode-card-icon {
-    width: 52px; height: 52px; border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    margin: 0 auto 16px;
-}
-.mode-card-title { font-size: 19px; font-weight: 800; color: #f1f5f9; margin-bottom: 8px; }
-.mode-card-desc  { font-size: 13px; color: #334155; line-height: 1.65; }
-.mode-card-cta   { font-size: 11px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; display: inline-block; margin-top: 18px; }
-.cta-work  { color: #38bdf8; }
-.cta-learn { color: #2dd4bf; }
-
-/* ── Stat strip ── */
-.stat-strip {
-    display: grid; grid-template-columns: repeat(4,1fr);
-    border: 1px solid #1e2d45; border-radius: 10px;
-    background: #0a1221; margin: 36px 0; overflow: hidden;
-}
-.stat-item { padding: 22px 0; text-align: center; border-right: 1px solid #1e2d45; }
-.stat-item:last-child { border-right: none; }
-.stat-num  { font-size: 26px; font-weight: 900; color: #f1f5f9; line-height: 1; }
-.stat-lbl  { font-size: 10px; color: #334155; margin-top: 5px; letter-spacing: .08em; text-transform: uppercase; }
-
-/* ── Knowledge intent option cards ── */
-.intent-card {
-    background: #0d1526; border: 2px solid #1e2d45;
-    border-radius: 12px; padding: 24px 20px;
-    cursor: pointer; transition: border-color .2s, background .2s;
+    background: #FFFFFF;
+    border: 2px solid #E2E8F0;
+    border-radius: 16px;
+    padding: 32px 26px;
+    transition: all 0.2s ease-in-out;
     text-align: center;
+    height: 100%;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
 }
-.intent-card-active-learn { border-color: #14b8a6 !important; background: rgba(20,184,166,.06) !important; }
-.intent-card-active-teach { border-color: #a855f7 !important; background: rgba(168,85,247,.06) !important; }
-.intent-card-title { font-size: 15px; font-weight: 700; color: #f1f5f9; margin-bottom: 6px; }
-.intent-card-desc  { font-size: 12px; color: #334155; line-height: 1.6; }
+.mode-card:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 14px 40px rgba(0,0,0,.1);
+}
+.mode-card-work:hover  { border-color: #2563EB; }
+.mode-card-learn:hover { border-color: #0D9488; }
+.mode-card-icon {
+    width: 56px; height: 56px; border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 18px;
+}
+.mode-card-title { font-size: 20px; font-weight: 800; color: #0F172A; margin-bottom: 8px; }
+.mode-card-desc  { font-size: 13px; color: #64748B; line-height: 1.65; }
+.mode-card-cta   {
+    font-size: 11px; font-weight: 700; letter-spacing: .06em;
+    text-transform: uppercase; display: inline-block; margin-top: 20px;
+}
+.cta-work  { color: #2563EB; }
+.cta-learn { color: #0D9488; }
 
-/* ── Profile avatar ring ── */
+/* ══════════════════════════════════════
+   STAT STRIP
+   ══════════════════════════════════════ */
+.stat-strip {
+    display: grid; grid-template-columns: repeat(4, 1fr);
+    border: 1px solid #E2E8F0; border-radius: 14px;
+    background: #FFFFFF; margin: 36px 0; overflow: hidden;
+    box-shadow: 0 2px 12px rgba(0,0,0,.05);
+}
+.stat-item { padding: 24px 0; text-align: center; border-right: 1px solid #E2E8F0; }
+.stat-item:last-child { border-right: none; }
+.stat-num  { font-size: 28px; font-weight: 900; color: #0F172A; line-height: 1; }
+.stat-lbl  { font-size: 10px; color: #64748B; margin-top: 5px; letter-spacing: .08em; text-transform: uppercase; }
+
+/* ══════════════════════════════════════
+   KNOWLEDGE INTENT CARDS
+   ══════════════════════════════════════ */
+.intent-card {
+    background: #FFFFFF; border: 2px solid #E2E8F0;
+    border-radius: 14px; padding: 26px 22px;
+    cursor: pointer; transition: all 0.2s ease-in-out;
+    text-align: center; box-shadow: 0 2px 8px rgba(0,0,0,.04);
+}
+.intent-card:hover { box-shadow: 0 6px 20px rgba(0,0,0,.09); transform: translateY(-2px); }
+.intent-card-active-learn { border-color: #0D9488 !important; background: #F0FDFA !important; box-shadow: 0 0 0 3px rgba(13,148,136,.12) !important; }
+.intent-card-active-teach { border-color: #9333EA !important; background: #FAF5FF !important; box-shadow: 0 0 0 3px rgba(147,51,234,.12) !important; }
+.intent-card-title { font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
+.intent-card-desc  { font-size: 12px; color: #64748B; line-height: 1.6; }
+
+/* ══════════════════════════════════════
+   AVATAR RING
+   ══════════════════════════════════════ */
 .profile-avatar-ring {
     display: inline-flex; align-items: center; justify-content: center;
-    border-radius: 50%; box-shadow: 0 0 0 3px #1e2d45, 0 0 0 6px rgba(56,189,248,.1);
+    border-radius: 50%;
+    box-shadow: 0 0 0 3px #E2E8F0, 0 0 0 6px rgba(37,99,235,.08);
 }
 
-/* ── Section divider ── */
+/* ══════════════════════════════════════
+   SECTION DIVIDER
+   ══════════════════════════════════════ */
 .section-divider {
     font-size: 10px; font-weight: 700; letter-spacing: .12em;
-    text-transform: uppercase; color: #1e2d45;
-    display: flex; align-items: center; gap: 12px; margin: 24px 0 16px;
+    text-transform: uppercase; color: #94A3B8;
+    display: flex; align-items: center; gap: 12px; margin: 28px 0 18px;
 }
 .section-divider::before, .section-divider::after {
-    content: ''; flex: 1; height: 1px; background: #1e2d45;
+    content: ''; flex: 1; height: 1px; background: #E2E8F0;
 }
+
+/* ══════════════════════════════════════
+   NOTIFICATION DOT
+   ══════════════════════════════════════ */
+.notif-unread-dot {
+    width: 6px; height: 6px; background: #2563EB;
+    border-radius: 50%; display: inline-block;
+    margin-left: 5px; vertical-align: middle;
+}
+
+/* ══════════════════════════════════════
+   COLOR PICKER LABEL FIX
+   ══════════════════════════════════════ */
+.stColorPicker label { color: #64748B !important; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -465,14 +590,14 @@ def mk_avatar_html(name, size=40, color="#1d4ed8"):
 def empty_state(title, desc="", action_label=None, action_key=None, action_fn=None):
     st.markdown(f"""
     <div class='cs-card' style='text-align:center;padding:48px 32px;'>
-        <div style='width:44px;height:44px;border-radius:10px;background:#111f38;
+        <div style='width:44px;height:44px;border-radius:10px;background:#F1F5F9;
             display:flex;align-items:center;justify-content:center;margin:0 auto 14px;'>
             <svg width="18" height="18" fill="none" stroke="#1e2d45" stroke-width="2" viewBox="0 0 24 24">
             <path d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2"/>
             <rect x="9" y="3" width="6" height="4" rx="1"/></svg>
         </div>
-        <div style='font-size:14px;font-weight:700;color:#cbd5e1;margin-bottom:5px;'>{title}</div>
-        <div style='font-size:12px;color:#334155;'>{desc}</div>
+        <div style='font-size:14px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+        <div style='font-size:12px;color:#64748B;'>{desc}</div>
     </div>""", unsafe_allow_html=True)
     if action_label and action_key:
         _, mc, _ = st.columns([2, 1, 2])
@@ -488,8 +613,8 @@ def back_btn():
 
 def breadcrumb(*parts):
     html = " / ".join(
-        f"<span style='color:#1e2d45;'>{p}</span>" if i < len(parts)-1
-        else f"<span style='color:#475569;font-weight:500;'>{p}</span>"
+        f"<span style='color:#94A3B8;'>{p}</span>" if i < len(parts)-1
+        else f"<span style='color:#64748B;font-weight:500;'>{p}</span>"
         for i, p in enumerate(parts))
     st.markdown(f"<div style='font-size:11px;margin-bottom:10px;'>{html}</div>",
                 unsafe_allow_html=True)
@@ -513,7 +638,7 @@ def stars_html(rating, max_stars=5):
     filled = "★" * int(rating)
     empty  = "☆" * (max_stars - int(rating))
     return (f"<span style='color:#f59e0b;letter-spacing:1px;'>{filled}</span>"
-            f"<span style='color:#1e2d45;letter-spacing:1px;'>{empty}</span>")
+            f"<span style='color:#94A3B8;letter-spacing:1px;'>{empty}</span>")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -588,7 +713,7 @@ def render_navbar():
     # Logged-in navbar — use HTML for perfectly aligned, no-wrap nav
     admin_pill = (
         " <span style='font-size:9px;background:rgba(56,189,248,.1);"
-        "color:#38bdf8;border:1px solid rgba(56,189,248,.15);"
+        "color:#2563EB;border:1px solid rgba(56,189,248,.15);"
         "border-radius:3px;padding:2px 7px;letter-spacing:.06em;'>ADMIN</span>"
         if is_admin() else ""
     )
@@ -638,7 +763,7 @@ def page_landing():
 
     st.markdown(
         "<div style='text-align:center;font-size:10px;font-weight:700;"
-        "letter-spacing:.14em;text-transform:uppercase;color:#334155;"
+        "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
         "margin-bottom:18px;'>Choose how you want to get started</div>",
         unsafe_allow_html=True)
 
@@ -722,8 +847,8 @@ def page_landing():
                 display:flex;align-items:center;justify-content:center;margin-bottom:12px;'>
                 <div style='width:12px;height:12px;border-radius:50%;background:{accent};'></div>
             </div>
-            <div style='font-size:13px;font-weight:700;color:#f1f5f9;margin-bottom:6px;'>{title}</div>
-            <div style='font-size:12px;color:#334155;line-height:1.65;'>{desc}</div>
+            <div style='font-size:13px;font-weight:700;color:#0F172A;margin-bottom:6px;'>{title}</div>
+            <div style='font-size:12px;color:#64748B;line-height:1.65;'>{desc}</div>
         </div>""", unsafe_allow_html=True)
 
     # How it works
@@ -738,16 +863,16 @@ def page_landing():
     for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
         col.markdown(f"""
         <div class='cs-card'>
-            <div style='font-size:28px;font-weight:900;color:#1a2740;line-height:1;margin-bottom:10px;'>{num}</div>
-            <div style='font-size:12px;font-weight:700;color:#94a3b8;margin-bottom:5px;'>{title}</div>
-            <div style='font-size:11px;color:#334155;line-height:1.6;'>{desc}</div>
+            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
         </div>""", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
-    <div style='text-align:center;padding:20px 0;border-top:1px solid #1a2740;'>
-        <div style='font-size:12px;font-weight:700;color:#cbd5e1;'>CollabSkill AI</div>
-        <div style='font-size:11px;color:#1e2d45;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
     </div>""", unsafe_allow_html=True)
 
 
@@ -763,10 +888,10 @@ def page_login():
         st.markdown("<div style='height:20px;'></div>", unsafe_allow_html=True)
         mode_label = "Knowledge Exchange" if is_learn_mode() else "Task Collaboration"
         st.markdown(f"""
-        <div style='background:#0d1526;border:1px solid #1e2d45;border-radius:14px;padding:36px;'>
+        <div style='background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;padding:36px;'>
             <div style='text-align:center;margin-bottom:26px;'>
-                <div style='font-size:20px;font-weight:800;color:#f1f5f9;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
-                <div style='font-size:12px;color:#334155;'>{mode_label} Mode</div>
+                <div style='font-size:20px;font-weight:800;color:#0F172A;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
+                <div style='font-size:12px;color:#64748B;'>{mode_label} Mode</div>
             </div>
         """, unsafe_allow_html=True)
 
@@ -790,7 +915,7 @@ def page_login():
 
         st.markdown("""
         <div style='text-align:center;margin-top:18px;padding-top:18px;
-            border-top:1px solid #1a2740;font-size:12px;color:#334155;'>
+            border-top:1px solid #E2E8F0;font-size:12px;color:#64748B;'>
             Do not have an account yet?
         </div>""", unsafe_allow_html=True)
 
@@ -811,7 +936,7 @@ def page_register():
 
     # ── Skill dropdowns must be OUTSIDE the form ──────────────
     st.markdown(
-        "<div style='font-size:11px;font-weight:700;color:#475569;"
+        "<div style='font-size:11px;font-weight:700;color:#64748B;"
         "letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;'>"
         "Primary Skill</div>",
         unsafe_allow_html=True)
@@ -889,7 +1014,7 @@ def page_register():
             else:
                 st.error(result)
 
-    st.markdown("<div style='font-size:12px;color:#334155;margin-top:10px;'>Already have an account?</div>",
+    st.markdown("<div style='font-size:12px;color:#64748B;margin-top:10px;'>Already have an account?</div>",
                 unsafe_allow_html=True)
     if st.button("Sign In Instead", key="rp_to_login"):
         go("login")
@@ -938,9 +1063,9 @@ def page_dashboard():
             <div class='cs-card' style='display:flex;align-items:center;gap:16px;margin-bottom:0;'>
                 {mk_avatar_html(u['username'], 48, avatar_color)}
                 <div>
-                    <div style='font-size:15px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
-                    <div style='font-size:12px;color:#334155;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
-                    <div style='font-size:11px;color:#1e2d45;margin-top:2px;'>{u['experience']}</div>
+                    <div style='font-size:15px;font-weight:800;color:#0F172A;'>{u['username']}</div>
+                    <div style='font-size:12px;color:#64748B;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
+                    <div style='font-size:11px;color:#94A3B8;margin-top:2px;'>{u['experience']}</div>
                 </div>
             </div>""", unsafe_allow_html=True)
         with pc2:
@@ -982,12 +1107,12 @@ def page_dashboard():
                 tp = type_badge(a.get("task_type", TYPE_TASK))
                 st.markdown(f"""
                 <div class='cs-card' style='padding:14px;'>
-                    <div style='font-weight:600;color:#e2e8f0;margin-bottom:6px;'>{a['task_title']}</div>
+                    <div style='font-weight:600;color:#0F172A;margin-bottom:6px;'>{a['task_title']}</div>
                     <div>{status_badge(a['status'])} {tp}
                         <span class='cs-badge badge-violet'>{a['category']}</span>
                         <span class='cs-badge badge-slate'>{a['owner_name']}</span>
                     </div>
-                    <div style='color:#1e2d45;font-size:11px;margin-top:6px;'>{str(a['created_at'])[:10]}</div>
+                    <div style='color:#94A3B8;font-size:11px;margin-top:6px;'>{str(a['created_at'])[:10]}</div>
                 </div>""", unsafe_allow_html=True)
 
     with tab3:
@@ -1018,7 +1143,7 @@ def _render_entry_card(t, owner=False):
         c1, c2 = st.columns([3, 1])
         with c1:
             st.markdown(f"""
-            <div style='color:#64748b;font-size:13px;margin-bottom:10px;line-height:1.7;'>{t['description']}</div>
+            <div style='color:#64748B;font-size:13px;margin-bottom:10px;line-height:1.7;'>{t['description']}</div>
             {type_badge(t.get('type', TYPE_TASK), intent)}
             {status_badge(t['status'])}
             {priority_badge(t.get('priority','Normal'))}
@@ -1100,7 +1225,7 @@ def page_browse_tasks():
 
     count_noun = "knowledge post(s)" if is_know else "task(s)"
     st.markdown(
-        f"<div style='color:#334155;font-size:12px;margin:10px 0;'>{len(entries)} {count_noun}</div>",
+        f"<div style='color:#64748B;font-size:12px;margin:10px 0;'>{len(entries)} {count_noun}</div>",
         unsafe_allow_html=True)
 
     if not entries:
@@ -1119,7 +1244,7 @@ def page_browse_tasks():
             c1, c2 = st.columns([3, 1])
             with c1:
                 st.markdown(f"""
-                <div style='color:#64748b;font-size:13px;line-height:1.7;margin-bottom:10px;'>{t['description']}</div>
+                <div style='color:#64748B;font-size:13px;line-height:1.7;margin-bottom:10px;'>{t['description']}</div>
                 {type_badge(t.get('type', TYPE_TASK), intent)}
                 {status_badge(t['status'])}
                 {priority_badge(t.get('priority','Normal'))}
@@ -1129,7 +1254,7 @@ def page_browse_tasks():
                 <span class='cs-badge badge-slate'>By {creator}</span>
                 <span class='cs-badge badge-slate'>Trust {t.get("creator_trust",0)}/10</span>
                 <span class='cs-badge badge-slate'>{t.get("applicant_count",0)} {'interested' if is_know else 'applied'}</span>
-                <div style='font-size:11px;color:#1e2d45;margin-top:8px;'>Posted {str(t.get("created_at",""))[:10]}</div>
+                <div style='font-size:11px;color:#94A3B8;margin-top:8px;'>Posted {str(t.get("created_at",""))[:10]}</div>
                 """, unsafe_allow_html=True)
             with c2:
                 if logged_in() and st.session_state.user["id"] != t["created_by"]:
@@ -1191,10 +1316,10 @@ def page_post_task():
         with c_tip:
             st.markdown("""
             <div class='cs-card'>
-                <div style='font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:12px;letter-spacing:.04em;'>
+                <div style='font-size:12px;font-weight:700;color:#2563EB;margin-bottom:12px;letter-spacing:.04em;'>
                     TIPS FOR A GOOD TASK POST
                 </div>
-                <div style='font-size:12px;color:#334155;line-height:2.1;'>
+                <div style='font-size:12px;color:#64748B;line-height:2.1;'>
                     Be specific about deliverables<br>
                     List the exact skills required<br>
                     Provide a clear deadline<br>
@@ -1310,7 +1435,7 @@ def page_post_task():
                 <div style='font-size:12px;font-weight:700;color:#2dd4bf;margin-bottom:12px;letter-spacing:.04em;'>
                     TIPS FOR A LEARNING REQUEST
                 </div>
-                <div style='font-size:12px;color:#334155;line-height:2.1;'>
+                <div style='font-size:12px;color:#64748B;line-height:2.1;'>
                     State your current knowledge level<br>
                     Describe exactly what you are stuck on<br>
                     Mention your preferred learning format<br>
@@ -1324,7 +1449,7 @@ def page_post_task():
                 <div style='font-size:12px;font-weight:700;color:#c084fc;margin-bottom:12px;letter-spacing:.04em;'>
                     TIPS FOR A TEACHING OFFER
                 </div>
-                <div style='font-size:12px;color:#334155;line-height:2.1;'>
+                <div style='font-size:12px;color:#64748B;line-height:2.1;'>
                     Clearly state your expertise level<br>
                     Describe what learners will gain<br>
                     Mention session format (1-on-1, video)<br>
@@ -1341,10 +1466,10 @@ def page_post_task():
                 dot = "#4ade80" if t["status"] == "open" else "#1e2d45"
                 intent_lbl = " (Teach)" if t.get("knowledge_intent") == INTENT_TEACH else " (Learn)"
                 st.markdown(
-                    f"<div style='font-size:11px;color:#475569;padding:5px 0;"
-                    f"border-bottom:1px solid #1a2740;display:flex;align-items:center;gap:7px;'>"
+                    f"<div style='font-size:11px;color:#64748B;padding:5px 0;"
+                    f"border-bottom:1px solid #E2E8F0;display:flex;align-items:center;gap:7px;'>"
                     f"<span style='width:5px;height:5px;border-radius:50%;background:{dot};flex-shrink:0;display:inline-block;'></span>"
-                    f"{t['title']}<span style='color:#1e2d45;'>{intent_lbl}</span></div>",
+                    f"{t['title']}<span style='color:#94A3B8;'>{intent_lbl}</span></div>",
                     unsafe_allow_html=True)
 
 
@@ -1374,7 +1499,7 @@ def page_profile():
             <div style='width:88px;height:88px;border-radius:50%;background:{avatar_color};
                 display:inline-flex;align-items:center;justify-content:center;
                 font-size:30px;font-weight:800;color:#fff;
-                box-shadow:0 0 0 3px #1e2d45,0 0 0 7px rgba(56,189,248,.08);'>
+                box-shadow:0 0 0 3px #E2E8F0,0 0 0 7px rgba(56,189,248,.08);'>
                 {ini}
             </div>
         </div>""", unsafe_allow_html=True)
@@ -1389,8 +1514,8 @@ def page_profile():
 
         st.markdown(f"""
         <div style='text-align:center;margin-top:12px;'>
-            <div style='font-size:17px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
-            <div style='font-size:12px;color:#334155;margin-top:3px;'>{u['email']}</div>
+            <div style='font-size:17px;font-weight:800;color:#0F172A;'>{u['username']}</div>
+            <div style='font-size:12px;color:#64748B;margin-top:3px;'>{u['email']}</div>
         </div>""", unsafe_allow_html=True)
 
         admin_b = '<span class="cs-badge badge-cyan" style="font-size:10px;">Admin</span>' if u["role"]=="admin" else ""
@@ -1401,13 +1526,13 @@ def page_profile():
 
         if u.get("phone_number"):
             st.markdown(f"""
-            <div style='text-align:center;font-size:12px;color:#475569;margin-bottom:6px;'>
+            <div style='text-align:center;font-size:12px;color:#64748B;margin-bottom:6px;'>
                 {u['phone_number']}
             </div>""", unsafe_allow_html=True)
 
         if u.get("bio"):
             st.markdown(f"""
-            <div style='font-size:12px;color:#334155;line-height:1.65;
+            <div style='font-size:12px;color:#64748B;line-height:1.65;
                 text-align:center;margin-bottom:12px;'>{u['bio']}</div>""",
                 unsafe_allow_html=True)
 
@@ -1415,17 +1540,17 @@ def page_profile():
             st.markdown(
                 f"<div style='text-align:center;margin-bottom:10px;'>"
                 f"<a href='{u['portfolio']}' target='_blank' "
-                f"style='font-size:12px;color:#38bdf8;font-weight:600;'>Portfolio / GitHub</a></div>",
+                f"style='font-size:12px;color:#2563EB;font-weight:600;'>Portfolio / GitHub</a></div>",
                 unsafe_allow_html=True)
 
         trust_pct = int((u["trust_score"] / 10) * 100)
         st.markdown(f"""
-        <div style='margin-top:12px;padding-top:12px;border-top:1px solid #1a2740;'>
-            <div style='display:flex;justify-content:space-between;color:#334155;font-size:10px;margin-bottom:4px;'>
+        <div style='margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0;'>
+            <div style='display:flex;justify-content:space-between;color:#64748B;font-size:10px;margin-bottom:4px;'>
                 <span>Trust Score</span><span>{u['trust_score']} / 10</span>
             </div>
             {trust_bar_html(u['trust_score'])}
-            <div style='font-size:10px;color:#1e2d45;margin-top:5px;'>{u['total_ratings']} ratings received</div>
+            <div style='font-size:10px;color:#94A3B8;margin-top:5px;'>{u['total_ratings']} ratings received</div>
         </div>""", unsafe_allow_html=True)
 
         if u.get("skills"):
@@ -1433,9 +1558,9 @@ def page_profile():
                 f"<span class='cs-badge badge-slate' style='font-size:10px;margin:2px;'>{s.strip()}</span>"
                 for s in u["skills"].split(",") if s.strip())
             st.markdown(f"""
-            <div style='margin-top:14px;padding-top:12px;border-top:1px solid #1a2740;'>
+            <div style='margin-top:14px;padding-top:12px;border-top:1px solid #E2E8F0;'>
                 <div style='font-size:10px;font-weight:700;text-transform:uppercase;
-                    letter-spacing:.08em;color:#1e2d45;margin-bottom:8px;'>Skills</div>
+                    letter-spacing:.08em;color:#94A3B8;margin-bottom:8px;'>Skills</div>
                 {tags}
             </div>""", unsafe_allow_html=True)
 
@@ -1457,7 +1582,7 @@ def page_profile():
         with tab1:
             # Skill dropdowns outside any form
             st.markdown(
-                "<div style='font-size:11px;font-weight:700;color:#475569;"
+                "<div style='font-size:11px;font-weight:700;color:#64748B;"
                 "letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;'>"
                 "Update Primary Skill</div>",
                 unsafe_allow_html=True)
@@ -1526,14 +1651,14 @@ def page_profile():
                 st.markdown(f"""
                 <div class='cs-card' style='padding:14px;'>
                     <div style='display:flex;justify-content:space-between;align-items:center;'>
-                        <div style='font-weight:600;color:#e2e8f0;font-size:13px;'>{t['title']}</div>
+                        <div style='font-weight:600;color:#0F172A;font-size:13px;'>{t['title']}</div>
                         {status_badge(t['status'])}
                     </div>
                     <div style='margin-top:6px;'>
                         <span class='cs-badge badge-slate'>{t['skills']}</span>
                         <span class='cs-badge badge-violet'>{t['category']}</span>
                     </div>
-                    <div style='font-size:11px;color:#1e2d45;margin-top:5px;'>{str(t['created_at'])[:10]}</div>
+                    <div style='font-size:11px;color:#94A3B8;margin-top:5px;'>{str(t['created_at'])[:10]}</div>
                 </div>""", unsafe_allow_html=True)
 
         with tab3:
@@ -1548,7 +1673,7 @@ def page_profile():
                 st.markdown(f"""
                 <div class='cs-card' style='padding:14px;'>
                     <div style='display:flex;justify-content:space-between;align-items:center;'>
-                        <div style='font-weight:600;color:#e2e8f0;font-size:13px;'>{t['title']}</div>
+                        <div style='font-weight:600;color:#0F172A;font-size:13px;'>{t['title']}</div>
                         {status_badge(t['status'])}
                     </div>
                     <div style='margin-top:6px;'>
@@ -1556,7 +1681,7 @@ def page_profile():
                         <span class='cs-badge badge-slate'>{t['skills']}</span>
                         <span class='cs-badge badge-violet'>{t['category']}</span>
                     </div>
-                    <div style='font-size:11px;color:#1e2d45;margin-top:5px;'>{str(t['created_at'])[:10]}</div>
+                    <div style='font-size:11px;color:#94A3B8;margin-top:5px;'>{str(t['created_at'])[:10]}</div>
                 </div>""", unsafe_allow_html=True)
 
         with tab4:
@@ -1567,19 +1692,19 @@ def page_profile():
                 avg = round(sum(f["rating"] for f in fbs) / len(fbs), 1)
                 st.markdown(f"""
                 <div class='cs-card' style='text-align:center;padding:20px;margin-bottom:14px;'>
-                    <div style='font-size:30px;font-weight:900;color:#38bdf8;'>{avg}</div>
+                    <div style='font-size:30px;font-weight:900;color:#2563EB;'>{avg}</div>
                     <div style='margin-top:4px;'>{stars_html(round(avg))}</div>
-                    <div style='font-size:12px;color:#334155;margin-top:5px;'>Average rating / 5 from {len(fbs)} reviews</div>
+                    <div style='font-size:12px;color:#64748B;margin-top:5px;'>Average rating / 5 from {len(fbs)} reviews</div>
                 </div>""", unsafe_allow_html=True)
                 for f in fbs:
                     st.markdown(f"""
                     <div class='cs-card' style='padding:14px;'>
                         <div style='display:flex;justify-content:space-between;align-items:center;'>
-                            <span style='font-weight:600;color:#cbd5e1;font-size:13px;'>{f['from_name']}</span>
+                            <span style='font-weight:600;color:#64748B;font-size:13px;'>{f['from_name']}</span>
                             <span>{stars_html(f['rating'])}</span>
                         </div>
-                        <div style='font-size:12px;color:#334155;margin-top:6px;'>{f['comment'] or 'No comment.'}</div>
-                        <div style='font-size:11px;color:#1e2d45;margin-top:4px;'>{str(f['created_at'])[:10]}</div>
+                        <div style='font-size:12px;color:#64748B;margin-top:6px;'>{f['comment'] or 'No comment.'}</div>
+                        <div style='font-size:11px;color:#94A3B8;margin-top:4px;'>{str(f['created_at'])[:10]}</div>
                     </div>""", unsafe_allow_html=True)
 
         with tab5:
@@ -1648,10 +1773,10 @@ def page_ai_match():
     with right:
         st.markdown("""
         <div class='cs-card'>
-            <div style='font-size:12px;font-weight:700;color:#38bdf8;margin-bottom:14px;letter-spacing:.04em;'>
+            <div style='font-size:12px;font-weight:700;color:#2563EB;margin-bottom:14px;letter-spacing:.04em;'>
                 HOW AI MATCHING WORKS
             </div>
-            <div style='font-size:12px;color:#334155;line-height:2.2;'>
+            <div style='font-size:12px;color:#64748B;line-height:2.2;'>
                 1. Describe your task requirements<br>
                 2. AI reads all user profiles<br>
                 3. Skills and experience are compared<br>
@@ -1681,26 +1806,26 @@ def page_ai_match():
                 st.markdown(f"""
                 <div class='cs-card'>
                     <div style='display:flex;align-items:center;gap:14px;margin-bottom:12px;'>
-                        <span style='font-size:11px;font-weight:700;color:#1e2d45;'>{ranks[i-1] if i<=3 else ""}</span>
+                        <span style='font-size:11px;font-weight:700;color:#94A3B8;'>{ranks[i-1] if i<=3 else ""}</span>
                         {mk_avatar_html(m['name'], 40, u_av)}
                         <div>
-                            <div style='font-size:14px;font-weight:800;color:#f1f5f9;'>{m['name']}</div>
-                            <div style='font-size:11px;color:#334155;'>{u_exp}</div>
+                            <div style='font-size:14px;font-weight:800;color:#0F172A;'>{m['name']}</div>
+                            <div style='font-size:11px;color:#64748B;'>{u_exp}</div>
                         </div>
                     </div>
                     <div style='margin-bottom:8px;'>
                         <span class='cs-badge badge-slate'>{u_sk}</span>
                     </div>
-                    <div style='font-size:12px;color:#475569;line-height:1.6;'>{m.get('reason','')}</div>
-                    {'<div style="margin-top:10px;"><a href="'+u_pt+'" target="_blank" style="font-size:11px;color:#38bdf8;font-weight:600;">Portfolio / GitHub</a></div>' if u_pt else ''}
+                    <div style='font-size:12px;color:#64748B;line-height:1.6;'>{m.get('reason','')}</div>
+                    {'<div style="margin-top:10px;"><a href="'+u_pt+'" target="_blank" style="font-size:11px;color:#2563EB;font-weight:600;">Portfolio / GitHub</a></div>' if u_pt else ''}
                 </div>""", unsafe_allow_html=True)
             with mc2:
                 st.markdown(f"""
-                <div style='text-align:center;padding:12px;background:#0d1526;border:1px solid #1e2d45;border-radius:10px;'>
+                <div style='text-align:center;padding:12px;background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;'>
                     <div style='font-size:26px;font-weight:900;color:{sc};line-height:1;'>{score}%</div>
-                    <div style='font-size:9px;color:#1e2d45;margin-top:2px;text-transform:uppercase;letter-spacing:.06em;'>Match</div>
-                    <div style='font-size:16px;font-weight:800;color:#38bdf8;margin-top:10px;'>{u_tr}</div>
-                    <div style='font-size:9px;color:#1e2d45;text-transform:uppercase;letter-spacing:.06em;'>Trust</div>
+                    <div style='font-size:9px;color:#94A3B8;margin-top:2px;text-transform:uppercase;letter-spacing:.06em;'>Match</div>
+                    <div style='font-size:16px;font-weight:800;color:#2563EB;margin-top:10px;'>{u_tr}</div>
+                    <div style='font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;'>Trust</div>
                 </div>""", unsafe_allow_html=True)
             if row:
                 st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
@@ -1760,7 +1885,7 @@ def page_community():
         tuple(params))
 
     st.markdown(
-        f"<div style='color:#334155;font-size:12px;margin:10px 0 16px;'>{len(users)} member(s)</div>",
+        f"<div style='color:#64748B;font-size:12px;margin:10px 0 16px;'>{len(users)} member(s)</div>",
         unsafe_allow_html=True)
 
     # Show active skill category filter label
@@ -1768,7 +1893,7 @@ def page_community():
         st.markdown(
             f"<div style='margin-bottom:12px;'>"
             f"<span class='cs-badge badge-cyan'>{skill_cat_filter}</span>"
-            f"<span style='font-size:11px;color:#334155;margin-left:6px;'>Showing members with this skill</span></div>",
+            f"<span style='font-size:11px;color:#64748B;margin-left:6px;'>Showing members with this skill</span></div>",
             unsafe_allow_html=True)
 
     if not users:
@@ -1795,7 +1920,7 @@ def page_community():
             port = (
                 f'<div style="margin-top:10px;">'
                 f'<a href="{u["portfolio"]}" target="_blank" '
-                f'style="font-size:11px;color:#38bdf8;font-weight:600;">Portfolio</a></div>'
+                f'style="font-size:11px;color:#2563EB;font-weight:600;">Portfolio</a></div>'
                 if u.get("portfolio") else ""
             )
             col.markdown(f"""
@@ -1804,26 +1929,26 @@ def page_community():
                     <div style='width:42px;height:42px;border-radius:50%;background:{avatar_color};
                         display:inline-flex;align-items:center;justify-content:center;
                         font-size:14px;font-weight:700;color:#fff;flex-shrink:0;
-                        box-shadow:0 0 0 2px #1e2d45;'>{ini}</div>
+                        box-shadow:0 0 0 2px #E2E8F0;'>{ini}</div>
                     <div style='flex:1;min-width:0;'>
-                        <div style='font-weight:700;color:#f1f5f9;font-size:13px;
+                        <div style='font-weight:700;color:#0F172A;font-size:13px;
                             white-space:nowrap;overflow:hidden;text-overflow:ellipsis;'>
                             {u['username']}</div>
                         <span class='cs-badge {exp_badge.get(u["experience"],"badge-slate")}'
                             style='font-size:9px;'>{u['experience']}</span>
                     </div>
                     <div style='text-align:right;flex-shrink:0;'>
-                        <div style='font-size:17px;font-weight:800;color:#38bdf8;'>{u['trust_score']}</div>
-                        <div style='font-size:9px;color:#1e2d45;'>trust</div>
+                        <div style='font-size:17px;font-weight:800;color:#2563EB;'>{u['trust_score']}</div>
+                        <div style='font-size:9px;color:#94A3B8;'>trust</div>
                     </div>
                 </div>
-                <div style='font-size:11px;color:#334155;line-height:1.55;margin-bottom:10px;'>
+                <div style='font-size:11px;color:#64748B;line-height:1.55;margin-bottom:10px;'>
                     {(u['bio'] or 'No bio provided.')[:90]}...</div>
                 <div>{tags}</div>
                 <div class='trust-bar-bg'>
                     <div class='trust-bar-fill' style='width:{pct}%;'></div>
                 </div>
-                <div style='font-size:10px;color:#1e2d45;margin-top:4px;'>{u['total_ratings']} ratings</div>
+                <div style='font-size:10px;color:#94A3B8;margin-top:4px;'>{u['total_ratings']} ratings</div>
                 {port}
             </div>""", unsafe_allow_html=True)
 
@@ -1855,12 +1980,12 @@ def page_notifications():
         <div style='background:{bg};border:1px solid {border};border-radius:10px;
             padding:14px 16px;margin-bottom:8px;'>
             <div style='display:flex;justify-content:space-between;align-items:flex-start;'>
-                <div style='font-weight:600;font-size:13px;color:#cbd5e1;'>
+                <div style='font-weight:600;font-size:13px;color:#64748B;'>
                     {n['title']}{unread_dot}</div>
-                <div style='font-size:10px;color:#1e2d45;white-space:nowrap;margin-left:10px;'>
+                <div style='font-size:10px;color:#94A3B8;white-space:nowrap;margin-left:10px;'>
                     {str(n['created_at'])[:16]}</div>
             </div>
-            <div style='font-size:12px;color:#334155;margin-top:5px;line-height:1.5;'>{n['message']}</div>
+            <div style='font-size:12px;color:#64748B;margin-top:5px;line-height:1.5;'>{n['message']}</div>
         </div>""", unsafe_allow_html=True)
 
 
@@ -1935,7 +2060,7 @@ def page_admin_dashboard():
             df = pd.DataFrame(cat_data); df.columns = ["Category","Count"]
             st.dataframe(df, use_container_width=True, hide_index=True)
         else:
-            st.markdown("<div style='color:#334155;font-size:12px;'>No data yet.</div>",
+            st.markdown("<div style='color:#64748B;font-size:12px;'>No data yet.</div>",
                         unsafe_allow_html=True)
 
     with col2:
@@ -1948,12 +2073,12 @@ def page_admin_dashboard():
             dot_c = ("#38bdf8" if "registered" in a["action"]
                      else "#2dd4bf" if "Knowledge" in a["action"] else "#a78bfa")
             st.markdown(f"""
-            <div style='display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #1a2740;'>
+            <div style='display:flex;gap:10px;padding:6px 0;border-bottom:1px solid #E2E8F0;'>
                 <div style='width:5px;height:5px;border-radius:50%;background:{dot_c};
                     margin-top:5px;flex-shrink:0;'></div>
                 <div>
-                    <div style='font-size:12px;color:#cbd5e1;'>{a['action']}: <strong>{a['name']}</strong></div>
-                    <div style='font-size:10px;color:#1e2d45;'>{str(a['created_at'])[:16]}</div>
+                    <div style='font-size:12px;color:#64748B;'>{a['action']}: <strong>{a['name']}</strong></div>
+                    <div style='font-size:10px;color:#94A3B8;'>{str(a['created_at'])[:16]}</div>
                 </div>
             </div>""", unsafe_allow_html=True)
 
@@ -1972,13 +2097,13 @@ def page_admin_dashboard():
                     display:inline-flex;align-items:center;justify-content:center;
                     font-size:11px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
                 <div style='flex:1;'>
-                    <div style='font-size:10px;color:#1e2d45;font-weight:700;text-transform:uppercase;letter-spacing:.04em;'>{medals[i]}</div>
-                    <div style='font-size:13px;font-weight:700;color:#f1f5f9;'>{u['username']}</div>
-                    <div style='font-size:10px;color:#334155;'>{u['skills'] or '—'}</div>
+                    <div style='font-size:10px;color:#94A3B8;font-weight:700;text-transform:uppercase;letter-spacing:.04em;'>{medals[i]}</div>
+                    <div style='font-size:13px;font-weight:700;color:#0F172A;'>{u['username']}</div>
+                    <div style='font-size:10px;color:#64748B;'>{u['skills'] or '—'}</div>
                 </div>
                 <div style='text-align:right;'>
-                    <div style='font-size:18px;font-weight:900;color:#38bdf8;'>{u['trust_score']}</div>
-                    <div style='font-size:9px;color:#1e2d45;'>{u['total_ratings']} ratings</div>
+                    <div style='font-size:18px;font-weight:900;color:#2563EB;'>{u['trust_score']}</div>
+                    <div style='font-size:9px;color:#94A3B8;'>{u['total_ratings']} ratings</div>
                 </div>
             </div>
         </div>""", unsafe_allow_html=True)
@@ -2010,7 +2135,7 @@ def page_admin_users():
     users = db_fetchall(
         f"SELECT * FROM users WHERE {' AND '.join(where)} ORDER BY created_at DESC",
         tuple(params))
-    st.markdown(f"<div style='color:#334155;font-size:12px;margin-bottom:12px;'>{len(users)} user(s)</div>",
+    st.markdown(f"<div style='color:#64748B;font-size:12px;margin-bottom:12px;'>{len(users)} user(s)</div>",
                 unsafe_allow_html=True)
 
     for u in users:
@@ -2018,22 +2143,22 @@ def page_admin_users():
             c1, c2, c3 = st.columns([2,2,1])
             with c1:
                 st.markdown(f"""
-                <div style='font-size:12px;color:#475569;line-height:2.1;'>
-                    <strong style='color:#64748b;'>Role</strong><br>{u['role']}<br>
-                    <strong style='color:#64748b;'>Skills</strong><br>{u['skills'] or '—'}<br>
-                    <strong style='color:#64748b;'>Level</strong><br>{u['experience']}<br>
-                    <strong style='color:#64748b;'>Phone</strong><br>{u.get('phone_number') or '—'}
+                <div style='font-size:12px;color:#64748B;line-height:2.1;'>
+                    <strong style='color:#64748B;'>Role</strong><br>{u['role']}<br>
+                    <strong style='color:#64748B;'>Skills</strong><br>{u['skills'] or '—'}<br>
+                    <strong style='color:#64748B;'>Level</strong><br>{u['experience']}<br>
+                    <strong style='color:#64748B;'>Phone</strong><br>{u.get('phone_number') or '—'}
                 </div>""", unsafe_allow_html=True)
             with c2:
                 tc = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE created_by=? AND type='task'",      (u["id"],))["c"]
                 kc = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE created_by=? AND type='knowledge'", (u["id"],))["c"]
                 rc = db_fetchone("SELECT COUNT(*) AS c FROM feedback WHERE to_user_id=?",                   (u["id"],))["c"]
                 st.markdown(f"""
-                <div style='font-size:12px;color:#475569;line-height:2.1;'>
-                    <strong style='color:#64748b;'>Tasks / Knowledge</strong><br>{tc} / {kc}<br>
-                    <strong style='color:#64748b;'>Ratings Received</strong><br>{rc}<br>
-                    <strong style='color:#64748b;'>Status</strong><br>{'Active' if u['is_active'] else 'Inactive'}<br>
-                    <strong style='color:#64748b;'>Joined</strong><br>{str(u['created_at'])[:10]}
+                <div style='font-size:12px;color:#64748B;line-height:2.1;'>
+                    <strong style='color:#64748B;'>Tasks / Knowledge</strong><br>{tc} / {kc}<br>
+                    <strong style='color:#64748B;'>Ratings Received</strong><br>{rc}<br>
+                    <strong style='color:#64748B;'>Status</strong><br>{'Active' if u['is_active'] else 'Inactive'}<br>
+                    <strong style='color:#64748B;'>Joined</strong><br>{str(u['created_at'])[:10]}
                 </div>""", unsafe_allow_html=True)
             with c3:
                 if u["role"] != "admin":
@@ -2082,7 +2207,7 @@ def page_admin_tasks():
     if cat_f != "All Categories":
         tasks = [t for t in tasks if t["category"] == cat_f]
 
-    st.markdown(f"<div style='color:#334155;font-size:12px;margin-bottom:12px;'>{len(tasks)} record(s)</div>",
+    st.markdown(f"<div style='color:#64748B;font-size:12px;margin-bottom:12px;'>{len(tasks)} record(s)</div>",
                 unsafe_allow_html=True)
     if not tasks:
         empty_state("No records found","Try adjusting filters."); return
@@ -2096,14 +2221,14 @@ def page_admin_tasks():
             tc1, tc2 = st.columns([3,1])
             with tc1:
                 st.markdown(f"""
-                <div style='color:#475569;font-size:12px;line-height:1.7;margin-bottom:8px;'>{t['description']}</div>
+                <div style='color:#64748B;font-size:12px;line-height:1.7;margin-bottom:8px;'>{t['description']}</div>
                 {type_badge(t.get('type',TYPE_TASK), intent)}
                 {status_badge(t['status'])}
                 {priority_badge(t.get('priority','Normal'))}
                 <span class='cs-badge badge-violet'>{t['category']}</span>
                 <span class='cs-badge badge-slate'>{t['skills']}</span>
                 <span class='cs-badge badge-slate'>{t.get('applicant_count',0)} interested</span>
-                <div style='font-size:10px;color:#1e2d45;margin-top:6px;'>Posted {str(t['created_at'])[:10]}</div>
+                <div style='font-size:10px;color:#94A3B8;margin-top:6px;'>Posted {str(t['created_at'])[:10]}</div>
                 """,unsafe_allow_html=True)
             with tc2:
                 new_s = st.selectbox("Status",["open","in_progress","closed"],
