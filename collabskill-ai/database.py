@@ -88,6 +88,7 @@ def init_db():
         ("portfolio",     "TEXT DEFAULT ''"),
         ("phone_number",  "TEXT DEFAULT ''"),
         ("avatar_color",  "TEXT DEFAULT '#22d3ee'"),
+        ("avatar_photo",  "BLOB DEFAULT NULL"),
         ("trust_score",   "REAL DEFAULT 5.0"),
         ("total_ratings", "INTEGER DEFAULT 0"),
         ("is_active",     "INTEGER DEFAULT 1"),
