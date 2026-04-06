@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from database import init_db, db_fetchone, db_fetchall, db_execute
 from auth import (register_user, login_user, get_user,
-                  update_profile, update_avatar_color,
+                  update_profile, update_avatar_color, update_avatar_photo,
                   update_trust_score, get_top_users, AVATAR_COLORS)
 from tasks_db import (
     create_task, get_all_open_tasks, get_my_tasks, get_all_tasks_admin,
@@ -581,7 +581,15 @@ def mode_pill():
         st.markdown("<div class='mode-pill-work'>Task Collaboration Mode</div>",
                     unsafe_allow_html=True)
 
-def mk_avatar_html(name, size=40, color="#1d4ed8"):
+def mk_avatar_html(name, size=40, color="#2563EB", photo_bytes=None):
+    """Renders a circular avatar — photo takes priority over color initial."""
+    if photo_bytes:
+        import base64
+        b64 = base64.b64encode(photo_bytes).decode()
+        return (f"<img src='data:image/jpeg;base64,{b64}' "
+                f"style='width:{size}px;height:{size}px;border-radius:50%;"
+                f"object-fit:cover;flex-shrink:0;"
+                f"box-shadow:0 0 0 2px #E2E8F0;' />")
     ini = "".join(w[0].upper() for w in (name or "U").split()[:2])
     return (f"<div class='profile-avatar-ring' "
             f"style='width:{size}px;height:{size}px;background:{color};flex-shrink:0;'>"
@@ -724,13 +732,14 @@ def render_navbar():
 
     with cols[0]:
         st.markdown(
-            f"<div class='navbar-logo' style='line-height:38px;'>"
+            f"<div class='navbar-logo' style='line-height:38px;padding-top:2px;'>"
             f"Collab<span>Skill</span> AI{admin_pill}</div>",
             unsafe_allow_html=True)
 
     for col, (lbl, pg) in zip(cols[1:], nav_items):
         with col:
             if pg == "__logout__":
+                # Same height wrapper — NO margin-top shift
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                     st.session_state.user    = None
@@ -934,12 +943,37 @@ def page_register():
     section_header("Create Your Account",
                    "Join CollabSkill AI and start collaborating or learning today.")
 
-    # ── Skill dropdowns must be OUTSIDE the form ──────────────
-    st.markdown(
-        "<div style='font-size:11px;font-weight:700;color:#64748B;"
-        "letter-spacing:.08em;text-transform:uppercase;margin-bottom:8px;'>"
-        "Primary Skill</div>",
-        unsafe_allow_html=True)
+    # ── Main form (account + profile details) ─────────────────
+    with st.form("register_form", clear_on_submit=False):
+        c1, c2 = st.columns(2)
+        with c1:
+            st.markdown("**Account Details**")
+            username  = st.text_input("Username *",         placeholder="Choose a unique username", key="rp_user")
+            email     = st.text_input("Email Address *",    placeholder="you@email.com",            key="rp_email")
+            password  = st.text_input("Password *",         placeholder="Minimum 6 characters",     key="rp_pass",    type="password")
+            confirm   = st.text_input("Confirm Password *", placeholder="Repeat your password",     key="rp_confirm", type="password")
+        with c2:
+            st.markdown("**Profile Details**")
+            experience   = st.selectbox("Experience Level",
+                                        ["Beginner","Intermediate","Advanced","Expert"], key="rp_exp")
+            phone_number = st.text_input("Phone Number (optional)", placeholder="+91 98765 43210", key="rp_phone")
+            portfolio    = st.text_input("Portfolio / GitHub URL (optional)",
+                                         placeholder="https://github.com/yourname", key="rp_port")
+            bio          = st.text_area("Short Bio", placeholder="Tell others about yourself...",
+                                        height=80, key="rp_bio")
+
+        agree    = st.checkbox("I agree to the Terms and Conditions", key="rp_agree")
+        submitted = st.form_submit_button("Create Account", use_container_width=True)
+
+    # ── Primary Skill — BELOW account details, OUTSIDE form ───
+    st.markdown("<div style='height:16px;'></div>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;
+        padding:20px 22px;margin-bottom:12px;box-shadow:0 2px 10px rgba(0,0,0,.05);'>
+        <div style='font-size:13px;font-weight:700;color:#0F172A;margin-bottom:14px;'>
+            Primary Skill
+        </div>
+    """, unsafe_allow_html=True)
 
     sk1, sk2 = st.columns(2)
     with sk1:
@@ -963,29 +997,7 @@ def page_register():
             placeholder="Type your specific skill here...",
             key="rp_custom_skill")
 
-    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
-
-    # ── Rest of form ──────────────────────────────────────────
-    with st.form("register_form", clear_on_submit=False):
-        c1, c2 = st.columns(2)
-        with c1:
-            st.markdown("**Account Details**")
-            username  = st.text_input("Username *",         placeholder="Choose a unique username", key="rp_user")
-            email     = st.text_input("Email Address *",    placeholder="you@email.com",            key="rp_email")
-            password  = st.text_input("Password *",         placeholder="Minimum 6 characters",     key="rp_pass",    type="password")
-            confirm   = st.text_input("Confirm Password *", placeholder="Repeat your password",     key="rp_confirm", type="password")
-        with c2:
-            st.markdown("**Profile Details**")
-            experience   = st.selectbox("Experience Level",
-                                        ["Beginner","Intermediate","Advanced","Expert"], key="rp_exp")
-            phone_number = st.text_input("Phone Number (optional)", placeholder="+91 98765 43210", key="rp_phone")
-            portfolio    = st.text_input("Portfolio / GitHub URL (optional)",
-                                         placeholder="https://github.com/yourname", key="rp_port")
-            bio          = st.text_area("Short Bio", placeholder="Tell others about yourself...",
-                                        height=80, key="rp_bio")
-
-        agree    = st.checkbox("I agree to the Terms and Conditions", key="rp_agree")
-        submitted = st.form_submit_button("Create Account", use_container_width=True)
+    st.markdown("</div>", unsafe_allow_html=True)
 
     if submitted:
         # Resolve the final skill string
@@ -1054,32 +1066,24 @@ def page_dashboard():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    # Profile banner — full width card with Edit Profile + Sign Out inside it
-    avatar_color = u.get("avatar_color", "#1d4ed8")
-    with st.container():
-        pc1, pc2, pc3 = st.columns([5, 1, 1])
-        with pc1:
-            st.markdown(f"""
-            <div class='cs-card' style='display:flex;align-items:center;gap:16px;margin-bottom:0;'>
-                {mk_avatar_html(u['username'], 48, avatar_color)}
-                <div>
-                    <div style='font-size:15px;font-weight:800;color:#0F172A;'>{u['username']}</div>
-                    <div style='font-size:12px;color:#64748B;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
-                    <div style='font-size:11px;color:#94A3B8;margin-top:2px;'>{u['experience']}</div>
-                </div>
-            </div>""", unsafe_allow_html=True)
-        with pc2:
-            st.markdown("<div style='padding-top:8px;'>", unsafe_allow_html=True)
-            if st.button("Edit Profile", key="dash_edit", use_container_width=True):
-                go("profile")
-            st.markdown("</div>", unsafe_allow_html=True)
-        with pc3:
-            st.markdown("<div class='btn-danger' style='padding-top:8px;'>", unsafe_allow_html=True)
-            if st.button("Sign Out", key="dash_signout", use_container_width=True):
-                st.session_state.user    = None
-                st.session_state.history = []
-                go("landing")
-            st.markdown("</div>", unsafe_allow_html=True)
+    # Profile banner — just avatar info + Edit Profile, NO sign out here
+    avatar_color = u.get("avatar_color", "#2563EB")
+    pc1, pc2 = st.columns([6, 1])
+    with pc1:
+        st.markdown(f"""
+        <div class='cs-card' style='display:flex;align-items:center;gap:16px;margin-bottom:0;'>
+            {mk_avatar_html(u['username'], 48, avatar_color)}
+            <div>
+                <div style='font-size:15px;font-weight:800;color:#0F172A;'>{u['username']}</div>
+                <div style='font-size:12px;color:#64748B;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
+                <div style='font-size:11px;color:#94A3B8;margin-top:2px;'>{u['experience']}</div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+    with pc2:
+        st.markdown("<div style='padding-top:8px;'>", unsafe_allow_html=True)
+        if st.button("Edit Profile", key="dash_edit", use_container_width=True):
+            go("profile")
+        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1116,19 +1120,32 @@ def page_dashboard():
                 </div>""", unsafe_allow_html=True)
 
     with tab3:
-        q1, q2, q3, q4 = st.columns(4)
+        # All 4 buttons in perfectly equal columns — same height via CSS wrapper
+        st.markdown("""
+        <style>
+        /* Force all quick-action buttons to same height */
+        div[data-testid="column"] .stButton > button {
+            height: 44px !important;
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+        }
+        </style>""", unsafe_allow_html=True)
+
         lbl1 = "Post Knowledge" if is_learn_mode() else "Post a Task"
         lbl2 = "Browse Knowledge" if is_learn_mode() else "Browse Tasks"
+
+        q1, q2, q3, q4 = st.columns(4)
         with q1:
             st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
             st.markdown("</div>", unsafe_allow_html=True)
         with q2:
-            if st.button(lbl2, key="qa_browse", use_container_width=True): go("browse_tasks")
+            if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
-            if st.button("AI Matching", key="qa_ai", use_container_width=True): go("ai_match")
+            if st.button("AI Matching", key="qa_ai",        use_container_width=True): go("ai_match")
         with q4:
-            if st.button("Community", key="qa_community", use_container_width=True): go("community")
+            if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1490,27 +1507,91 @@ def page_profile():
     sidebar, main = st.columns([1, 2.2])
 
     with sidebar:
-        avatar_color = u.get("avatar_color") or "#1d4ed8"
+        avatar_color = u.get("avatar_color") or "#2563EB"
         ini = "".join(w[0].upper() for w in (u["username"] or "U").split()[:2])
+        avatar_photo = u.get("avatar_photo")   # bytes or None
 
-        # ── Avatar with color picker ───────────────────────────
-        st.markdown(f"""
-        <div style='text-align:center;margin-bottom:16px;'>
-            <div style='width:88px;height:88px;border-radius:50%;background:{avatar_color};
-                display:inline-flex;align-items:center;justify-content:center;
-                font-size:30px;font-weight:800;color:#fff;
-                box-shadow:0 0 0 3px #E2E8F0,0 0 0 7px rgba(56,189,248,.08);'>
-                {ini}
-            </div>
+        # ── Profile picture display ────────────────────────────
+        if avatar_photo:
+            import base64
+            b64 = base64.b64encode(avatar_photo).decode()
+            st.markdown(f"""
+            <div style='text-align:center;margin-bottom:12px;'>
+                <img src='data:image/jpeg;base64,{b64}'
+                    style='width:88px;height:88px;border-radius:50%;
+                    object-fit:cover;
+                    box-shadow:0 0 0 3px #E2E8F0,0 0 0 7px rgba(37,99,235,.08);'/>
+            </div>""", unsafe_allow_html=True)
+        else:
+            st.markdown(f"""
+            <div style='text-align:center;margin-bottom:12px;'>
+                <div style='width:88px;height:88px;border-radius:50%;background:{avatar_color};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:30px;font-weight:800;color:#fff;
+                    box-shadow:0 0 0 3px #E2E8F0,0 0 0 7px rgba(37,99,235,.08);'>
+                    {ini}
+                </div>
+            </div>""", unsafe_allow_html=True)
+
+        # ── Photo options ──────────────────────────────────────
+        st.markdown("""
+        <div style='font-size:11px;font-weight:700;color:#64748B;
+            letter-spacing:.08em;text-transform:uppercase;
+            text-align:center;margin-bottom:8px;'>
+            Profile Photo
         </div>""", unsafe_allow_html=True)
 
-        # Color picker
-        new_color = st.color_picker("Profile Color", value=avatar_color, key="prof_color")
-        if new_color != avatar_color:
-            update_avatar_color(u["id"], new_color)
-            fresh = get_user(u["id"])
-            st.session_state.user = fresh
-            st.rerun()
+        photo_option = st.selectbox(
+            "Photo option",
+            ["Keep current", "Upload from Device", "Take a Photo",
+             "Remove / Delete Photo"] if avatar_photo
+            else ["Keep current", "Upload from Device", "Take a Photo"],
+            key="prof_photo_opt",
+            label_visibility="collapsed")
+
+        if photo_option == "Upload from Device":
+            uploaded = st.file_uploader(
+                "Choose an image", type=["jpg","jpeg","png","webp"],
+                key="prof_upload", label_visibility="collapsed")
+            if uploaded is not None:
+                photo_bytes = uploaded.read()
+                update_avatar_photo(u["id"], photo_bytes)
+                st.success("Profile photo updated.")
+                fresh = get_user(u["id"])
+                st.session_state.user = fresh
+                st.rerun()
+
+        elif photo_option == "Take a Photo":
+            camera_img = st.camera_input("Take a selfie", key="prof_camera",
+                                         label_visibility="collapsed")
+            if camera_img is not None:
+                photo_bytes = camera_img.read()
+                update_avatar_photo(u["id"], photo_bytes)
+                st.success("Profile photo updated.")
+                fresh = get_user(u["id"])
+                st.session_state.user = fresh
+                st.rerun()
+
+        elif photo_option == "Remove / Delete Photo":
+            st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+            if st.button("Confirm Remove Photo", key="prof_remove_photo",
+                         use_container_width=True):
+                update_avatar_photo(u["id"], None)
+                st.success("Profile photo removed.")
+                fresh = get_user(u["id"])
+                st.session_state.user = fresh
+                st.rerun()
+            st.markdown("</div>", unsafe_allow_html=True)
+
+        # ── Avatar color picker (when no photo) ───────────────
+        if not avatar_photo:
+            st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
+            new_color = st.color_picker("Avatar Color", value=avatar_color, key="prof_color")
+            if new_color != avatar_color:
+                update_avatar_color(u["id"], new_color)
+                fresh = get_user(u["id"])
+                st.session_state.user = fresh
+                st.rerun()
 
         st.markdown(f"""
         <div style='text-align:center;margin-top:12px;'>
@@ -1563,15 +1644,6 @@ def page_profile():
                     letter-spacing:.08em;color:#94A3B8;margin-bottom:8px;'>Skills</div>
                 {tags}
             </div>""", unsafe_allow_html=True)
-
-        # Sign out in profile sidebar
-        st.markdown("<div style='margin-top:16px;'>", unsafe_allow_html=True)
-        st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-        if st.button("Sign Out", key="prof_signout", use_container_width=True):
-            st.session_state.user    = None
-            st.session_state.history = []
-            go("landing")
-        st.markdown("</div></div>", unsafe_allow_html=True)
 
     with main:
         tab1, tab2, tab3, tab4, tab5 = st.tabs([
