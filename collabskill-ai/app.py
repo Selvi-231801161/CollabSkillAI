@@ -154,6 +154,11 @@ label, .stTextInput label, .stTextArea label,
     padding: 8px 16px !important;
     transition: background .15s, color .15s, border-color .15s !important;
     letter-spacing: .01em !important;
+    white-space: nowrap !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
+    height: 38px !important;
+    line-height: 1.2 !important;
 }
 .stButton > button:hover {
     background: #131f35 !important;
@@ -543,7 +548,7 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 def render_navbar():
     u      = st.session_state.user
     unread = get_unread_count(u["id"]) if u else 0
-    notif_lbl = f"Notifications ({unread})" if unread else "Notifications"
+    notif_lbl = f"Notifs ({unread})" if unread else "Notifs"
 
     if is_admin():
         nav_items = [
@@ -580,25 +585,26 @@ def render_navbar():
         st.markdown("<hr/>", unsafe_allow_html=True)
         return
 
-    # Logged-in navbar
-    n = len(nav_items)
-    cols = st.columns([3] + [1]*n)
+    # Logged-in navbar — use HTML for perfectly aligned, no-wrap nav
+    admin_pill = (
+        " <span style='font-size:9px;background:rgba(56,189,248,.1);"
+        "color:#38bdf8;border:1px solid rgba(56,189,248,.15);"
+        "border-radius:3px;padding:2px 7px;letter-spacing:.06em;'>ADMIN</span>"
+        if is_admin() else ""
+    )
+
+    # Logo column + one column per nav button, all fixed height
+    n    = len(nav_items)
+    cols = st.columns([2.4] + [1.1] * n)
 
     with cols[0]:
-        admin_pill = (
-            " <span style='font-size:9px;background:rgba(56,189,248,.1);"
-            "color:#38bdf8;border:1px solid rgba(56,189,248,.15);"
-            "border-radius:3px;padding:2px 7px;letter-spacing:.06em;'>ADMIN</span>"
-            if is_admin() else ""
-        )
         st.markdown(
-            f"<div class='navbar-logo' style='padding-top:10px;'>"
+            f"<div class='navbar-logo' style='line-height:38px;'>"
             f"Collab<span>Skill</span> AI{admin_pill}</div>",
             unsafe_allow_html=True)
 
     for col, (lbl, pg) in zip(cols[1:], nav_items):
         with col:
-            # Sign Out gets a subtle red tint
             if pg == "__logout__":
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
@@ -821,8 +827,16 @@ def page_register():
             st.selectbox("Skill", ["Select a category first"], key="rp_skill_val")
             sel_skill = None
         else:
-            skill_opts = SKILLS_BY_CATEGORY.get(sel_cat, []) + ["Other"]
+            skill_opts = SKILLS_BY_CATEGORY.get(sel_cat, []) + ["Other — type your own"]
             sel_skill  = st.selectbox("Skill", skill_opts, key="rp_skill_val")
+
+    # If "Other — type your own" is selected, show a text input
+    custom_skill = None
+    if sel_skill == "Other — type your own":
+        custom_skill = st.text_input(
+            "Enter your skill",
+            placeholder="Type your specific skill here...",
+            key="rp_custom_skill")
 
     st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
@@ -849,8 +863,13 @@ def page_register():
         submitted = st.form_submit_button("Create Account", use_container_width=True)
 
     if submitted:
-        skill_str = (f"{sel_cat} - {sel_skill}"
-                     if sel_cat and sel_cat != "Select a category" and sel_skill else "")
+        # Resolve the final skill string
+        if sel_skill == "Other — type your own":
+            resolved_skill = custom_skill.strip() if custom_skill else ""
+            skill_str = f"{sel_cat} - {resolved_skill}" if (sel_cat and sel_cat != "Select a category" and resolved_skill) else ""
+        else:
+            skill_str = (f"{sel_cat} - {sel_skill}"
+                         if sel_cat and sel_cat != "Select a category" and sel_skill else "")
         if not agree:
             st.warning("Please accept the Terms and Conditions.")
         elif not all([username, email, password, skill_str]):
@@ -910,28 +929,32 @@ def page_dashboard():
 
     st.markdown("<br>", unsafe_allow_html=True)
 
-    pc1, pc2, pc3 = st.columns([4, 1, 1])
+    # Profile banner — full width card with Edit Profile + Sign Out inside it
     avatar_color = u.get("avatar_color", "#1d4ed8")
-    with pc1:
-        st.markdown(f"""
-        <div class='cs-card' style='display:flex;align-items:center;gap:16px;'>
-            {mk_avatar_html(u['username'], 48, avatar_color)}
-            <div>
-                <div style='font-size:15px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
-                <div style='font-size:12px;color:#334155;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
-                <div style='font-size:11px;color:#1e2d45;margin-top:2px;'>{u['experience']}</div>
-            </div>
-        </div>""", unsafe_allow_html=True)
-    with pc2:
-        if st.button("Edit Profile", key="dash_edit", use_container_width=True):
-            go("profile")
-    with pc3:
-        st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-        if st.button("Sign Out", key="dash_signout", use_container_width=True):
-            st.session_state.user    = None
-            st.session_state.history = []
-            go("landing")
-        st.markdown("</div>", unsafe_allow_html=True)
+    with st.container():
+        pc1, pc2, pc3 = st.columns([5, 1, 1])
+        with pc1:
+            st.markdown(f"""
+            <div class='cs-card' style='display:flex;align-items:center;gap:16px;margin-bottom:0;'>
+                {mk_avatar_html(u['username'], 48, avatar_color)}
+                <div>
+                    <div style='font-size:15px;font-weight:800;color:#f1f5f9;'>{u['username']}</div>
+                    <div style='font-size:12px;color:#334155;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
+                    <div style='font-size:11px;color:#1e2d45;margin-top:2px;'>{u['experience']}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+        with pc2:
+            st.markdown("<div style='padding-top:8px;'>", unsafe_allow_html=True)
+            if st.button("Edit Profile", key="dash_edit", use_container_width=True):
+                go("profile")
+            st.markdown("</div>", unsafe_allow_html=True)
+        with pc3:
+            st.markdown("<div class='btn-danger' style='padding-top:8px;'>", unsafe_allow_html=True)
+            if st.button("Sign Out", key="dash_signout", use_container_width=True):
+                st.session_state.user    = None
+                st.session_state.history = []
+                go("landing")
+            st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1453,9 +1476,17 @@ def page_profile():
                     st.selectbox("Skill", ["Select a category first"], key="ep_sval")
                     new_skill = None
                 else:
-                    sk_opts   = SKILLS_BY_CATEGORY.get(new_cat, []) + ["Other"]
+                    sk_opts   = SKILLS_BY_CATEGORY.get(new_cat, []) + ["Other — type your own"]
                     sk_idx    = sk_opts.index(def_sk) if def_sk in sk_opts else 0
                     new_skill = st.selectbox("Skill", sk_opts, index=sk_idx, key="ep_sval")
+
+            # Show text input when Other is selected
+            ep_custom = None
+            if new_skill == "Other — type your own":
+                ep_custom = st.text_input(
+                    "Enter your skill",
+                    placeholder="Type your specific skill here...",
+                    key="ep_custom_skill")
 
             with st.form("edit_profile_form"):
                 eu1, eu2 = st.columns(2)
@@ -1472,9 +1503,15 @@ def page_profile():
                     n_bio = st.text_area("Bio", value=u.get("bio",""), height=100)
 
                 if st.form_submit_button("Save Changes", use_container_width=True):
-                    new_skills = (f"{new_cat} - {new_skill}"
-                                  if new_cat and new_cat != "Select a category" and new_skill
-                                  else u["skills"])
+                    if new_skill == "Other — type your own":
+                        resolved = ep_custom.strip() if ep_custom else ""
+                        new_skills = (f"{new_cat} - {resolved}"
+                                      if new_cat and new_cat != "Select a category" and resolved
+                                      else u["skills"])
+                    else:
+                        new_skills = (f"{new_cat} - {new_skill}"
+                                      if new_cat and new_cat != "Select a category" and new_skill
+                                      else u["skills"])
                     update_profile(u["id"], n_user, new_skills, n_exp, n_bio, n_port, n_phone)
                     fresh = get_user(u["id"])
                     st.session_state.user = fresh
