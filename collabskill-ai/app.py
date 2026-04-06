@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from database import init_db, db_fetchone, db_fetchall, db_execute
 from auth import (register_user, login_user, get_user,
-                  update_profile, update_avatar_color, update_avatar_photo,
+                  update_profile, update_avatar_color, 
                   update_trust_score, get_top_users, AVATAR_COLORS)
 from tasks_db import (
     create_task, get_all_open_tasks, get_my_tasks, get_all_tasks_admin,
