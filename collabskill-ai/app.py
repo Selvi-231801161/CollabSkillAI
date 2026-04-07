@@ -929,7 +929,7 @@ def page_login():
         st.markdown(f"""
         <div style='background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;padding:36px;'>
             <div style='text-align:center;margin-bottom:26px;'>
-                <div style='font-size:20px;font-weight:800;color:#0F172A;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
+                <div style='font-size:32px;font-weight:800;color:#0F172A;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
                 <div style='font-size:12px;color:#64748B;'>{mode_label} Mode</div>
             </div>
         """, unsafe_allow_html=True)
