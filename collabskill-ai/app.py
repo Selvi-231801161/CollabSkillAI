@@ -759,7 +759,7 @@ def render_navbar():
 
     # Logo column + one column per nav button, all fixed height
     n    = len(nav_items)
-    cols = st.columns([3.2] + [1.6] * n)
+    cols = st.columns([3.2] + [2.2 if lbl == "Dashboard" else 1.5 for lbl, _ in nav_items])
     with cols[0]:
         st.markdown(
             f"<div class='navbar-logo' style='line-height:38px;padding-top:2px;'>"
