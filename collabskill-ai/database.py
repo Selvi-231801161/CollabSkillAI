@@ -198,3 +198,19 @@ def db_execute(sql, params=()):
         conn.commit()
     finally:
         conn.close()
+
+
+# ── Extended table initialisation ────────────────────────────
+def init_extended_tables():
+    """Call once on startup to create all feature tables."""
+    conn = get_connection()
+    try:
+        from network    import init_network_tables
+        from chat       import init_chat_tables
+        from project_db import init_project_tables
+        init_network_tables(conn)
+        init_chat_tables(conn)
+        init_project_tables(conn)
+    except ImportError:
+        pass
+    conn.close()
