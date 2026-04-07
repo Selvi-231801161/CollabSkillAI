@@ -2688,7 +2688,7 @@ def page_network():
                         <div style='font-size:11px;color:#94A3B8;'>{fu.get('experience','')}</div>
                         {status_badge_html}
                     </div>
-                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{fu.get('trust_score',5)}</div>
+                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{round(float(fu.get('trust_score', 5)), 1)}</div>
                 </div>""", unsafe_allow_html=True)
                 if status == "none":
                     st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
