@@ -759,7 +759,7 @@ def render_navbar():
 
     # Logo column + one column per nav button, all fixed height
     n    = len(nav_items)
-    cols = st.columns([2.0] + [1.3] * n)
+    cols = st.columns([2.2] + [1.6] * n)
 
     with cols[0]:
         st.markdown(
