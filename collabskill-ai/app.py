@@ -452,7 +452,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* ══════════════════════════════════════
    NAVBAR
    ══════════════════════════════════════ */
-.navbar-logo { font-size: 16px; font-weight: 800; color: #0F172A; letter-spacing: -.01em; }
+.navbar-logo { font-size: 32px; font-weight: 900; color: #0F172A; letter-spacing: -.01em; }
 .navbar-logo span { color: #2563EB; }
 
 /* ══════════════════════════════════════
