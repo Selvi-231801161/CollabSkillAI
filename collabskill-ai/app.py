@@ -910,7 +910,7 @@ def page_landing():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
-        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:18px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
         <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
     </div>""", unsafe_allow_html=True)
 
