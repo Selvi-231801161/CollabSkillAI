@@ -3,7 +3,7 @@ import streamlit as st
 import pandas as pd
 from database import init_db, db_fetchone, db_fetchall, db_execute
 from auth import (register_user, login_user, get_user,
-                  update_profile, update_avatar_color, 
+                  update_profile, update_avatar_color, update_avatar_photo,
                   update_trust_score, get_top_users, AVATAR_COLORS)
 from tasks_db import (
     create_task, get_all_open_tasks, get_my_tasks, get_all_tasks_admin,
@@ -16,8 +16,32 @@ from tasks_db import (
     INTENT_LEARN, INTENT_TEACH,
     SKILL_CATEGORIES, SKILLS_BY_CATEGORY,
 )
+from ai_matching import (
+    match_users_to_task, recommend_tasks_for_user,
+    recommend_users_for_collaboration,
+)
+from badges     import assign_badges, render_badges_html, compute_trust_score
+from network    import (send_request, accept_request, reject_request,
+                        get_connection_status, get_incoming_requests,
+                        get_my_network, get_connection_count)
+from chat       import (send_message, get_messages, get_conversations,
+                        send_group_message, get_group_messages,
+                        create_group, add_member_to_group, get_user_groups,
+                        get_group_members)
+from project_db import (create_project, get_project, get_my_projects,
+                        send_project_invite, get_pending_invites,
+                        accept_project_invite, reject_project_invite,
+                        get_project_members, is_project_member,
+                        add_resource, get_resources, update_project_chat)
 
 init_db()
+
+# ── Init extended tables ──────────────────────────────────────
+try:
+    from database import init_extended_tables
+    init_extended_tables()
+except Exception:
+    pass
 
 st.set_page_config(
     page_title="CollabSkill AI",
@@ -34,7 +58,10 @@ for k, v in {
     "ai_matches":    [],
     "ai_done":       False,
     "mode":          "work",
-    "know_intent":   INTENT_LEARN,   # learn | teach
+    "know_intent":   INTENT_LEARN,
+    "chat_partner":  None,   # user_id for active 1:1 chat
+    "chat_group":    None,   # group_id for active group chat
+    "active_project": None,  # project_id for workspace
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -424,7 +451,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* ══════════════════════════════════════
    NAVBAR
    ══════════════════════════════════════ */
-.navbar-logo { font-size: 26px; font-weight: 900; color: #0F172A; letter-spacing: -.01em; }
+.navbar-logo { font-size: 16px; font-weight: 800; color: #0F172A; letter-spacing: -.01em; }
 .navbar-logo span { color: #2563EB; }
 
 /* ══════════════════════════════════════
@@ -699,6 +726,9 @@ def render_navbar():
             ("Dashboard",   "dashboard"),
             ("Browse",      "browse_tasks"),
             ("Post",        "post_task"),
+            ("Network",     "network"),
+            ("Projects",    "projects"),
+            ("Chat",        "chat"),
             (notif_lbl,     "notifications"),
             ("Profile",     "profile"),
             ("Sign Out",    "__logout__"),
@@ -728,7 +758,7 @@ def render_navbar():
 
     # Logo column + one column per nav button, all fixed height
     n    = len(nav_items)
-    cols = st.columns([2.4] + [1.1] * n)
+    cols = st.columns([2.0] + [0.9] * n)
 
     with cols[0]:
         st.markdown(
@@ -1135,16 +1165,24 @@ def page_dashboard():
         lbl1 = "Post Knowledge" if is_learn_mode() else "Post a Task"
         lbl2 = "Browse Knowledge" if is_learn_mode() else "Browse Tasks"
 
-        q1, q2, q3, q4 = st.columns(4)
+        q1, q2, q3, q4, q5, q6 = st.columns(6)
         with q1:
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
-
+            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
             if st.button("AI Matching", key="qa_ai",        use_container_width=True): go("ai_match")
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
+        with q5:
+            if st.button("Network",     key="qa_network",   use_container_width=True): go("network")
+        with q6:
+            if st.button("Projects",    key="qa_projects",  use_container_width=True): go("projects")
+
+    # ── AI Recommendations ────────────────────────────────────
+    render_ai_recommendations(u)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1623,14 +1661,25 @@ def page_profile():
                 f"style='font-size:12px;color:#2563EB;font-weight:600;'>Portfolio / GitHub</a></div>",
                 unsafe_allow_html=True)
 
-        trust_pct = int((u["trust_score"] / 10) * 100)
+        # ── Enhanced trust score display ───────────────────────
+        computed_trust = compute_trust_score(u["id"])
+        trust_pct = computed_trust
         st.markdown(f"""
         <div style='margin-top:12px;padding-top:12px;border-top:1px solid #E2E8F0;'>
             <div style='display:flex;justify-content:space-between;color:#64748B;font-size:10px;margin-bottom:4px;'>
-                <span>Trust Score</span><span>{u['trust_score']} / 10</span>
+                <span>Trust Score</span><span style='font-weight:700;color:#2563EB;'>{computed_trust} / 100</span>
             </div>
-            {trust_bar_html(u['trust_score'])}
+            <div style='background:#E2E8F0;border-radius:999px;height:6px;'>
+                <div style='width:{trust_pct}%;height:6px;border-radius:999px;background:linear-gradient(90deg,#2563EB,#4F46E5);'></div>
+            </div>
             <div style='font-size:10px;color:#94A3B8;margin-top:5px;'>{u['total_ratings']} ratings received</div>
+        </div>""", unsafe_allow_html=True)
+
+        # Connections count
+        conn_cnt = get_connection_count(u["id"])
+        st.markdown(f"""
+        <div style='text-align:center;margin-top:10px;font-size:12px;color:#64748B;'>
+            <strong style='color:#2563EB;'>{conn_cnt}</strong> connections
         </div>""", unsafe_allow_html=True)
 
         if u.get("skills"):
@@ -1645,9 +1694,9 @@ def page_profile():
             </div>""", unsafe_allow_html=True)
 
     with main:
-        tab1, tab2, tab3, tab4, tab5 = st.tabs([
+        tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
             "Edit Profile", "My Tasks", "My Knowledge Posts",
-            "Feedback Received", "Give Rating",
+            "Feedback & Ratings", "Badges", "Give Rating",
         ])
 
         with tab1:
@@ -1765,13 +1814,15 @@ def page_profile():
                 <div class='cs-card' style='text-align:center;padding:20px;margin-bottom:14px;'>
                     <div style='font-size:30px;font-weight:900;color:#2563EB;'>{avg}</div>
                     <div style='margin-top:4px;'>{stars_html(round(avg))}</div>
-                    <div style='font-size:12px;color:#64748B;margin-top:5px;'>Average rating / 5 from {len(fbs)} reviews</div>
+                    <div style='font-size:12px;color:#64748B;margin-top:5px;'>
+                        Average from {len(fbs)} reviews
+                    </div>
                 </div>""", unsafe_allow_html=True)
                 for f in fbs:
                     st.markdown(f"""
                     <div class='cs-card' style='padding:14px;'>
                         <div style='display:flex;justify-content:space-between;align-items:center;'>
-                            <span style='font-weight:600;color:#64748B;font-size:13px;'>{f['from_name']}</span>
+                            <span style='font-weight:600;color:#0F172A;font-size:13px;'>{f['from_name']}</span>
                             <span>{stars_html(f['rating'])}</span>
                         </div>
                         <div style='font-size:12px;color:#64748B;margin-top:6px;'>{f['comment'] or 'No comment.'}</div>
@@ -1779,6 +1830,36 @@ def page_profile():
                     </div>""", unsafe_allow_html=True)
 
         with tab5:
+            # ── Badge System ──────────────────────────────────
+            computed_trust = compute_trust_score(u["id"])
+            badges         = assign_badges(u["id"])
+
+            # Trust score card
+            st.markdown(f"""
+            <div class='cs-card' style='display:flex;align-items:center;gap:20px;padding:18px;margin-bottom:16px;'>
+                <div style='text-align:center;flex-shrink:0;'>
+                    <div style='font-size:36px;font-weight:900;color:#2563EB;line-height:1;'>{computed_trust}</div>
+                    <div style='font-size:10px;color:#94A3B8;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:2px;'>Trust Score</div>
+                </div>
+                <div style='flex:1;'>
+                    <div style='background:#E2E8F0;border-radius:999px;height:10px;margin-bottom:6px;'>
+                        <div style='width:{computed_trust}%;height:10px;border-radius:999px;
+                            background:linear-gradient(90deg,#2563EB,#4F46E5);'></div>
+                    </div>
+                    <div style='font-size:11px;color:#64748B;'>
+                        Score out of 100 — based on completed tasks, ratings, profile completeness and knowledge contributions.
+                    </div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+
+            # Badges
+            st.markdown(
+                "<div style='font-size:12px;font-weight:700;color:#0F172A;margin-bottom:10px;'>"
+                f"Earned Badges ({len(badges)})</div>",
+                unsafe_allow_html=True)
+            st.markdown(render_badges_html(badges), unsafe_allow_html=True)
+
+        with tab6:
             others = db_fetchall(
                 "SELECT id, username, skills, trust_score FROM users "
                 "WHERE id != ? AND is_active = 1 AND role = 'user'", (u["id"],))
@@ -1815,7 +1896,7 @@ def page_ai_match():
     back_btn()
     breadcrumb("Home", "AI Skill Matching")
     section_header("AI Skill Matching",
-                   "Describe your task and let AI find the best collaborators.")
+                   "Local AI — no API key required. Powered by TF-IDF and skill overlap.")
 
     left, right = st.columns([3, 2])
     with left:
@@ -1829,9 +1910,8 @@ def page_ai_match():
             if not all([ai_title, ai_desc, ai_skills]):
                 st.warning("Please fill in all three fields.")
             else:
-                with st.spinner("Analyzing profiles..."):
+                with st.spinner("Analyzing profiles locally..."):
                     try:
-                        from ai_matching import match_users_to_task
                         matches = match_users_to_task(
                             ai_title, ai_desc, ai_skills, st.session_state.user["id"])
                         st.session_state.ai_matches = matches
@@ -1839,7 +1919,6 @@ def page_ai_match():
                     except Exception as e:
                         st.session_state.ai_done = False
                         st.error(f"Matching error: {e}")
-                        st.info("Set OPENAI_API_KEY in Streamlit Cloud Secrets to enable AI matching.")
 
     with right:
         st.markdown("""
@@ -2314,22 +2393,615 @@ def page_admin_tasks():
 
 
 # ═══════════════════════════════════════════════════════════════
+#  AI RECOMMENDATIONS WIDGET (used in dashboard)
+# ═══════════════════════════════════════════════════════════════
+def render_ai_recommendations(u):
+    """Render AI Recommendations panel inside dashboard."""
+    user_skills = u.get("skills","")
+    user_bio    = u.get("bio","")
+    uid         = u["id"]
+    mode_type   = TYPE_KNOWLEDGE if is_learn_mode() else TYPE_TASK
+
+    section_divider("AI Recommendations")
+
+    tab_t, tab_u = st.tabs(["Recommended Posts", "Recommended Collaborators"])
+
+    with tab_t:
+        recs = recommend_tasks_for_user(uid, user_skills, user_bio,
+                                         entry_type=mode_type, top_n=5)
+        if not recs:
+            st.markdown("<div style='color:#64748B;font-size:13px;'>No recommendations yet. Post or browse to get started.</div>",
+                        unsafe_allow_html=True)
+        for task, score in recs:
+            pct   = int(min(score, 100))
+            color = "#16A34A" if pct >= 70 else "#D97706" if pct >= 40 else "#64748B"
+            best  = " <span style='background:#DCFCE7;color:#16A34A;border-radius:999px;font-size:10px;font-weight:700;padding:2px 8px;margin-left:6px;'>Best Match</span>" if pct >= 80 else ""
+            st.markdown(f"""
+            <div class='cs-card' style='padding:14px;margin-bottom:8px;'>
+                <div style='display:flex;justify-content:space-between;align-items:flex-start;'>
+                    <div style='flex:1;'>
+                        <div style='font-weight:700;color:#0F172A;font-size:13px;'>{task['title']}{best}</div>
+                        <div style='font-size:11px;color:#64748B;margin-top:3px;'>{task.get('skills','')}</div>
+                        <div style='font-size:11px;color:#94A3B8;margin-top:2px;'>By {task.get('creator_name','')}</div>
+                    </div>
+                    <div style='text-align:right;flex-shrink:0;margin-left:12px;'>
+                        <div style='font-size:20px;font-weight:900;color:{color};'>{pct}%</div>
+                        <div style='font-size:10px;color:#94A3B8;'>match</div>
+                    </div>
+                </div>
+                <div style='background:#F1F5F9;border-radius:999px;height:5px;margin-top:8px;'>
+                    <div style='width:{pct}%;height:5px;border-radius:999px;background:{color};'></div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+
+    with tab_u:
+        rec_users = recommend_users_for_collaboration(uid, user_skills, user_bio, top_n=5)
+        if not rec_users:
+            st.markdown("<div style='color:#64748B;font-size:13px;'>No collaborator recommendations yet.</div>",
+                        unsafe_allow_html=True)
+        for usr, score in rec_users:
+            pct   = int(min(score, 100))
+            color = "#16A34A" if pct >= 70 else "#D97706" if pct >= 40 else "#64748B"
+            av    = usr.get("avatar_color","#2563EB")
+            ini   = "".join(w[0].upper() for w in usr["username"].split()[:2])
+            btn_lbl = "Connect" if is_learn_mode() else "Collab"
+            st.markdown(f"""
+            <div class='cs-card' style='padding:14px;display:flex;align-items:center;gap:14px;margin-bottom:8px;'>
+                <div style='width:40px;height:40px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:14px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div style='flex:1;'>
+                    <div style='font-weight:700;color:#0F172A;font-size:13px;'>{usr['username']}</div>
+                    <div style='font-size:11px;color:#64748B;'>{usr.get('skills','')}</div>
+                </div>
+                <div style='text-align:right;flex-shrink:0;'>
+                    <div style='font-size:18px;font-weight:800;color:{color};'>{pct}%</div>
+                    <div style='font-size:10px;color:#94A3B8;'>match</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            if st.button(f"{btn_lbl} — {usr['username']}", key=f"rec_conn_{usr['id']}"):
+                ok, msg = send_request(uid, usr["id"], st.session_state.mode)
+                if ok:
+                    add_notification(usr["id"], f"New {btn_lbl} Request",
+                                     f"{u['username']} wants to {btn_lbl.lower()} with you.")
+                st.success(msg) if ok else st.warning(msg)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAGE: CHAT  (1:1)
+# ═══════════════════════════════════════════════════════════════
+def page_chat():
+    require_login()
+    render_navbar()
+    back_btn()
+    breadcrumb("Home", "Chat")
+    section_header("Messages", "Chat with your connections.")
+
+    u = st.session_state.user
+    conversations = get_conversations(u["id"])
+    partner_id    = st.session_state.chat_partner
+
+    c_list, c_chat = st.columns([1, 2])
+
+    with c_list:
+        st.markdown("<div style='font-size:12px;font-weight:700;color:#64748B;text-transform:uppercase;letter-spacing:.08em;margin-bottom:10px;'>Conversations</div>",
+                    unsafe_allow_html=True)
+
+        # Also show network connections not yet chatted
+        network = get_my_network(u["id"])
+        all_ids = {c["id"] for c in conversations}
+        for nu in network:
+            if nu["id"] not in all_ids:
+                conversations.append(nu)
+
+        if not conversations:
+            st.markdown("<div style='color:#94A3B8;font-size:12px;'>No conversations yet. Connect with users to start chatting.</div>",
+                        unsafe_allow_html=True)
+
+        for partner in conversations:
+            ini = "".join(w[0].upper() for w in partner["username"].split()[:2])
+            av  = partner.get("avatar_color","#2563EB")
+            selected = partner_id == partner["id"]
+            bg = "#EFF6FF" if selected else "#FFFFFF"
+            bc = "#2563EB" if selected else "#E2E8F0"
+            st.markdown(f"""
+            <div style='background:{bg};border:1px solid {bc};border-radius:10px;
+                padding:10px 12px;margin-bottom:6px;cursor:pointer;
+                display:flex;align-items:center;gap:10px;'>
+                <div style='width:36px;height:36px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:13px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div>
+                    <div style='font-weight:600;font-size:13px;color:#0F172A;'>{partner['username']}</div>
+                    <div style='font-size:11px;color:#94A3B8;'>{partner.get('skills','')[:28]}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            if st.button("Open", key=f"chat_open_{partner['id']}", use_container_width=True):
+                st.session_state.chat_partner = partner["id"]
+                st.rerun()
+
+    with c_chat:
+        if not partner_id:
+            st.markdown("""
+            <div style='text-align:center;padding:60px;color:#94A3B8;'>
+                <div style='font-size:36px;margin-bottom:12px;'>💬</div>
+                <div style='font-size:14px;'>Select a conversation to start chatting</div>
+            </div>""", unsafe_allow_html=True)
+            return
+
+        partner_user = db_fetchone("SELECT * FROM users WHERE id=?", (partner_id,))
+        if not partner_user:
+            return
+
+        st.markdown(f"""
+        <div style='display:flex;align-items:center;gap:12px;
+            background:#FFFFFF;border:1px solid #E2E8F0;border-radius:12px;
+            padding:12px 16px;margin-bottom:14px;'>
+            {mk_avatar_html(partner_user['username'],40,partner_user.get('avatar_color','#2563EB'))}
+            <div>
+                <div style='font-weight:700;font-size:14px;color:#0F172A;'>{partner_user['username']}</div>
+                <div style='font-size:11px;color:#94A3B8;'>{partner_user.get('skills','')}</div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+        messages = get_messages(u["id"], partner_id)
+
+        # Chat bubble area
+        st.markdown("<div style='max-height:360px;overflow-y:auto;'>", unsafe_allow_html=True)
+        for msg in messages:
+            is_me = msg["sender_id"] == u["id"]
+            align = "flex-end" if is_me else "flex-start"
+            bubble_bg = "#2563EB" if is_me else "#F1F5F9"
+            text_col  = "#FFFFFF" if is_me else "#0F172A"
+            st.markdown(f"""
+            <div style='display:flex;justify-content:{align};margin-bottom:8px;'>
+                <div style='max-width:70%;background:{bubble_bg};color:{text_col};
+                    border-radius:14px;padding:10px 14px;font-size:13px;
+                    box-shadow:0 1px 4px rgba(0,0,0,.07);'>
+                    {msg['message']}
+                    <div style='font-size:10px;opacity:.6;margin-top:4px;text-align:right;'>
+                        {str(msg['timestamp'])[11:16]}
+                    </div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        # Send message
+        with st.form(f"chat_form_{partner_id}", clear_on_submit=True):
+            msg_text = st.text_input("", placeholder="Type a message...",
+                                     label_visibility="collapsed", key="chat_input")
+            if st.form_submit_button("Send", use_container_width=True):
+                if msg_text.strip():
+                    send_message(u["id"], partner_id, msg_text.strip())
+                    st.rerun()
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAGE: NETWORK
+# ═══════════════════════════════════════════════════════════════
+def page_network():
+    require_login()
+    render_navbar()
+    back_btn()
+    breadcrumb("Home", "My Network")
+    section_header("My Network", "Your professional connections.")
+
+    u       = st.session_state.user
+    mode    = st.session_state.mode
+    btn_lbl = "Connect" if is_learn_mode() else "Collab"
+
+    tab1, tab2, tab3 = st.tabs(["My Network", "Requests", "Find People"])
+
+    with tab1:
+        connections = get_my_network(u["id"])
+        conn_count  = get_connection_count(u["id"])
+        st.markdown(f"<div style='color:#64748B;font-size:12px;margin-bottom:12px;'>{conn_count} connection(s)</div>",
+                    unsafe_allow_html=True)
+
+        if not connections:
+            empty_state("No connections yet",
+                        f"Search for users and send {btn_lbl} requests to build your network.")
+        else:
+            for i in range(0, len(connections), 3):
+                cols = st.columns(3)
+                for col, cu in zip(cols, connections[i:i+3]):
+                    ini = "".join(w[0].upper() for w in cu["username"].split()[:2])
+                    av  = cu.get("avatar_color","#2563EB")
+                    col.markdown(f"""
+                    <div class='cs-card' style='text-align:center;padding:16px;'>
+                        <div style='width:52px;height:52px;border-radius:50%;background:{av};
+                            display:flex;align-items:center;justify-content:center;
+                            font-size:18px;font-weight:700;color:#fff;margin:0 auto 10px;'>{ini}</div>
+                        <div style='font-weight:700;color:#0F172A;font-size:13px;'>{cu['username']}</div>
+                        <div style='font-size:11px;color:#64748B;margin-top:3px;'>{cu.get('skills','')[:30]}</div>
+                        <span class='cs-badge badge-green' style='margin-top:8px;'>Connected</span>
+                    </div>""", unsafe_allow_html=True)
+                    if col.button("Chat", key=f"net_chat_{cu['id']}"):
+                        st.session_state.chat_partner = cu["id"]
+                        go("chat")
+
+    with tab2:
+        requests = get_incoming_requests(u["id"])
+        if not requests:
+            empty_state("No pending requests", "You have no incoming connection requests.")
+        else:
+            for r in requests:
+                ini = "".join(w[0].upper() for w in r["sender_name"].split()[:2])
+                av  = r.get("sender_color","#2563EB")
+                st.markdown(f"""
+                <div class='cs-card' style='display:flex;align-items:center;gap:14px;padding:14px;'>
+                    <div style='width:44px;height:44px;border-radius:50%;background:{av};
+                        display:inline-flex;align-items:center;justify-content:center;
+                        font-size:16px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                    <div style='flex:1;'>
+                        <div style='font-weight:700;color:#0F172A;font-size:13px;'>{r['sender_name']}</div>
+                        <div style='font-size:11px;color:#64748B;'>{r.get('sender_skills','')}</div>
+                        <div style='font-size:11px;color:#94A3B8;margin-top:2px;'>Mode: {r.get('mode','work').capitalize()}</div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                ra1, ra2 = st.columns(2)
+                with ra1:
+                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                    if st.button("Accept", key=f"acc_{r['id']}"):
+                        accept_request(r["id"])
+                        add_notification(r["sender"], "Connection Accepted",
+                                         f"{u['username']} accepted your request.")
+                        st.success("Connected!"); st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+                with ra2:
+                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                    if st.button("Decline", key=f"rej_{r['id']}"):
+                        reject_request(r["id"]); st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab3:
+        search = st.text_input("", placeholder=f"Search by username or skill to send {btn_lbl} requests...",
+                               label_visibility="collapsed", key="net_search")
+        if search:
+            found = db_fetchall("""
+                SELECT id,username,skills,bio,avatar_color,experience,trust_score
+                FROM users WHERE id!=? AND is_active=1
+                  AND (username LIKE ? OR skills LIKE ?)
+                ORDER BY trust_score DESC LIMIT 20
+            """, (u["id"], f"%{search}%", f"%{search}%"))
+
+            if not found:
+                st.markdown("<div style='color:#94A3B8;font-size:12px;'>No users found.</div>",
+                            unsafe_allow_html=True)
+            for fu in found:
+                status = get_connection_status(u["id"], fu["id"])
+                ini    = "".join(w[0].upper() for w in fu["username"].split()[:2])
+                av     = fu.get("avatar_color","#2563EB")
+                status_badge_html = {
+                    "accepted": "<span class='cs-badge badge-green'>Connected</span>",
+                    "pending":  "<span class='cs-badge badge-amber'>Pending</span>",
+                    "rejected": "<span class='cs-badge badge-red'>Rejected</span>",
+                }.get(status, "")
+                st.markdown(f"""
+                <div class='cs-card' style='display:flex;align-items:center;gap:14px;padding:14px;'>
+                    <div style='width:44px;height:44px;border-radius:50%;background:{av};
+                        display:inline-flex;align-items:center;justify-content:center;
+                        font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                    <div style='flex:1;'>
+                        <div style='font-weight:700;color:#0F172A;font-size:13px;'>{fu['username']}</div>
+                        <div style='font-size:11px;color:#64748B;'>{fu.get('skills','')}</div>
+                        <div style='font-size:11px;color:#94A3B8;'>{fu.get('experience','')}</div>
+                        {status_badge_html}
+                    </div>
+                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{fu.get('trust_score',5)}</div>
+                </div>""", unsafe_allow_html=True)
+                if status == "none":
+                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                    if st.button(btn_lbl, key=f"send_conn_{fu['id']}"):
+                        ok, msg = send_request(u["id"], fu["id"], mode)
+                        if ok:
+                            add_notification(fu["id"], f"New {btn_lbl} Request",
+                                             f"{u['username']} wants to {btn_lbl.lower()} with you.")
+                        st.success(msg) if ok else st.warning(msg)
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAGE: PROJECTS
+# ═══════════════════════════════════════════════════════════════
+def page_projects():
+    require_login()
+    render_navbar()
+    back_btn()
+    breadcrumb("Home", "Projects")
+    section_header("My Projects", "Create and manage team collaboration projects.")
+
+    u = st.session_state.user
+
+    tab1, tab2, tab3 = st.tabs(["My Projects", "Create Project", "Project Invites"])
+
+    with tab1:
+        projects = get_my_projects(u["id"])
+        if not projects:
+            empty_state("No projects yet", "Create your first project to start team collaboration.")
+        else:
+            for proj in projects:
+                st.markdown(f"""
+                <div class='cs-card' style='padding:16px;'>
+                    <div style='display:flex;justify-content:space-between;align-items:flex-start;'>
+                        <div style='flex:1;'>
+                            <div style='font-weight:800;font-size:15px;color:#0F172A;'>{proj['title']}</div>
+                            <div style='font-size:12px;color:#64748B;margin-top:4px;'>{proj['description'][:100]}...</div>
+                            <div style='margin-top:8px;'>
+                                <span class='cs-badge badge-blue'>{proj['skills_required'][:40]}</span>
+                                <span class='cs-badge badge-slate'>{proj['member_count']} members</span>
+                                <span class='cs-badge badge-green'>{proj['status'].capitalize()}</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                if st.button("Open Workspace", key=f"open_proj_{proj['id']}"):
+                    st.session_state.active_project = proj["id"]
+                    go("project_workspace")
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    with tab2:
+        with st.form("create_project_form"):
+            p_title  = st.text_input("Project Title *",      placeholder="e.g., AI Chatbot Platform")
+            p_desc   = st.text_area("Description *",          placeholder="Describe the project goals...", height=100)
+            p_skills = st.text_input("Required Skills *",     placeholder="e.g., Python, React, ML")
+            pc1, pc2 = st.columns(2)
+            with pc1:
+                p_dur  = st.text_input("Project Duration",   placeholder="e.g., 3 months")
+            with pc2:
+                p_size = st.number_input("Team Size",        min_value=1, max_value=50, value=3)
+
+            if st.form_submit_button("Create Project", use_container_width=True):
+                if not all([p_title, p_desc, p_skills]):
+                    st.warning("Please fill Title, Description and Skills.")
+                else:
+                    pid = create_project(u["id"], p_title, p_desc,
+                                         p_skills, p_dur, int(p_size))
+                    # Auto-create group chat
+                    from chat import create_group
+                    gid = create_group(f"{p_title} — Team", u["id"], pid)
+                    update_project_chat(pid, gid)
+                    st.success(f"Project '{p_title}' created! Opening workspace...")
+                    st.session_state.active_project = pid
+                    go("project_workspace")
+
+    with tab3:
+        invites = get_pending_invites(u["id"])
+        if not invites:
+            empty_state("No invites", "You have no pending project invitations.")
+        else:
+            for inv in invites:
+                st.markdown(f"""
+                <div class='cs-card' style='padding:14px;'>
+                    <div style='font-weight:700;color:#0F172A;'>{inv['project_title']}</div>
+                    <div style='font-size:12px;color:#64748B;margin-top:4px;'>{inv['description'][:80]}...</div>
+                    <div style='margin-top:6px;'>
+                        <span class='cs-badge badge-blue'>{inv['skills_required'][:40]}</span>
+                        <span class='cs-badge badge-slate'>From: {inv['sender_name']}</span>
+                    </div>
+                </div>""", unsafe_allow_html=True)
+                ia1, ia2 = st.columns(2)
+                with ia1:
+                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                    if st.button("Accept", key=f"pinv_acc_{inv['id']}"):
+                        accept_project_invite(inv["id"], u["id"], inv["project_id"])
+                        # Add to group chat
+                        proj = get_project(inv["project_id"])
+                        if proj and proj.get("group_chat_id"):
+                            add_member_to_group(proj["group_chat_id"], u["id"])
+                        add_notification(inv["sender_id"], "Invite Accepted",
+                                         f"{u['username']} joined '{inv['project_title']}'.")
+                        st.success("Joined project!"); st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+                with ia2:
+                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                    if st.button("Decline", key=f"pinv_rej_{inv['id']}"):
+                        reject_project_invite(inv["id"]); st.rerun()
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAGE: PROJECT WORKSPACE
+# ═══════════════════════════════════════════════════════════════
+def page_project_workspace():
+    require_login()
+    render_navbar()
+    back_btn()
+
+    proj_id = st.session_state.get("active_project")
+    if not proj_id:
+        go("projects"); return
+
+    u    = st.session_state.user
+    proj = get_project(proj_id)
+    if not proj or not is_project_member(proj_id, u["id"]):
+        st.error("Project not found or access denied.")
+        go("projects"); return
+
+    breadcrumb("Home", "Projects", proj["title"])
+    section_header(proj["title"], proj["description"][:100])
+
+    # Members + skills badges
+    st.markdown(f"""
+    <div style='margin-bottom:14px;'>
+        <span class='cs-badge badge-blue'>{proj['skills_required'][:60]}</span>
+        {'<span class="cs-badge badge-slate">Duration: '+proj['duration']+'</span>' if proj.get('duration') else ''}
+        <span class='cs-badge badge-green'>{proj['status'].capitalize()}</span>
+    </div>""", unsafe_allow_html=True)
+
+    tab_chat, tab_members, tab_res, tab_invite = st.tabs([
+        "Group Chat", "Team Members", "Resources", "Invite Users"])
+
+    # ── Group Chat ─────────────────────────────────────────────
+    with tab_chat:
+        gid = proj.get("group_chat_id","")
+        if not gid:
+            st.info("Group chat not set up. Recreating...")
+            gid = create_group(f"{proj['title']} — Team", u["id"], proj_id)
+            update_project_chat(proj_id, gid)
+            add_member_to_group(gid, u["id"])
+
+        messages = get_group_messages(gid)
+        st.markdown("<div style='max-height:380px;overflow-y:auto;'>", unsafe_allow_html=True)
+        for msg in messages:
+            is_me     = msg["sender_id"] == u["id"]
+            align     = "flex-end" if is_me else "flex-start"
+            bubble_bg = "#2563EB" if is_me else "#F1F5F9"
+            text_col  = "#FFFFFF" if is_me else "#0F172A"
+            st.markdown(f"""
+            <div style='display:flex;justify-content:{align};margin-bottom:8px;'>
+                <div style='max-width:72%;'>
+                    {'<div style="font-size:10px;color:#94A3B8;margin-bottom:2px;">'+msg["sender_name"]+'</div>' if not is_me else ''}
+                    <div style='background:{bubble_bg};color:{text_col};
+                        border-radius:14px;padding:10px 14px;font-size:13px;
+                        box-shadow:0 1px 4px rgba(0,0,0,.07);'>
+                        {msg['message']}
+                        <div style='font-size:10px;opacity:.6;margin-top:4px;text-align:right;'>
+                            {str(msg['timestamp'])[11:16]}
+                        </div>
+                    </div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+
+        with st.form(f"gc_form_{gid}", clear_on_submit=True):
+            gmsg = st.text_input("", placeholder="Type a message to the team...",
+                                 label_visibility="collapsed")
+            if st.form_submit_button("Send", use_container_width=True):
+                if gmsg.strip():
+                    send_group_message(u["id"], gid, gmsg.strip())
+                    st.rerun()
+
+    # ── Members ────────────────────────────────────────────────
+    with tab_members:
+        members = get_project_members(proj_id)
+        for m in members:
+            ini = "".join(w[0].upper() for w in m["username"].split()[:2])
+            av  = m.get("avatar_color","#2563EB")
+            role_badge = "<span class='cs-badge badge-violet'>Owner</span>" if m["role"]=="owner" else "<span class='cs-badge badge-slate'>Member</span>"
+            st.markdown(f"""
+            <div class='cs-card' style='padding:12px;display:flex;align-items:center;gap:12px;'>
+                <div style='width:40px;height:40px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:14px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div style='flex:1;'>
+                    <div style='font-weight:700;color:#0F172A;font-size:13px;'>{m['username']} {role_badge}</div>
+                    <div style='font-size:11px;color:#64748B;'>{m.get('skills','')}</div>
+                </div>
+                <div style='font-size:16px;font-weight:800;color:#2563EB;'>{m.get('trust_score',5)}/10</div>
+            </div>""", unsafe_allow_html=True)
+
+    # ── Resources ──────────────────────────────────────────────
+    with tab_res:
+        resources = get_resources(proj_id)
+        if resources:
+            for r in resources:
+                icon = "🔗" if r["res_type"] == "link" else "📝"
+                st.markdown(f"""
+                <div class='cs-card' style='padding:12px;'>
+                    <div style='font-size:12px;color:#94A3B8;margin-bottom:4px;'>{icon} {r['res_type'].upper()} — {r['poster_name']} — {str(r['created_at'])[:10]}</div>
+                    <div style='font-size:13px;color:#0F172A;'>{r['content']}</div>
+                </div>""", unsafe_allow_html=True)
+        else:
+            empty_state("No resources yet", "Share notes and links with your team.")
+
+        section_divider("Share a Resource")
+        with st.form("res_form", clear_on_submit=True):
+            res_type = st.selectbox("Type", ["note","link"])
+            res_cont = st.text_area("Content", placeholder="Paste a link or write a note...", height=80)
+            if st.form_submit_button("Share", use_container_width=True):
+                if res_cont.strip():
+                    add_resource(proj_id, u["id"], res_cont.strip(), res_type)
+                    st.success("Resource shared!"); st.rerun()
+
+    # ── Invite ─────────────────────────────────────────────────
+    with tab_invite:
+        if proj["creator_id"] != u["id"]:
+            st.info("Only the project creator can invite members.")
+            return
+
+        section_divider("Manual Selection")
+        all_users = db_fetchall("""
+            SELECT id,username,skills,bio,avatar_color,trust_score
+            FROM users WHERE id!=? AND is_active=1
+            ORDER BY trust_score DESC
+        """, (u["id"],))
+        for fu in all_users:
+            is_member = is_project_member(proj_id, fu["id"])
+            ini = "".join(w[0].upper() for w in fu["username"].split()[:2])
+            av  = fu.get("avatar_color","#2563EB")
+            st.markdown(f"""
+            <div class='cs-card' style='padding:12px;display:flex;align-items:center;gap:12px;'>
+                <div style='width:38px;height:38px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:13px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div style='flex:1;'>
+                    <div style='font-weight:700;color:#0F172A;font-size:13px;'>{fu['username']}</div>
+                    <div style='font-size:11px;color:#64748B;'>{fu.get('skills','')}</div>
+                </div>
+            </div>""", unsafe_allow_html=True)
+            if is_member:
+                st.markdown("<span class='cs-badge badge-green'>Already a member</span>", unsafe_allow_html=True)
+            else:
+                if st.button("Invite to Project", key=f"inv_{proj_id}_{fu['id']}"):
+                    ok, msg = send_project_invite(proj_id, u["id"], fu["id"])
+                    if ok:
+                        add_notification(fu["id"], "Project Invitation",
+                                         f"{u['username']} invited you to join '{proj['title']}'.")
+                    st.success(msg) if ok else st.warning(msg)
+
+        section_divider("AI Recommendations")
+        req_skills = proj.get("skills_required","")
+        rec_users  = recommend_users_for_collaboration(u["id"], req_skills, proj.get("description",""), top_n=5)
+        if not rec_users:
+            st.markdown("<div style='color:#94A3B8;font-size:12px;'>No recommendations available.</div>", unsafe_allow_html=True)
+        for ru, score in rec_users:
+            pct = int(min(score, 100))
+            ini = "".join(w[0].upper() for w in ru["username"].split()[:2])
+            av  = ru.get("avatar_color","#2563EB")
+            is_member = is_project_member(proj_id, ru["id"])
+            st.markdown(f"""
+            <div class='cs-card' style='padding:12px;display:flex;align-items:center;gap:12px;'>
+                <div style='width:38px;height:38px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:13px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div style='flex:1;'>
+                    <div style='font-weight:700;color:#0F172A;font-size:13px;'>{ru['username']}</div>
+                    <div style='font-size:11px;color:#64748B;'>{ru.get('skills','')}</div>
+                </div>
+                <div style='font-size:18px;font-weight:800;color:#16A34A;'>{pct}%</div>
+            </div>""", unsafe_allow_html=True)
+            if not is_member:
+                if st.button(f"Invite {ru['username']}", key=f"ai_inv_{proj_id}_{ru['id']}"):
+                    ok, msg = send_project_invite(proj_id, u["id"], ru["id"])
+                    if ok:
+                        add_notification(ru["id"], "Project Invitation",
+                                         f"{u['username']} invited you to '{proj['title']}'.")
+                    st.success(msg) if ok else st.warning(msg)
+
+
+# ═══════════════════════════════════════════════════════════════
 #  ROUTER
 # ═══════════════════════════════════════════════════════════════
 PAGES = {
-    "landing":         page_landing,
-    "login":           page_login,
-    "register":        page_register,
-    "dashboard":       page_dashboard,
-    "browse_tasks":    page_browse_tasks,
-    "post_task":       page_post_task,
-    "profile":         page_profile,
-    "ai_match":        page_ai_match,
-    "community":       page_community,
-    "notifications":   page_notifications,
-    "admin_dashboard": page_admin_dashboard,
-    "admin_users":     page_admin_users,
-    "admin_tasks":     page_admin_tasks,
+    "landing":             page_landing,
+    "login":               page_login,
+    "register":            page_register,
+    "dashboard":           page_dashboard,
+    "browse_tasks":        page_browse_tasks,
+    "post_task":           page_post_task,
+    "profile":             page_profile,
+    "ai_match":            page_ai_match,
+    "community":           page_community,
+    "notifications":       page_notifications,
+    "chat":                page_chat,
+    "network":             page_network,
+    "projects":            page_projects,
+    "project_workspace":   page_project_workspace,
+    "admin_dashboard":     page_admin_dashboard,
+    "admin_users":         page_admin_users,
+    "admin_tasks":         page_admin_tasks,
 }
 
 PAGES.get(st.session_state.page, page_landing)()
