@@ -221,8 +221,8 @@ label, .stTextInput label, .stTextArea label,
     height: 38px !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    overflow: visible !important;
+    text-overflow: unset !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
