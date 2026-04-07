@@ -1823,7 +1823,7 @@ def page_profile():
                     <div class='cs-card' style='padding:14px;'>
                         <div style='display:flex;justify-content:space-between;align-items:center;'>
                             <span style='font-weight:600;color:#0F172A;font-size:13px;'>{f['from_name']}</span>
-                            <span>{stars_html(f['rating'])}</span>
+                            {stars_html(f['rating'])}
                         </div>
                         <div style='font-size:12px;color:#64748B;margin-top:6px;'>{f['comment'] or 'No comment.'}</div>
                         <div style='font-size:11px;color:#94A3B8;margin-top:4px;'>{str(f['created_at'])[:10]}</div>
