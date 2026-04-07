@@ -223,7 +223,7 @@ label, .stTextInput label, .stTextArea label,
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    min-width: 100px !important;
+    min-width: auto !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
