@@ -223,7 +223,6 @@ label, .stTextInput label, .stTextArea label,
     white-space: nowrap !important;
     overflow: hidden !important;
     text-overflow: ellipsis !important;
-    min-width: auto !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
@@ -452,7 +451,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* ══════════════════════════════════════
    NAVBAR
    ══════════════════════════════════════ */
-.navbar-logo { font-size: 22px; font-weight: 850; color: #0F172A; letter-spacing: -.01em; }
+.navbar-logo { font-size: 16px; font-weight: 800; color: #0F172A; letter-spacing: -.01em; }
 .navbar-logo span { color: #2563EB; }
 
 /* ══════════════════════════════════════
@@ -759,7 +758,8 @@ def render_navbar():
 
     # Logo column + one column per nav button, all fixed height
     n    = len(nav_items)
-    cols = st.columns([3.2] + [1.6 + (len(lbl) * 0.08) for lbl, _ in nav_items])
+    cols = st.columns([2.0] + [0.9] * n)
+
     with cols[0]:
         st.markdown(
             f"<div class='navbar-logo' style='line-height:38px;padding-top:2px;'>"
@@ -910,7 +910,7 @@ def page_landing():
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
     <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
-        <div style='font-size:18px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
         <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
     </div>""", unsafe_allow_html=True)
 
@@ -929,7 +929,7 @@ def page_login():
         st.markdown(f"""
         <div style='background:#FFFFFF;border:1px solid #E2E8F0;border-radius:14px;padding:36px;'>
             <div style='text-align:center;margin-bottom:26px;'>
-                <div style='font-size:32px;font-weight:1000;color:#0F172A;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
+                <div style='font-size:20px;font-weight:800;color:#0F172A;margin-bottom:4px;'>Sign in to CollabSkill AI</div>
                 <div style='font-size:12px;color:#64748B;'>{mode_label} Mode</div>
             </div>
         """, unsafe_allow_html=True)
@@ -1167,9 +1167,9 @@ def page_dashboard():
 
         q1, q2, q3, q4, q5, q6 = st.columns(6)
         with q1:
-            if st.button(lbl1, key="qa_post", use_container_width=True):
-                go("post_task")
-            
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+            if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
+            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
@@ -1823,7 +1823,7 @@ def page_profile():
                     <div class='cs-card' style='padding:14px;'>
                         <div style='display:flex;justify-content:space-between;align-items:center;'>
                             <span style='font-weight:600;color:#0F172A;font-size:13px;'>{f['from_name']}</span>
-                            {stars_html(f['rating'])}
+                            <span>{stars_html(f['rating'])}</span>
                         </div>
                         <div style='font-size:12px;color:#64748B;margin-top:6px;'>{f['comment'] or 'No comment.'}</div>
                         <div style='font-size:11px;color:#94A3B8;margin-top:4px;'>{str(f['created_at'])[:10]}</div>
@@ -1896,7 +1896,7 @@ def page_ai_match():
     back_btn()
     breadcrumb("Home", "AI Skill Matching")
     section_header("AI Skill Matching",
-                   "")
+                   "Local AI — no API key required. Powered by TF-IDF and skill overlap.")
 
     left, right = st.columns([3, 2])
     with left:
@@ -2688,7 +2688,7 @@ def page_network():
                         <div style='font-size:11px;color:#94A3B8;'>{fu.get('experience','')}</div>
                         {status_badge_html}
                     </div>
-                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{round(float(fu.get('trust_score', 5)), 1)}</div>
+                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{fu.get('trust_score',5)}</div>
                 </div>""", unsafe_allow_html=True)
                 if status == "none":
                     st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
