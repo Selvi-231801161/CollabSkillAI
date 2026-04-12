@@ -2677,28 +2677,37 @@ def page_network():
                     "pending":  "<span class='cs-badge badge-amber'>Pending</span>",
                     "rejected": "<span class='cs-badge badge-red'>Rejected</span>",
                 }.get(status, "")
-                st.markdown(f"""
-                <div class='cs-card' style='display:flex;align-items:center;gap:14px;padding:14px;'>
-                    <div style='width:44px;height:44px;border-radius:50%;background:{av};
-                        display:inline-flex;align-items:center;justify-content:center;
-                        font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
-                    <div style='flex:1;'>
-                        <div style='font-weight:700;color:#0F172A;font-size:13px;'>{fu['username']}</div>
-                        <div style='font-size:11px;color:#64748B;'>{fu.get('skills','')}</div>
-                        <div style='font-size:11px;color:#94A3B8;'>{fu.get('experience','')}</div>
-                        {status_badge_html}
-                    </div>
-                    <div style='font-size:16px;font-weight:800;color:#2563EB;'>{fu.get('trust_score',5)}</div>
-                </div>""", unsafe_allow_html=True)
-                if status == "none":
-                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
-                    if st.button(btn_lbl, key=f"send_conn_{fu['id']}"):
-                        ok, msg = send_request(u["id"], fu["id"], mode)
-                        if ok:
-                            add_notification(fu["id"], f"New {btn_lbl} Request",
-                                             f"{u['username']} wants to {btn_lbl.lower()} with you.")
-                        st.success(msg) if ok else st.warning(msg)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                col_card, col_btn = st.columns([5, 1])
+                with col_card:
+                    trust = fu.get('trust_score', 5)
+                    st.markdown(
+                        f"<div class='cs-card' style='display:flex;align-items:center;"
+                        f"gap:14px;padding:14px;margin-bottom:0;'>"
+                        f"<div style='width:44px;height:44px;border-radius:50%;background:{av};"
+                        f"display:inline-flex;align-items:center;justify-content:center;"
+                        f"font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>"
+                        f"<div style='flex:1;'>"
+                        f"<div style='font-weight:700;color:#0F172A;font-size:13px;'>{fu['username']}</div>"
+                        f"<div style='font-size:11px;color:#64748B;'>{fu.get('skills','')}</div>"
+                        f"<div style='font-size:11px;color:#94A3B8;'>{fu.get('experience','')}</div>"
+                        f"{status_badge_html}"
+                        f"</div>"
+                        f"<div style='font-size:16px;font-weight:800;color:#2563EB;'>{trust}</div>"
+                        f"</div>",
+                        unsafe_allow_html=True)
+                with col_btn:
+                    if status == "none":
+                        st.markdown("<div class='btn-accent' style='padding-top:6px;'>",
+                                    unsafe_allow_html=True)
+                        if st.button(btn_lbl, key=f"send_conn_{fu['id']}",
+                                     use_container_width=True):
+                            ok, msg = send_request(u["id"], fu["id"], mode)
+                            if ok:
+                                add_notification(
+                                    fu["id"], f"New {btn_lbl} Request",
+                                    f"{u['username']} wants to {btn_lbl.lower()} with you.")
+                            st.success(msg) if ok else st.warning(msg)
+                        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
