@@ -208,9 +208,13 @@ def init_extended_tables():
         from network    import init_network_tables
         from chat       import init_chat_tables
         from project_db import init_project_tables
+        from learning   import init_learning_tables
+        from sessions   import init_sessions_tables
         init_network_tables(conn)
         init_chat_tables(conn)
         init_project_tables(conn)
+        init_learning_tables(conn)
+        init_sessions_tables(conn)
     except ImportError:
         pass
     conn.close()
