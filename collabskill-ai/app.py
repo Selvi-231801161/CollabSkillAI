@@ -33,6 +33,13 @@ from project_db import (create_project, get_project, get_my_projects,
                         accept_project_invite, reject_project_invite,
                         get_project_members, is_project_member,
                         add_resource, get_resources, update_project_chat)
+from learning   import (express_interest, get_interested_teachers,
+                        get_interest_count, accept_teacher, reject_interest,
+                        get_accepted_pair, is_teacher_accepted,
+                        get_my_teaching_pairs, get_my_learning_pairs)
+from sessions   import (book_session, get_my_sessions,
+                        get_upcoming_sessions, get_past_sessions,
+                        mark_session_complete, count_sessions)
 
 init_db()
 
@@ -52,16 +59,18 @@ st.set_page_config(
 
 # ── Session state ─────────────────────────────────────────────
 for k, v in {
-    "page":          "landing",
-    "user":          None,
-    "history":       [],
-    "ai_matches":    [],
-    "ai_done":       False,
-    "mode":          "work",
-    "know_intent":   INTENT_LEARN,
-    "chat_partner":  None,   # user_id for active 1:1 chat
-    "chat_group":    None,   # group_id for active group chat
-    "active_project": None,  # project_id for workspace
+    "page":           "landing",
+    "user":           None,
+    "history":        [],
+    "ai_matches":     [],
+    "ai_done":        False,
+    "mode":           "work",
+    "know_intent":    INTENT_LEARN,
+    "chat_partner":   None,
+    "chat_group":     None,
+    "active_project": None,
+    "book_post_id":   None,   # post_id for session booking
+    "book_teacher_id": None,  # teacher being booked
 }.items():
     if k not in st.session_state:
         st.session_state[k] = v
@@ -729,6 +738,7 @@ def render_navbar():
             ("Network",     "network"),
             ("Projects",    "projects"),
             ("Chat",        "chat"),
+            ("Sessions",    "my_sessions"),
             (notif_lbl,     "notifications"),
             ("Profile",     "profile"),
             ("Sign Out",    "__logout__"),
@@ -1086,13 +1096,15 @@ def page_dashboard():
     my_entries = get_my_tasks(u["id"], entry_type=mode_type)
     my_apps    = get_my_applications(u["id"])
     open_cnt   = sum(1 for t in my_entries if t["status"] == "open")
+    sess_cnt   = count_sessions(u["id"])
 
-    m1, m2, m3, m4, m5 = st.columns(5)
-    m1.metric("My Posts",     len(my_entries))
-    m2.metric("Active",       open_cnt)
-    m3.metric("Applications", len(my_apps))
-    m4.metric("Trust Score",  f"{u['trust_score']}/10")
-    m5.metric("Ratings",      u["total_ratings"])
+    m1, m2, m3, m4, m5, m6 = st.columns(6)
+    m1.metric("My Posts",      len(my_entries))
+    m2.metric("Active",        open_cnt)
+    m3.metric("Applications",  len(my_apps))
+    m4.metric("Trust Score",   f"{u['trust_score']}/10")
+    m5.metric("Ratings",       u["total_ratings"])
+    m6.metric("Sessions",      sess_cnt)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1150,10 +1162,8 @@ def page_dashboard():
                 </div>""", unsafe_allow_html=True)
 
     with tab3:
-        # All 4 buttons in perfectly equal columns — same height via CSS wrapper
         st.markdown("""
         <style>
-        /* Force all quick-action buttons to same height */
         div[data-testid="column"] .stButton > button {
             height: 44px !important;
             display: flex !important;
@@ -1165,7 +1175,7 @@ def page_dashboard():
         lbl1 = "Post Knowledge" if is_learn_mode() else "Post a Task"
         lbl2 = "Browse Knowledge" if is_learn_mode() else "Browse Tasks"
 
-        q1, q2, q3, q4, q5, q6 = st.columns(6)
+        q1, q2, q3, q4 = st.columns(4)
         with q1:
             st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
@@ -1176,10 +1186,65 @@ def page_dashboard():
             if st.button("AI Matching", key="qa_ai",        use_container_width=True): go("ai_match")
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
+
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        q5, q6, q7, q8 = st.columns(4)
         with q5:
-            if st.button("Network",     key="qa_network",   use_container_width=True): go("network")
+            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
         with q6:
-            if st.button("Projects",    key="qa_projects",  use_container_width=True): go("projects")
+            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
+        with q7:
+            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
+        with q8:
+            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
+
+    # ── My Learning Connections (only in Learn mode) ──────────
+    if is_learn_mode():
+        section_divider("My Learning Connections")
+        my_learn  = get_my_learning_pairs(u["id"])
+        my_teach  = get_my_teaching_pairs(u["id"])
+        all_pairs = [("learning", p) for p in my_learn] + [("teaching", p) for p in my_teach]
+
+        if not all_pairs:
+            st.markdown(
+                "<div style='color:#94A3B8;font-size:13px;'>No active learning connections yet. "
+                "Browse Knowledge posts and express interest to connect with learners or teachers.</div>",
+                unsafe_allow_html=True)
+        else:
+            for role, pair in all_pairs:
+                partner_name  = pair["teacher_name"] if role == "learning" else pair["learner_name"]
+                role_label    = "Learning from" if role == "learning" else "Teaching"
+                role_color    = "#0D9488" if role == "learning" else "#7C3AED"
+                role_bg       = "#F0FDFA" if role == "learning" else "#FAF5FF"
+                partner_id_key = "teacher_id" if role == "learning" else "learner_id"
+                pid            = pair[partner_id_key] if partner_id_key in pair else None
+
+                st.markdown(
+                    f"<div class='cs-card' style='display:flex;align-items:center;"
+                    f"gap:14px;padding:14px;margin-bottom:8px;'>"
+                    f"<div style='flex:1;'>"
+                    f"<span style='background:{role_bg};color:{role_color};border-radius:999px;"
+                    f"padding:3px 10px;font-size:10px;font-weight:700;margin-bottom:6px;"
+                    f"display:inline-block;'>{role_label}</span>"
+                    f"<div style='font-weight:700;color:#0F172A;font-size:13px;'>{partner_name}</div>"
+                    f"<div style='font-size:11px;color:#64748B;'>{pair.get('post_title','')}</div>"
+                    f"</div></div>",
+                    unsafe_allow_html=True)
+
+                lc1, lc2 = st.columns(2)
+                with lc1:
+                    if pid and st.button("Chat", key=f"dash_lc_chat_{pair['id']}",
+                                         use_container_width=True):
+                        st.session_state.chat_partner = pid
+                        go("chat")
+                with lc2:
+                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                    if st.button("Book Session", key=f"dash_lc_book_{pair['id']}",
+                                 use_container_width=True):
+                        st.session_state.book_post_id    = pair["post_id"]
+                        st.session_state.book_teacher_id = pair.get("teacher_id")
+                        go("book_session")
+                    st.markdown("</div>", unsafe_allow_html=True)
 
     # ── AI Recommendations ────────────────────────────────────
     render_ai_recommendations(u)
@@ -1196,29 +1261,277 @@ def _render_entry_card(t, owner=False):
     with st.expander(header):
         c1, c2 = st.columns([3, 1])
         with c1:
-            st.markdown(f"""
-            <div style='color:#64748B;font-size:13px;margin-bottom:10px;line-height:1.7;'>{t['description']}</div>
-            {type_badge(t.get('type', TYPE_TASK), intent)}
-            {status_badge(t['status'])}
-            {priority_badge(t.get('priority','Normal'))}
-            <span class='cs-badge badge-violet'>{t.get('category','')}</span>
-            <span class='cs-badge badge-slate'>{t['skills']}</span>
-            <span class='cs-badge badge-slate'>{t.get('applicant_count',0)} {'interested' if is_know else 'applicants'}</span>
-            """, unsafe_allow_html=True)
+            interest_cnt = get_interest_count(t["id"]) if is_know else t.get("applicant_count", 0)
+            interest_lbl = f"{interest_cnt} interested" if is_know else f"{interest_cnt} applicants"
+            st.markdown(
+                f"<div style='color:#64748B;font-size:13px;margin-bottom:10px;line-height:1.7;'>"
+                f"{t['description']}</div>"
+                f"{type_badge(t.get('type', TYPE_TASK), intent)}"
+                f"{status_badge(t['status'])}"
+                f"{priority_badge(t.get('priority','Normal'))}"
+                f"<span class='cs-badge badge-violet'>{t.get('category','')}</span>"
+                f"<span class='cs-badge badge-slate'>{t['skills']}</span>"
+                f"<span class='cs-badge badge-blue'>{interest_lbl}</span>",
+                unsafe_allow_html=True)
         with c2:
             if owner:
                 if t["status"] == "open":
                     if st.button("Close",  key=f"tc_{t['id']}"): update_task_status(t["id"], "closed"); st.rerun()
                 else:
-                    if st.button("Reopen", key=f"to_{t['id']}"): update_task_status(t["id"], "open");   st.rerun()
+                    if st.button("Reopen", key=f"to_{t['id']}"): update_task_status(t["id"], "open"); st.rerun()
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button("Delete", key=f"td_{t['id']}"): delete_task(t["id"]); st.rerun()
                 st.markdown("</div>", unsafe_allow_html=True)
+                # For knowledge LEARN posts — show interested teachers
+                if is_know and intent == INTENT_LEARN and interest_cnt > 0:
+                    st.markdown("<div style='margin-top:8px;'>", unsafe_allow_html=True)
+                    if st.button(f"View Interested ({interest_cnt})", key=f"vi_{t['id']}",
+                                 use_container_width=True):
+                        st.session_state[f"show_interested_{t['id']}"] = \
+                            not st.session_state.get(f"show_interested_{t['id']}", False)
+                    st.markdown("</div>", unsafe_allow_html=True)
+
+        # ── Show interested teachers panel ─────────────────────
+        if (owner and is_know and intent == INTENT_LEARN
+                and st.session_state.get(f"show_interested_{t['id']}", False)):
+            _render_interested_teachers(t)
+
+def _render_interested_teachers(t):
+    """Show list of teachers who expressed interest — learner can Accept/Reject."""
+    uid      = st.session_state.user["id"]
+    teachers = get_interested_teachers(t["id"])
+    st.markdown(
+        "<div style='background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;"
+        "padding:16px;margin-top:8px;'>",
+        unsafe_allow_html=True)
+    st.markdown(
+        "<div style='font-size:12px;font-weight:700;color:#0F172A;margin-bottom:12px;'>"
+        "Users interested in teaching you</div>",
+        unsafe_allow_html=True)
+
+    accepted_exists = any(r["status"] == "accepted" for r in teachers)
+
+    for r in teachers:
+        ini = "".join(w[0].upper() for w in r["teacher_name"].split()[:2])
+        av  = r.get("teacher_color", "#2563EB")
+        status_html = {
+            "accepted": "<span class='cs-badge badge-green'>Accepted</span>",
+            "rejected": "<span class='cs-badge badge-red'>Rejected</span>",
+            "pending":  "<span class='cs-badge badge-amber'>Pending</span>",
+        }.get(r["status"], "")
+
+        st.markdown(
+            f"<div style='display:flex;align-items:center;gap:12px;"
+            f"background:#FFFFFF;border:1px solid #E2E8F0;border-radius:10px;"
+            f"padding:12px 14px;margin-bottom:8px;'>"
+            f"<div style='width:40px;height:40px;border-radius:50%;background:{av};"
+            f"display:inline-flex;align-items:center;justify-content:center;"
+            f"font-size:14px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>"
+            f"<div style='flex:1;'>"
+            f"<div style='font-weight:700;color:#0F172A;font-size:13px;'>{r['teacher_name']}</div>"
+            f"<div style='font-size:11px;color:#64748B;'>{r.get('teacher_skills','')}</div>"
+            f"<div style='font-size:11px;color:#94A3B8;'>{r.get('teacher_exp','')} "
+            f"— Trust {r.get('teacher_trust',5)}/10</div>"
+            f"</div>"
+            f"{status_html}"
+            f"</div>",
+            unsafe_allow_html=True)
+
+        if r["status"] == "pending" and not accepted_exists:
+            ba, br = st.columns(2)
+            with ba:
+                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                if st.button("Accept", key=f"acc_teach_{r['id']}_{t['id']}",
+                             use_container_width=True):
+                    accept_teacher(r["id"], t["id"])
+                    add_notification(r["teacher_id"], "Your Offer Was Accepted",
+                        f"{st.session_state.user['username']} accepted your offer to teach: {t['title']}")
+                    st.success(f"Accepted {r['teacher_name']}! You can now chat and book sessions.")
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+            with br:
+                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
+                if st.button("Decline", key=f"rej_teach_{r['id']}_{t['id']}",
+                             use_container_width=True):
+                    reject_interest(r["id"])
+                    st.rerun()
+                st.markdown("</div>", unsafe_allow_html=True)
+
+        elif r["status"] == "accepted":
+            # Show Chat + Book Session buttons for accepted teacher
+            bc1, bc2 = st.columns(2)
+            with bc1:
+                if st.button("Open Chat", key=f"chat_teach_{r['id']}_{t['id']}",
+                             use_container_width=True):
+                    st.session_state.chat_partner = r["teacher_id"]
+                    go("chat")
+            with bc2:
+                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                if st.button("Book Session", key=f"book_{r['id']}_{t['id']}",
+                             use_container_width=True):
+                    st.session_state.book_post_id    = t["id"]
+                    st.session_state.book_teacher_id = r["teacher_id"]
+                    go("book_session")
+                st.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
-#  BROWSE
+#  PAGE: BOOK SESSION
 # ═══════════════════════════════════════════════════════════════
+def page_book_session():
+    require_login()
+    render_navbar()
+    back_btn()
+    breadcrumb("Home", "Knowledge", "Book Session")
+    section_header("Book a Learning Session", "Schedule a structured session with your teacher.")
+
+    u          = st.session_state.user
+    post_id    = st.session_state.get("book_post_id")
+    teacher_id = st.session_state.get("book_teacher_id")
+
+    if not post_id or not teacher_id:
+        st.warning("Invalid session — please go back and try again.")
+        return
+
+    teacher = db_fetchone("SELECT * FROM users WHERE id=?", (teacher_id,))
+    post    = db_fetchone("SELECT * FROM tasks WHERE id=?", (post_id,))
+    if not teacher or not post:
+        st.warning("Could not find the teacher or post.")
+        return
+
+    ini = "".join(w[0].upper() for w in teacher["username"].split()[:2])
+    av  = teacher.get("avatar_color","#2563EB")
+    st.markdown(
+        f"<div class='cs-card' style='display:flex;align-items:center;gap:14px;padding:16px;margin-bottom:20px;'>"
+        f"<div style='width:48px;height:48px;border-radius:50%;background:{av};"
+        f"display:inline-flex;align-items:center;justify-content:center;"
+        f"font-size:17px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>"
+        f"<div>"
+        f"<div style='font-weight:800;color:#0F172A;font-size:15px;'>Session with {teacher['username']}</div>"
+        f"<div style='font-size:12px;color:#64748B;margin-top:3px;'>Topic: {post['title']}</div>"
+        f"</div></div>",
+        unsafe_allow_html=True)
+
+    with st.form("book_session_form"):
+        bc1, bc2 = st.columns(2)
+        with bc1:
+            s_date = st.date_input("Session Date")
+            s_dur  = st.selectbox("Duration", ["30 minutes","1 hour","1.5 hours","2 hours","Custom"])
+        with bc2:
+            s_time = st.time_input("Session Time")
+            s_type = st.selectbox("Session Type", ["Video Call","Chat Session","Audio Call"])
+
+        s_notes = st.text_area("Notes (optional)",
+                               placeholder="What do you want to focus on in this session?",
+                               height=80)
+
+        if st.form_submit_button("Confirm Booking", use_container_width=True):
+            sid = book_session(
+                learner_id   = u["id"],
+                teacher_id   = teacher_id,
+                post_id      = post_id,
+                topic        = post["title"],
+                date         = str(s_date),
+                time         = str(s_time),
+                duration     = s_dur,
+                session_type = s_type,
+                notes        = s_notes,
+            )
+            add_notification(teacher_id, "New Session Booked",
+                f"{u['username']} booked a {s_type} with you on {s_date} at {s_time}.")
+            st.success(f"Session booked for {s_date} at {s_time}. Your teacher has been notified.")
+            st.session_state.book_post_id    = None
+            st.session_state.book_teacher_id = None
+            go("my_sessions")
+
+
+# ═══════════════════════════════════════════════════════════════
+#  PAGE: MY SESSIONS
+# ═══════════════════════════════════════════════════════════════
+def page_my_sessions():
+    require_login()
+    render_navbar()
+    back_btn()
+    breadcrumb("Home", "My Sessions")
+    section_header("My Sessions", "Upcoming and past learning sessions.")
+
+    u  = st.session_state.user
+    tab1, tab2 = st.tabs(["Upcoming Sessions", "Past Sessions"])
+
+    def _session_card(s, uid):
+        is_learner = s["learner_id"] == uid
+        partner    = s["teacher_name"] if is_learner else s["learner_name"]
+        partner_av = s.get("teacher_color","#2563EB") if is_learner else s.get("learner_color","#2563EB")
+        role_lbl   = "You are learning" if is_learner else "You are teaching"
+        ini        = "".join(w[0].upper() for w in partner.split()[:2])
+
+        type_color = {"Video Call":"#2563EB","Chat Session":"#0D9488","Audio Call":"#7C3AED"}.get(s["session_type"],"#64748B")
+        type_bg    = {"Video Call":"#EFF6FF","Chat Session":"#CCFBF1","Audio Call":"#F3E8FF"}.get(s["session_type"],"#F1F5F9")
+
+        st.markdown(
+            f"<div class='cs-card' style='padding:18px;'>"
+            f"<div style='display:flex;align-items:flex-start;gap:14px;'>"
+            f"<div style='width:44px;height:44px;border-radius:50%;background:{partner_av};"
+            f"display:inline-flex;align-items:center;justify-content:center;"
+            f"font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>"
+            f"<div style='flex:1;'>"
+            f"<div style='font-weight:800;font-size:14px;color:#0F172A;'>{s['topic']}</div>"
+            f"<div style='font-size:12px;color:#64748B;margin-top:3px;'>{role_lbl} with <strong>{partner}</strong></div>"
+            f"<div style='margin-top:10px;display:flex;gap:8px;flex-wrap:wrap;'>"
+            f"<span style='background:{type_bg};color:{type_color};border-radius:999px;"
+            f"padding:3px 12px;font-size:11px;font-weight:700;'>{s['session_type']}</span>"
+            f"<span class='cs-badge badge-slate'>{s['date']} at {s['time'][:5]}</span>"
+            f"<span class='cs-badge badge-slate'>{s['duration']}</span>"
+            f"<span class='cs-badge badge-{'green' if s['status']=='completed' else 'amber'}'>"
+            f"{s['status'].capitalize()}</span>"
+            f"</div>"
+            + (f"<div style='font-size:12px;color:#64748B;margin-top:8px;'>{s['notes']}</div>"
+               if s.get("notes") else "")
+            + f"</div></div></div>",
+            unsafe_allow_html=True)
+
+        # Action buttons
+        if s["status"] == "scheduled":
+            btn_cols = st.columns(3)
+            with btn_cols[0]:
+                partner_id = s["teacher_id"] if is_learner else s["learner_id"]
+                if st.button("Open Chat", key=f"schat_{s['id']}"):
+                    st.session_state.chat_partner = partner_id
+                    go("chat")
+            with btn_cols[1]:
+                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                if st.button("Join Session", key=f"sjoin_{s['id']}"):
+                    st.info("Video sessions open in your external conferencing tool. Use the chat to share your meeting link.")
+                st.markdown("</div>", unsafe_allow_html=True)
+            with btn_cols[2]:
+                if st.button("Mark Complete", key=f"scomp_{s['id']}"):
+                    mark_session_complete(s["id"])
+                    st.success("Session marked as completed.")
+                    st.rerun()
+
+    with tab1:
+        upcoming = get_upcoming_sessions(u["id"])
+        if not upcoming:
+            empty_state("No upcoming sessions",
+                        "Book a session from your accepted knowledge connections.")
+        else:
+            st.markdown(f"<div style='color:#64748B;font-size:12px;margin-bottom:12px;'>"
+                        f"{len(upcoming)} upcoming session(s)</div>", unsafe_allow_html=True)
+            for s in upcoming:
+                _session_card(s, u["id"])
+
+    with tab2:
+        past = get_past_sessions(u["id"])
+        if not past:
+            empty_state("No past sessions yet.")
+        else:
+            for s in past:
+                _session_card(s, u["id"])
+
+
+
 def page_browse_tasks():
     render_navbar()
     back_btn()
@@ -1312,17 +1625,53 @@ def page_browse_tasks():
                 """, unsafe_allow_html=True)
             with c2:
                 if logged_in() and st.session_state.user["id"] != t["created_by"]:
-                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
-                    if st.button(apply_lbl, key=f"apply_{t['id']}"):
-                        ok, msg = apply_to_task(t["id"], st.session_state.user["id"])
-                        if ok:
-                            ntitle = "New Interest in Your Post" if is_know else "New Application"
-                            nmsg   = f"{st.session_state.user['username']} responded to: {t['title']}"
-                            add_notification(t["created_by"], ntitle, nmsg)
-                            st.success(msg)
+                    uid = st.session_state.user["id"]
+                    # Knowledge LEARN post → express interest (teacher flow)
+                    if is_know and intent == INTENT_LEARN:
+                        already = db_fetchone(
+                            "SELECT id FROM learning_interests WHERE post_id=? AND teacher_id=?",
+                            (t["id"], uid))
+                        if already:
+                            accepted = is_teacher_accepted(t["id"], uid)
+                            if accepted:
+                                st.markdown("<span class='cs-badge badge-green'>Accepted</span>",
+                                            unsafe_allow_html=True)
+                                if st.button("Open Chat", key=f"br_chat_{t['id']}"):
+                                    st.session_state.chat_partner = t["created_by"]
+                                    go("chat")
+                                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                                if st.button("Book Session", key=f"br_book_{t['id']}"):
+                                    st.session_state.book_post_id    = t["id"]
+                                    st.session_state.book_teacher_id = uid
+                                    go("book_session")
+                                st.markdown("</div>", unsafe_allow_html=True)
+                            else:
+                                st.markdown("<span class='cs-badge badge-amber'>Interest Sent</span>",
+                                            unsafe_allow_html=True)
                         else:
-                            st.warning(msg)
-                    st.markdown("</div>", unsafe_allow_html=True)
+                            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                            if st.button("I Can Help Teach", key=f"apply_{t['id']}"):
+                                ok, msg = express_interest(t["id"], t["created_by"], uid)
+                                if ok:
+                                    add_notification(t["created_by"], "New Interest in Your Post",
+                                        f"{st.session_state.user['username']} responded to: {t['title']}")
+                                    st.success("Interest sent! The learner will review and accept.")
+                                else:
+                                    st.warning(msg)
+                            st.markdown("</div>", unsafe_allow_html=True)
+                    else:
+                        # Task mode or teach posts → regular apply
+                        st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+                        if st.button(apply_lbl, key=f"apply_{t['id']}"):
+                            ok, msg = apply_to_task(t["id"], uid)
+                            if ok:
+                                ntitle = "New Interest in Your Post" if is_know else "New Application"
+                                nmsg   = f"{st.session_state.user['username']} responded to: {t['title']}"
+                                add_notification(t["created_by"], ntitle, nmsg)
+                                st.success(msg)
+                            else:
+                                st.warning(msg)
+                        st.markdown("</div>", unsafe_allow_html=True)
                 elif not logged_in():
                     if st.button("Sign In to Apply", key=f"la_{t['id']}"): go("login")
 
@@ -2119,24 +2468,27 @@ def page_notifications():
         return
 
     for n in notifs:
-        bg     = "#0a1525" if not n["is_read"] else "#0d1526"
-        border = "#1e3a5f"  if not n["is_read"] else "#1e2d45"
-        unread_dot = (
-            "<span style='width:5px;height:5px;background:#38bdf8;border-radius:50%;"
-            "display:inline-block;margin-left:6px;vertical-align:middle;'></span>"
-            if not n["is_read"] else ""
+        is_unread = not n["is_read"]
+        bg        = "#EFF6FF" if is_unread else "#FFFFFF"
+        border    = "#BFDBFE" if is_unread else "#E2E8F0"
+        title_col = "#1D4ED8" if is_unread else "#0F172A"
+        dot       = (
+            "<span style='width:7px;height:7px;background:#2563EB;border-radius:50%;"
+            "display:inline-block;margin-left:8px;vertical-align:middle;'></span>"
+            if is_unread else ""
         )
-        st.markdown(f"""
-        <div style='background:{bg};border:1px solid {border};border-radius:10px;
-            padding:14px 16px;margin-bottom:8px;'>
-            <div style='display:flex;justify-content:space-between;align-items:flex-start;'>
-                <div style='font-weight:600;font-size:13px;color:#64748B;'>
-                    {n['title']}{unread_dot}</div>
-                <div style='font-size:10px;color:#94A3B8;white-space:nowrap;margin-left:10px;'>
-                    {str(n['created_at'])[:16]}</div>
-            </div>
-            <div style='font-size:12px;color:#64748B;margin-top:5px;line-height:1.5;'>{n['message']}</div>
-        </div>""", unsafe_allow_html=True)
+        ts = str(n.get("created_at", ""))[:16]
+        st.markdown(
+            f"<div style='background:{bg};border:1px solid {border};border-radius:12px;"
+            f"padding:16px 20px;margin-bottom:10px;box-shadow:0 1px 4px rgba(0,0,0,.04);'>"
+            f"<div style='display:flex;justify-content:space-between;align-items:center;gap:12px;'>"
+            f"<div style='font-weight:700;font-size:13px;color:{title_col};'>{n['title']}{dot}</div>"
+            f"<div style='font-size:11px;color:#94A3B8;white-space:nowrap;'>{ts}</div>"
+            f"</div>"
+            f"<div style='font-size:13px;color:#334155;margin-top:6px;line-height:1.55;'>"
+            f"{n['message']}</div>"
+            f"</div>",
+            unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3008,6 +3360,8 @@ PAGES = {
     "network":             page_network,
     "projects":            page_projects,
     "project_workspace":   page_project_workspace,
+    "book_session":        page_book_session,
+    "my_sessions":         page_my_sessions,
     "admin_dashboard":     page_admin_dashboard,
     "admin_users":         page_admin_users,
     "admin_tasks":         page_admin_tasks,
