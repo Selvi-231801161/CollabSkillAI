@@ -98,6 +98,40 @@ def is_teacher_accepted(post_id: str, teacher_id: str) -> bool:
     return bool(row)
 
 
+def is_learner_accepted(post_id: str, learner_id: str) -> bool:
+    """For TEACH posts — check if this learner was accepted by the teacher."""
+    row = db_fetchone("""
+        SELECT id FROM learning_interests
+        WHERE post_id=? AND learner_id=? AND status='accepted'
+    """, (post_id, learner_id))
+    return bool(row)
+
+
+def get_interested_learners(post_id: str):
+    """For TEACH posts — get all learners who expressed interest."""
+    return db_fetchall("""
+        SELECT li.*, u.username AS learner_name, u.skills AS learner_skills,
+               u.bio AS learner_bio, u.experience AS learner_exp,
+               u.trust_score AS learner_trust, u.avatar_color AS learner_color,
+               u.total_ratings AS learner_ratings
+        FROM learning_interests li
+        JOIN users u ON li.learner_id = u.id
+        WHERE li.post_id = ?
+        ORDER BY u.trust_score DESC
+    """, (post_id,))
+
+
+def accept_learner(interest_id: str, post_id: str):
+    """Teacher accepts one learner — rejects others automatically."""
+    db_execute(
+        "UPDATE learning_interests SET status='accepted' WHERE id=?",
+        (interest_id,))
+    db_execute(
+        "UPDATE learning_interests SET status='rejected' "
+        "WHERE post_id=? AND id!=? AND status='pending'",
+        (post_id, interest_id))
+
+
 def get_my_teaching_pairs(teacher_id: str):
     """All posts where this teacher was accepted."""
     return db_fetchall("""
