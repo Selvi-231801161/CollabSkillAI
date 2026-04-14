@@ -2396,8 +2396,7 @@ def page_ai_match():
     render_navbar()
     back_btn()
     breadcrumb("Home", "AI Skill Matching")
-    section_header("AI Skill Matching",
-                   "Local AI — no API key required. Powered by TF-IDF and skill overlap.")
+    section_header("AI Skill Matching")
 
     left, right = st.columns([3, 2])
     with left:
