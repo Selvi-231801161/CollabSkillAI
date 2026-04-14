@@ -902,31 +902,7 @@ def page_landing():
             <div style='font-size:12px;color:#64748B;line-height:1.65;'>{desc}</div>
         </div>""", unsafe_allow_html=True)
 
-    # How it works
-    section_divider("How It Works")
-    h1, h2, h3, h4 = st.columns(4)
-    steps = [
-        ("01", "Create account",   "Register and build your profile with skills and experience."),
-        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
-        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
-        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
-    ]
-    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
-        col.markdown(f"""
-        <div class='cs-card'>
-            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
-            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
-            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
-        </div>""", unsafe_allow_html=True)
-
-    st.markdown("<br>", unsafe_allow_html=True)
-    st.markdown("""
-    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
-        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
-        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
-    </div>""", unsafe_allow_html=True)
-
-
+   
 # ═══════════════════════════════════════════════════════════════
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
