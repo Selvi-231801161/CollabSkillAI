@@ -137,7 +137,7 @@ st.markdown("""
 header, #MainMenu, footer { visibility: hidden; }
 .block-container {
     padding-top: 0 !important;
-    max-width: 1280px;
+    max-width: 100% !important;
     padding-bottom: 40px !important;
 }
 html, body, [class*="css"] {
