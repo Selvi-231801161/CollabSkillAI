@@ -223,24 +223,26 @@ label, .stTextInput label, .stTextArea label,
 
 /* All regular buttons — clean white ghost */
 .stButton > button {
-    .stButton > button {
     background: #FFFFFF !important;
     color: #334155 !important;
     border: 1.5px solid #E2E8F0 !important;
     border-radius: 10px !important;
     font-weight: 500 !important;
     font-size: 13px !important;
+
     padding: 8px 18px !important;
-    height: auto !important;              /* 🔥 fix height */
+
+    height: auto !important;
     line-height: 1.2 !important;
-    white-space: nowrap !important;       /* 🔥 keep single line */
-    overflow: visible !important;         /* 🔥 allow full text */
+
+    white-space: nowrap !important;
+    overflow: visible !important;
     text-overflow: unset !important;
-    min-width: max-content !important;    /* 🔥 expand button */
-  
+
+    min-width: max-content !important;
+
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
-}
 }
 .stButton > button:hover {
     background: #F1F5F9 !important;
@@ -788,7 +790,7 @@ def render_navbar():
             if pg == "__logout__":
                 # Same height wrapper — NO margin-top shift
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+                if st.button(lbl, key=f"nav__{pg}"):
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
@@ -796,10 +798,7 @@ def render_navbar():
             else:
                 if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                     go(pg)
-
     st.markdown("<hr/>", unsafe_allow_html=True)
-
-
 # ═══════════════════════════════════════════════════════════════
 #  LANDING  — Work / Learn cards
 # ═══════════════════════════════════════════════════════════════
