@@ -229,18 +229,12 @@ label, .stTextInput label, .stTextArea label,
     border-radius: 10px !important;
     font-weight: 500 !important;
     font-size: 13px !important;
-
-    padding: 8px 18px !important;
-
-    height: auto !important;
+    padding: 8px 16px !important;
+    height: 38px !important;
     line-height: 1.2 !important;
-
     white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
-
-    min-width: max-content !important;
-
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
@@ -777,7 +771,7 @@ def render_navbar():
 
     # Logo column + one column per nav button, all fixed height
     n    = len(nav_items)
-    cols = st.columns([3.5] + [2.5] * n)
+    cols = st.columns([2.0] + [0.9] * n)
 
     with cols[0]:
         st.markdown(
@@ -790,15 +784,18 @@ def render_navbar():
             if pg == "__logout__":
                 # Same height wrapper — NO margin-top shift
                 st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-                if st.button(lbl, key=f"nav__{pg}"):
+                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
                 st.markdown("</div>", unsafe_allow_html=True)
             else:
-                if st.button(lbl, key=f"nav__{pg}"):
+                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                     go(pg)
+
     st.markdown("<hr/>", unsafe_allow_html=True)
+
+
 # ═══════════════════════════════════════════════════════════════
 #  LANDING  — Work / Learn cards
 # ═══════════════════════════════════════════════════════════════
