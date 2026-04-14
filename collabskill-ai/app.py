@@ -751,9 +751,8 @@ def render_navbar():
         cols = st.columns([5, 1, 1])
         with cols[0]:
             st.markdown(
-                "<div class='navbar-logo' style='padding-top:10px;'>"
-                "Collab<span>Skill</span> AI</div>",
-                unsafe_allow_html=True)
+                "<div class='navbar-logo' style='font-size:28px; font-weight:900; padding-top:10px;'>"
+                "Collab<span>Skill</span> AI</div>",unsafe_allow_html=True)
         with cols[1]:
             if st.button("Sign In", key="nav_login_guest"):  go("login")
         with cols[2]:
