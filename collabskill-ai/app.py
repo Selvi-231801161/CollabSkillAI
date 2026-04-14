@@ -796,7 +796,7 @@ def render_navbar():
                     go("landing")
                 st.markdown("</div>", unsafe_allow_html=True)
             else:
-                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+                if st.button(lbl, key=f"nav__{pg}"):
                     go(pg)
     st.markdown("<hr/>", unsafe_allow_html=True)
 # ═══════════════════════════════════════════════════════════════
