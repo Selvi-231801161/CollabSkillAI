@@ -961,7 +961,7 @@ def render_navbar():
         width: auto !important;
         flex: 0 0 auto !important;
     }
-    }}
+    
     /* All nav buttons */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
         .stButton > button {{
