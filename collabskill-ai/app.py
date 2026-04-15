@@ -137,7 +137,7 @@ st.markdown("""
 header, #MainMenu, footer { visibility: hidden; }
 .block-container {
     padding-top: 0 !important;
-    max-width: 100% !important;
+    max-width: 1280px;
     padding-bottom: 40px !important;
 }
 html, body, [class*="css"] {
@@ -461,10 +461,118 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 }
 
 /* ══════════════════════════════════════
-   NAVBAR
+   NAVBAR — Pure white professional
    ══════════════════════════════════════ */
-.navbar-logo { font-size: 24px !important; font-weight: 800; color: #0F172A; letter-spacing: -0.5px; }
+.navbar-logo { font-size: 17px; font-weight: 800; color: #111827; letter-spacing: -.02em; }
 .navbar-logo span { color: #2563EB; }
+
+/* Navbar wrapper */
+.cs-navbar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
+    padding: 0 0 0 0;
+    height: 56px;
+    margin-bottom: 24px;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+}
+.cs-navbar-logo {
+    font-size: 17px;
+    font-weight: 800;
+    color: #111827;
+    letter-spacing: -.02em;
+    white-space: nowrap;
+    flex-shrink: 0;
+    padding-right: 24px;
+}
+.cs-navbar-logo span { color: #2563EB; }
+
+.cs-navbar-menu {
+    display: flex;
+    align-items: center;
+    gap: 2px;
+    flex-wrap: nowrap;
+    overflow-x: auto;
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+    flex: 1;
+    justify-content: flex-end;
+}
+.cs-navbar-menu::-webkit-scrollbar { display: none; }
+
+/* All nav buttons unified */
+.stButton > button.nav-btn,
+.cs-navbar .stButton > button {
+    background: transparent !important;
+    color: #374151 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 6px 12px !important;
+    height: 36px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+    box-shadow: none !important;
+    letter-spacing: 0 !important;
+}
+.cs-navbar .stButton > button:hover {
+    background: #F3F4F6 !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+
+/* Sign Out special styling in navbar */
+.cs-navbar .btn-danger .stButton > button {
+    background: transparent !important;
+    color: #DC2626 !important;
+    border: 1px solid #FCA5A5 !important;
+    border-radius: 8px !important;
+    font-size: 13.5px !important;
+    padding: 6px 12px !important;
+    height: 36px !important;
+}
+.cs-navbar .btn-danger .stButton > button:hover {
+    background: #FEF2F2 !important;
+    color: #B91C1C !important;
+}
+
+/* Active page highlight */
+.cs-navbar-active .stButton > button {
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+    font-weight: 600 !important;
+    border: none !important;
+}
+
+/* Notification badge pill on nav */
+.cs-notif-badge {
+    display: inline-flex; align-items: center; gap: 4px;
+}
+.cs-notif-dot {
+    width: 7px; height: 7px; background: #EF4444;
+    border-radius: 50%; display: inline-block;
+    flex-shrink: 0;
+}
+
+/* Guest navbar sign-in / sign-up */
+.cs-navbar-guest .stButton > button {
+    font-size: 13.5px !important;
+    height: 36px !important;
+    padding: 6px 16px !important;
+}
+.cs-navbar-guest .btn-accent .stButton > button {
+    background: #2563EB !important;
+    color: #FFFFFF !important;
+    border: none !important;
+    font-weight: 600 !important;
+}
 
 /* ══════════════════════════════════════
    HERO SECTION
@@ -714,13 +822,22 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
     return selected_cat, selected_skill
 
 
+def _active_col_idx(nav_items, cur_page):
+    """Return the nth-child index (1-based) of the active nav column.
+    Column 1 = logo placeholder, so nav buttons start at column 2."""
+    for i, (_, pg) in enumerate(nav_items):
+        if pg == cur_page:
+            return i + 2   # +1 for 1-based, +1 for logo col
+    return 0   # 0 = no match → selector won't highlight anything
+
+
 # ═══════════════════════════════════════════════════════════════
-#  NAVBAR
+#  NAVBAR  — Pure HTML, no column squishing, all labels visible
 # ═══════════════════════════════════════════════════════════════
 def render_navbar():
     u      = st.session_state.user
     unread = get_unread_count(u["id"]) if u else 0
-    notif_lbl = f"Notifs ({unread})" if unread else "Notifs"
+    cur    = st.session_state.page
 
     if is_admin():
         nav_items = [
@@ -728,71 +845,156 @@ def render_navbar():
             ("Users",       "admin_users"),
             ("All Posts",   "admin_tasks"),
             ("Browse",      "browse_tasks"),
-            (notif_lbl,     "notifications"),
+            ("Notifications", "notifications"),
             ("Profile",     "profile"),
             ("Sign Out",    "__logout__"),
         ]
     elif logged_in():
         nav_items = [
-            ("Home",        "landing"),
-            ("Dashboard",   "dashboard"),
-            ("Browse",      "browse_tasks"),
-            ("Post",        "post_task"),
-            ("Network",     "network"),
-            ("Projects",    "projects"),
-            ("Chat",        "chat"),
-            ("Sessions",    "my_sessions"),
-            (notif_lbl,     "notifications"),
-            ("Profile",     "profile"),
-            ("Sign Out",    "__logout__"),
+            ("Home",          "landing"),
+            ("Dashboard",     "dashboard"),
+            ("Browse",        "browse_tasks"),
+            ("Post",          "post_task"),
+            ("Network",       "network"),
+            ("Projects",      "projects"),
+            ("Chat",          "chat"),
+            ("Sessions",      "my_sessions"),
+            ("Notifications", "notifications"),
+            ("Profile",       "profile"),
+            ("Sign Out",      "__logout__"),
         ]
     else:
-        # Guest navbar
-        cols = st.columns([5, 1, 1])
-        with cols[0]:
-            st.markdown(
-                "<div class='navbar-logo' style='font-size:28px; font-weight:900; padding-top:10px;'>"
-                "Collab<span>Skill</span> AI</div>",unsafe_allow_html=True)
-        with cols[1]:
-            if st.button("Sign In", key="nav_login_guest"):  go("login")
-        with cols[2]:
-            if st.button("Sign Up", key="nav_signup_guest"): go("register")
-        st.markdown("<hr/>", unsafe_allow_html=True)
+        # ── Guest navbar ──────────────────────────────────────
+        st.markdown("""
+        <div class='cs-navbar'>
+            <div class='cs-navbar-logo'>Collab<span>Skill</span> AI</div>
+        </div>""", unsafe_allow_html=True)
+        # Invisible button row for routing
+        gc1, gc2, gc3 = st.columns([8, 1, 1])
+        with gc2:
+            if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
+        with gc3:
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True): go("register")
+            st.markdown("</div>", unsafe_allow_html=True)
+        # Overlay the buttons onto the navbar visually
+        st.markdown("""
+        <style>
+        /* Pull guest nav buttons up into navbar area */
+        div[data-testid="stHorizontalBlock"]:has(button[kind]):first-of-type {
+            margin-top: -52px !important;
+            margin-bottom: 24px !important;
+        }
+        </style>""", unsafe_allow_html=True)
         return
 
-    # Logged-in navbar — use HTML for perfectly aligned, no-wrap nav
-    admin_pill = (
-        " <span style='font-size:9px;background:rgba(56,189,248,.1);"
-        "color:#2563EB;border:1px solid rgba(56,189,248,.15);"
-        "border-radius:3px;padding:2px 7px;letter-spacing:.06em;'>ADMIN</span>"
-        if is_admin() else ""
-    )
+    # ── Build admin pill ─────────────────────────────────────
+    admin_pill = ""
+    if is_admin():
+        admin_pill = (" <span style='font-size:9px;background:#EFF6FF;color:#2563EB;"
+                      "border:1px solid #BFDBFE;border-radius:4px;padding:2px 7px;"
+                      "letter-spacing:.04em;font-weight:700;'>ADMIN</span>")
 
-    # Logo column + one column per nav button, all fixed height
-    n    = len(nav_items)
-    cols = st.columns([2.0] + [0.9] * n)
+    # ── Notification label with live dot ─────────────────────
+    notif_display = {}
+    for lbl, pg in nav_items:
+        if pg == "notifications" and unread > 0:
+            notif_display[pg] = f"Notifications ({unread})"
+        else:
+            notif_display[pg] = lbl
 
+    # ── HTML navbar shell (visual only) ──────────────────────
+    st.markdown(
+        f"<div class='cs-navbar'>"
+        f"<div class='cs-navbar-logo'>Collab<span>Skill</span> AI{admin_pill}</div>"
+        f"</div>",
+        unsafe_allow_html=True)
+
+    # ── Actual Streamlit buttons — one per column, NO wrapper divs ──
+    # Wrapper divs inside columns cause DeltaGenerator locking errors.
+    # All styling is done purely via the CSS block below.
+    total = len(nav_items)
+    cols  = st.columns([2.8] + [1.05] * total)
+
+    # Empty logo placeholder
     with cols[0]:
-        st.markdown(
-            f"<div class='navbar-logo' style='line-height:38px;padding-top:2px;'>"
-            f"Collab<span>Skill</span> AI{admin_pill}</div>",
-            unsafe_allow_html=True)
+        st.markdown("<div style='height:36px;'></div>", unsafe_allow_html=True)
 
     for col, (lbl, pg) in zip(cols[1:], nav_items):
+        display_lbl = notif_display.get(pg, lbl)
         with col:
-            if pg == "__logout__":
-                # Same height wrapper — NO margin-top shift
-                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
-                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+            if st.button(display_lbl, key=f"nav__{pg}", use_container_width=True):
+                if pg == "__logout__":
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
-                st.markdown("</div>", unsafe_allow_html=True)
-            else:
-                if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+                else:
                     go(pg)
 
-    st.markdown("<hr/>", unsafe_allow_html=True)
+    st.markdown(f"""
+    <style>
+    /* ── Lift button row into the navbar bar ── */
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
+        margin-top: -56px !important;
+        padding-bottom: 4px !important;
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #E5E7EB !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        align-items: center !important;
+    }}
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        > div[data-testid="column"] {{
+        padding: 0 2px !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    /* All nav buttons */
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        .stButton > button {{
+        background: transparent !important;
+        color: #374151 !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        padding: 6px 10px !important;
+        height: 36px !important;
+        white-space: nowrap !important;
+        overflow: visible !important;
+        text-overflow: clip !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        transition: background 0.15s, color 0.15s !important;
+    }}
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        .stButton > button:hover {{
+        background: #F3F4F6 !important;
+        color: #111827 !important;
+    }}
+    /* Active page button — target by data attribute matching current page label */
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        [data-testid="column"]:nth-child({_active_col_idx(nav_items, cur)})
+        .stButton > button {{
+        background: #EFF6FF !important;
+        color: #2563EB !important;
+        font-weight: 600 !important;
+    }}
+    /* Sign Out = last nav button — always red */
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        [data-testid="column"]:last-child .stButton > button {{
+        color: #DC2626 !important;
+        border: 1px solid #FECACA !important;
+        background: transparent !important;
+    }}
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        [data-testid="column"]:last-child .stButton > button:hover {{
+        background: #FEF2F2 !important;
+        color: #B91C1C !important;
+    }}
+    </style>""", unsafe_allow_html=True)
+
+    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -902,7 +1104,31 @@ def page_landing():
             <div style='font-size:12px;color:#64748B;line-height:1.65;'>{desc}</div>
         </div>""", unsafe_allow_html=True)
 
-   
+    # How it works
+    section_divider("How It Works")
+    h1, h2, h3, h4 = st.columns(4)
+    steps = [
+        ("01", "Create account",   "Register and build your profile with skills and experience."),
+        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
+        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
+    ]
+    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
+        col.markdown(f"""
+        <div class='cs-card'>
+            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    </div>""", unsafe_allow_html=True)
+
+
 # ═══════════════════════════════════════════════════════════════
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
@@ -1155,7 +1381,9 @@ def page_dashboard():
 
         q1, q2, q3, q4 = st.columns(4)
         with q1:
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
+            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
@@ -1163,7 +1391,16 @@ def page_dashboard():
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
-        
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        q5, q6, q7, q8 = st.columns(4)
+        with q5:
+            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
+        with q6:
+            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
+        with q7:
+            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
+        with q8:
+            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
 
     # ── My Learning Connections (only in Learn mode) ──────────
     if is_learn_mode():
@@ -2372,7 +2609,8 @@ def page_ai_match():
     render_navbar()
     back_btn()
     breadcrumb("Home", "AI Skill Matching")
-    section_header("AI Skill Matching")
+    section_header("AI Skill Matching",
+                   "Local AI — no API key required. Powered by TF-IDF and skill overlap.")
 
     left, right = st.columns([3, 2])
     with left:
