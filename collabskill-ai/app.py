@@ -1026,7 +1026,7 @@ def page_landing():
         "margin-bottom:18px; position:relative; z-index:10;'>"
         "Choose how you want to get started</div>",
         unsafe_allow_html=True)
-
+    st.markdown("<div style='height:30px;'></div>", unsafe_allow_html=True)
     lc, rc = st.columns(2, gap="large")
 
     with lc:
