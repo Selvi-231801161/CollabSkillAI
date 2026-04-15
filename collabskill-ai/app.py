@@ -943,12 +943,17 @@ def render_navbar():
     <style>
     /* ── Lift button row into the navbar bar ── */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
+        display: flex !important;
+        flex-wrap: nowrap !important;
+        overflow-x: auto !important;
+        gap: 8px !important;
+
         margin-top: -40px !important;
-        padding-bottom: 4px !important;
-        background: #FFFFFF !important;
-        border-bottom: 1px solid #E5E7EB !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
+        padding: 6px 10px !important;
+
+        background: transparent !important;
+        border-bottom: none !important;
+
         align-items: center !important;
     }}
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
