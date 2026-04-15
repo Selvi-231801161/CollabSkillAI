@@ -518,7 +518,8 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     font-size: 13px !important;
 
     height: 44px !important;
-    min-width: 220px !important;   /* ✅ enough for "Dashboard" */
+    min-width: 260px !important;
+    width: 260px !important;
 
     padding: 8px 24px !important;
 
@@ -930,7 +931,7 @@ def render_navbar():
     # Wrapper divs inside columns cause DeltaGenerator locking errors.
     # All styling is done purely via the CSS block below.
     total = len(nav_items)
-    cols = st.columns([2.8] + [3]*total)
+    cols = st.columns([2.8] + [4]*total)
 
     # Empty logo placeholder
     with cols[0]:
