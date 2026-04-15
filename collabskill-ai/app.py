@@ -521,7 +521,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     min-width: 260px !important;
     width: 260px !important;
 
-    padding: 4px 14px !important;
+    padding: 2px 8px !important;
 
     display: flex !important;
     align-items: center !important;
