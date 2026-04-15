@@ -870,7 +870,7 @@ def render_navbar():
             <div class='cs-navbar-logo'>Collab<span>Skill</span> AI</div>
         </div>""", unsafe_allow_html=True)
         # Invisible button row for routing
-        gc1, gc2, gc3 = st.columns([8, 1, 1])
+        gc1, gc2, gc3 = st.columns([3, 2, 2])
         with gc2:
             if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
         with gc3:
