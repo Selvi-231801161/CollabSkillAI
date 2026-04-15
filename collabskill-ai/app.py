@@ -955,7 +955,7 @@ def render_navbar():
         border-bottom: none !important;
 
         align-items: center !important;
-    }}
+    }
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
     > div[data-testid="column"] {
         padding: 0 2px !important;
