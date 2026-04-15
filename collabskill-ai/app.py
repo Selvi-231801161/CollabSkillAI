@@ -881,9 +881,7 @@ def render_navbar():
         st.markdown("""
         <style>
         /* Pull guest nav buttons up into navbar area */
-        div[data-testid="stHorizontalBlock"]:has(button[kind]):first-of-type {
-            margin-top: -52px !important;
-            margin-bottom: 24px !important;
+        
         }
         </style>""", unsafe_allow_html=True)
         return
