@@ -939,30 +939,33 @@ def render_navbar():
                 else:
                     go(pg)
 
-    st.markdown(f"""
-    <style>
-    /* ── Lift button row into the navbar bar ── */
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
-        display: flex !important;
-        flex-wrap: nowrap !important;
-        overflow-x: auto !important;
-        gap: 8px !important;
+    st.markdown("""
+<style>
 
-        margin-top: -40px !important;
-        padding: 6px 10px !important;
+/* — Lift button row into the navbar bar — */
+section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {
+    display: flex !important;
+    flex-wrap: nowrap !important;
+    overflow-x: auto !important;
+    gap: 8px !important;
 
-        background: transparent !important;
-        border-bottom: none !important;
+    margin-top: -40px !important;
+    padding: 6px 10px !important;
 
-        align-items: center !important;
-    }
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-    > div[data-testid="column"] {
-        padding: 0 2px !important;
-        display: flex !important;
-        align-items: center !important;
-    }
-    }}
+    background: transparent !important;
+    border-bottom: none !important;
+
+    align-items: center !important;
+}
+/* Fix button alignment */
+section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] 
+.stButton {
+    width: auto !important;
+    flex: 0 0 auto !important;
+    display: inline-block !important;
+}
+</style>
+""", unsafe_allow_html=True)
     
     /* All nav buttons */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
