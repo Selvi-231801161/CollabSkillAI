@@ -880,9 +880,8 @@ def render_navbar():
         with gc2:
             if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
         with gc3:
-            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
-            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True): go("register")
-            st.markdown("</div>", unsafe_allow_html=True)
+            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
+                go("register")
         # Overlay the buttons onto the navbar visually
         st.markdown("""
         <style>
