@@ -956,11 +956,13 @@ def render_navbar():
 
         align-items: center !important;
     }}
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] 
-    .stButton {
-        width: auto !important;
-        flex: 0 0 auto !important;
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+    > div[data-testid="column"] {
+        padding: 0 2px !important;
+        display: flex !important;
+        align-items: center !important;
     }
+    }}
     
     /* All nav buttons */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
