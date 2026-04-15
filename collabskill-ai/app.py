@@ -581,7 +581,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* ══════════════════════════════════════
    HERO SECTION
    ══════════════════════════════════════ */
-.hero-wrap { text-align: center; padding: 60px 0 32px; }
+.hero-wrap { text-align: center; padding: 15px 0 32px; }
 .hero-eyebrow {
     display: inline-block;
     font-size: 10px; font-weight: 700; letter-spacing: .16em;
