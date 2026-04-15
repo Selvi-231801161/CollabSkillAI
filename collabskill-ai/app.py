@@ -509,21 +509,22 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* All nav buttons unified */
 .stButton > button.nav-btn,
 .cs-navbar .stButton > button {
-    background: transparent !important;
+    background: #FFFFFF !important;
     color: #374151 !important;
-    border: none !important;
-    border-radius: 8px !important;
+    border: 1px solid #E2E8F0 !important;
+    border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 13.5px !important;
+    font-size: 13px !important;
+    height: 38px !important;
+    min-width: 120px !important;   
     padding: 6px 12px !important;
-    height: 36px !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    transition: background 0.15s ease, color 0.15s ease !important;
-    box-shadow: none !important;
-    letter-spacing: 0 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    white-space: nowrap !important;   
+    overflow: visible !important;    
+    text-overflow: unset !important;
+    box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
 .cs-navbar .stButton > button:hover {
     background: #F3F4F6 !important;
