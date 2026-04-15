@@ -872,11 +872,16 @@ def render_navbar():
         # Invisible button row for routing
         gc1, gc2, gc3 = st.columns([8, 1, 1])
         with gc2:
-            if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
-        with gc3:
-            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
-            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True): go("register")
+            st.markdown("<div style='margin-top:6px;'>", unsafe_allow_html=True)
+            if st.button("Sign In", key="nav_login_guest", use_container_width=True):
+                go("login")
             st.markdown("</div>", unsafe_allow_html=True)
+
+       with gc3:
+           st.markdown("<div class='btn-accent' style='margin-top:6px;'>", unsafe_allow_html=True)
+           if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
+               go("register")
+           st.markdown("</div>", unsafe_allow_html=True)
         # Overlay the buttons onto the navbar visually
         st.markdown("""
         <style>
