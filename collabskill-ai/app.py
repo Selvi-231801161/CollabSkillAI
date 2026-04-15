@@ -1021,7 +1021,8 @@ def page_landing():
     st.markdown(
         "<div style='text-align:center;font-size:10px;font-weight:700;"
         "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
-        "margin-bottom:18px;'>Choose how you want to get started</div>",
+        "margin-bottom:18px; position:relative; z-index:10;'>"
+        "Choose how you want to get started</div>",
         unsafe_allow_html=True)
 
     lc, rc = st.columns(2, gap="large")
