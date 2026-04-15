@@ -1387,16 +1387,7 @@ def page_dashboard():
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
-        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-        q5, q6, q7, q8 = st.columns(4)
-        with q5:
-            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
-        with q6:
-            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
-        with q7:
-            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
-        with q8:
-            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
+        
 
     # ── My Learning Connections (only in Learn mode) ──────────
     if is_learn_mode():
