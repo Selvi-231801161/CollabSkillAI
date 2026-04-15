@@ -967,7 +967,7 @@ section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
 </style>
 """, unsafe_allow_html=True)
     
-    /* All nav buttons */
+    
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
         .stButton > button {{
         background: transparent !important;
