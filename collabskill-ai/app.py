@@ -513,19 +513,23 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     color: #374151 !important;
     border: 1px solid #E2E8F0 !important;
     border-radius: 10px !important;
+
     font-weight: 500 !important;
     font-size: 13px !important;
-    height: 38px !important;
 
-    width: 180px !important;                 
-    padding: 6px 20px !important;        
+    height: 38px !important;
+    min-width: 180px !important;   /* ✅ enough for "Dashboard" */
+
+    padding: 6px 20px !important;
 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
+
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
+    overflow: visible !important;      /* ✅ NO CUT */
+    text-overflow: unset !important;
+
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
 .cs-navbar .stButton > button:hover {
