@@ -226,7 +226,7 @@ label, .stTextInput label, .stTextArea label,
     background: #FFFFFF !important;
     color: #334155 !important;
     border: 1.5px solid #E2E8F0 !important;
-    border-radius: 10px !important;
+    border-radius: 20px !important;
     font-weight: 500 !important;
     font-size: 13px !important;
     padding: 8px 16px !important;
