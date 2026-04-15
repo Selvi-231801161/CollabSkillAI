@@ -931,7 +931,7 @@ def render_navbar():
     # Wrapper divs inside columns cause DeltaGenerator locking errors.
     # All styling is done purely via the CSS block below.
     total = len(nav_items)
-    cols = st.columns([3.4] + [10]*total)
+    cols = st.columns([3.4] + [20]*total)
 
     # Empty logo placeholder
     with cols[0]:
