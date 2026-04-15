@@ -935,7 +935,7 @@ def render_navbar():
     <style>
     /* ── Lift button row into the navbar bar ── */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
-        margin-top: -56px !important;
+        margin-top: -40px !important;
         padding-bottom: 4px !important;
         background: #FFFFFF !important;
         border-bottom: 1px solid #E5E7EB !important;
