@@ -614,6 +614,8 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     text-align: center;
     height: 100%;
     box-shadow: 0 2px 12px rgba(0,0,0,.05);
+    position: relative;
+    z-index: 1;
 }
 .mode-card:hover {
     transform: translateY(-4px);
