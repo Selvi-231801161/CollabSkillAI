@@ -877,11 +877,11 @@ def render_navbar():
                 go("login")
             st.markdown("</div>", unsafe_allow_html=True)
 
-       with gc3:
-           st.markdown("<div class='btn-accent' style='margin-top:6px;'>", unsafe_allow_html=True)
-           if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
-               go("register")
-           st.markdown("</div>", unsafe_allow_html=True)
+        with gc3:
+            st.markdown("<div class='btn-accent' style='margin-top:6px;'>", unsafe_allow_html=True)
+            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
+                go("register")
+            st.markdown("</div>", unsafe_allow_html=True)
         # Overlay the buttons onto the navbar visually
         st.markdown("""
         <style>
