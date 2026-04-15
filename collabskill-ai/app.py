@@ -515,7 +515,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     border-radius: 10px !important;
 
     font-weight: 500 !important;
-    font-size: 13px !important;
+    font-size: 10px !important;
 
     height: 44px !important;
     min-width: 260px !important;
