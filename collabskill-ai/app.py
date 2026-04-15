@@ -891,6 +891,10 @@ def render_navbar():
             margin-top: -52px !important;
             margin-bottom: 24px !important;
         }
+        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
+            display: flex;
+            align-items: center;
+        }
         </style>""", unsafe_allow_html=True)
         return
 
