@@ -228,8 +228,8 @@ label, .stTextInput label, .stTextArea label,
     border: 1.5px solid #E2E8F0 !important;
     border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 13px !important;
-    padding: 8px 16px !important;
+    font-size: 12px !important;
+    padding: 6px 10px !important;
     height: 38px !important;
     line-height: 1.2 !important;
 
