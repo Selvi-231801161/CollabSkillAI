@@ -226,10 +226,10 @@ label, .stTextInput label, .stTextArea label,
     background: #FFFFFF !important;
     color: #334155 !important;
     border: 1.5px solid #E2E8F0 !important;
-    border-radius: 20px !important;
+    border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 10px !important;
-    padding: 4px 8px !important;
+    font-size: 13px !important;
+    padding: 8px 16px !important;
     height: 38px !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
@@ -461,135 +461,77 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 }
 
 /* ══════════════════════════════════════
-   NAVBAR — Pure white professional
+   NAVBAR — Modern responsive flex bar
    ══════════════════════════════════════ */
-.navbar-logo { font-size: 17px; font-weight: 800; color: #111827; letter-spacing: -.02em; }
-.navbar-logo span { color: #2563EB; }
-
-/* Navbar wrapper */
-.cs-navbar {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-
-    background: transparent !important;
-    border-bottom: none !important;
-
-    padding: 0 0 0 0;
-    height: 56px;
-
-    margin-bottom: 24px;
-
-    box-shadow: none !important;
-}
-.cs-navbar-logo {
-    font-size: 17px;
-    font-weight: 800;
-    color: #111827;
-    letter-spacing: -.02em;
-    white-space: nowrap;
-    flex-shrink: 0;
-    padding-right: 24px;
-}
+.cs-navbar-logo { font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -.02em; }
 .cs-navbar-logo span { color: #2563EB; }
 
-.cs-navbar-menu {
-    display: flex;
-    align-items: center;
-    gap: 2px;
-    flex-wrap: nowrap;
-    overflow-x: auto;
-    scrollbar-width: none;
-    -ms-overflow-style: none;
-    flex: 1;
-    justify-content: flex-end;
-}
-.cs-navbar-menu::-webkit-scrollbar { display: none; }
-
-/* All nav buttons unified */
-.stButton > button.nav-btn,
-.cs-navbar .stButton > button {
-    background: #FFFFFF !important;
-    color: #374151 !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-
-    font-weight: 500 !important;
-    font-size: 10px !important;
-
-    height: 44px !important;
-    min-width: 260px !important;
-    width: 260px !important;
-
-    padding: 2px 8px !important;
-
+/* The column row itself becomes the flex navbar */
+div[data-testid="stHorizontalBlock"].cs-nav-row {
     display: flex !important;
+    flex-wrap: nowrap !important;
     align-items: center !important;
-    justify-content: center !important;
-
-    white-space: nowrap !important;
-    overflow: visible !important;      /* ✅ NO CUT */
-    text-overflow: unset !important;
-
-    box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
+    gap: 0 !important;
+    padding: 8px 16px !important;
+    background: #FFFFFF !important;
+    border-bottom: 1.5px solid #E5E7EB !important;
+    box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
+    overflow-x: auto !important;
+    scrollbar-width: none !important;
+    margin-bottom: 24px !important;
 }
-.cs-navbar .stButton > button:hover {
+div[data-testid="stHorizontalBlock"].cs-nav-row::-webkit-scrollbar { display: none !important; }
+
+div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"] {
+    padding: 0 2px !important;
+    flex-shrink: 0 !important;
+    min-width: fit-content !important;
+}
+
+/* ALL buttons in the nav row */
+div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button {
+    background: transparent !important;
+    color: #4B5563 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 7px 13px !important;
+    height: 38px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-shadow: none !important;
+    min-width: max-content !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+    letter-spacing: 0 !important;
+}
+div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button:hover {
     background: #F3F4F6 !important;
     color: #111827 !important;
     border: none !important;
     box-shadow: none !important;
 }
-
-/* Sign Out special styling in navbar */
-.cs-navbar .btn-danger .stButton > button {
-    background: transparent !important;
-    color: #DC2626 !important;
-    border: 1px solid #FCA5A5 !important;
-    border-radius: 8px !important;
-    font-size: 13.5px !important;
-    padding: 6px 12px !important;
-    height: 36px !important;
+div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button:active {
+    background: #E5E7EB !important;
 }
-.cs-navbar .btn-danger .stButton > button:hover {
+
+/* Last column = Sign Out — always red */
+div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"]:last-child .stButton > button {
+    color: #DC2626 !important;
+    font-weight: 500 !important;
+}
+div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"]:last-child .stButton > button:hover {
     background: #FEF2F2 !important;
     color: #B91C1C !important;
 }
 
-/* Active page highlight */
-.cs-navbar-active .stButton > button {
-    background: #EFF6FF !important;
-    color: #2563EB !important;
-    font-weight: 600 !important;
-    border: none !important;
-}
-
-/* Notification badge pill on nav */
-.cs-notif-badge {
-    display: inline-flex; align-items: center; gap: 4px;
-}
-.cs-notif-dot {
-    width: 7px; height: 7px; background: #EF4444;
-    border-radius: 50%; display: inline-block;
-    flex-shrink: 0;
-}
-
-/* Guest navbar sign-in / sign-up */
-.cs-navbar-guest .stButton > button {
-    font-size: 13.5px !important;
-    height: 36px !important;
-    padding: 6px 16px !important;
-}
-.cs-navbar-guest .btn-accent .stButton > button {
-    background: #2563EB !important;
-    color: #FFFFFF !important;
-    border: none !important;
-    font-weight: 600 !important;
-}
 
 /* ══════════════════════════════════════
    HERO SECTION
    ══════════════════════════════════════ */
-.hero-wrap { text-align: center; padding: 15px 0 32px; }
+.hero-wrap { text-align: center; padding: 60px 0 32px; }
 .hero-eyebrow {
     display: inline-block;
     font-size: 10px; font-weight: 700; letter-spacing: .16em;
@@ -622,8 +564,6 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     text-align: center;
     height: 100%;
     box-shadow: 0 2px 12px rgba(0,0,0,.05);
-    position: relative;
-    z-index: 1;
 }
 .mode-card:hover {
     transform: translateY(-4px);
@@ -771,10 +711,8 @@ def empty_state(title, desc="", action_label=None, action_key=None, action_fn=No
     if action_label and action_key:
         _, mc, _ = st.columns([2, 1, 2])
         with mc:
-            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(action_label, key=action_key, use_container_width=True):
                 if action_fn: action_fn()
-            st.markdown("</div>", unsafe_allow_html=True)
 
 def back_btn():
     if st.button("Back", key=f"back__{st.session_state.page}"):
@@ -837,16 +775,15 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 
 def _active_col_idx(nav_items, cur_page):
-    """Return the nth-child index (1-based) of the active nav column.
-    Column 1 = logo placeholder, so nav buttons start at column 2."""
+    """Return 1-based nth-child index of the active nav column."""
     for i, (_, pg) in enumerate(nav_items):
         if pg == cur_page:
-            return i + 2   # +1 for 1-based, +1 for logo col
-    return 0   # 0 = no match → selector won't highlight anything
+            return i + 1  # 1-based
+    return 0
 
 
 # ═══════════════════════════════════════════════════════════════
-#  NAVBAR  — Pure HTML, no column squishing, all labels visible
+#  NAVBAR  — Modern responsive flex navbar, zero wrapper divs
 # ═══════════════════════════════════════════════════════════════
 def render_navbar():
     u      = st.session_state.user
@@ -855,166 +792,129 @@ def render_navbar():
 
     if is_admin():
         nav_items = [
-            ("Dashboard",   "admin_dashboard"),
-            ("Users",       "admin_users"),
-            ("All Posts",   "admin_tasks"),
-            ("Browse",      "browse_tasks"),
-            ("Notifications", "notifications"),
-            ("Profile",     "profile"),
-            ("Sign Out",    "__logout__"),
+            ("CollabSkill AI", "__logo__"),
+            ("Dashboard",      "admin_dashboard"),
+            ("Users",          "admin_users"),
+            ("All Posts",      "admin_tasks"),
+            ("Browse",         "browse_tasks"),
+            (f"Notifs{' ('+str(unread)+')' if unread else ''}", "notifications"),
+            ("Profile",        "profile"),
+            ("Sign Out",       "__logout__"),
         ]
     elif logged_in():
         nav_items = [
-            ("Home",          "landing"),
-            ("Dashboard",     "dashboard"),
-            ("Browse",        "browse_tasks"),
-            ("Post",          "post_task"),
-            ("Network",       "network"),
-            ("Projects",      "projects"),
-            ("Chat",          "chat"),
-            ("Sessions",      "my_sessions"),
-            ("Notifications", "notifications"),
-            ("Profile",       "profile"),
-            ("Sign Out",      "__logout__"),
+            ("CollabSkill AI", "__logo__"),
+            ("Home",           "landing"),
+            ("Dashboard",      "dashboard"),
+            ("Browse",         "browse_tasks"),
+            ("Post",           "post_task"),
+            ("Network",        "network"),
+            ("Projects",       "projects"),
+            ("Chat",           "chat"),
+            ("Sessions",       "my_sessions"),
+            (f"Notifs{' ('+str(unread)+')' if unread else ''}", "notifications"),
+            ("Profile",        "profile"),
+            ("Sign Out",       "__logout__"),
         ]
     else:
-        # ── Guest navbar ──────────────────────────────────────
-        st.markdown("""
-        <div class='cs-navbar'>
-            <div class='cs-navbar-logo'>Collab<span>Skill</span> AI</div>
-        </div>""", unsafe_allow_html=True)
-        # Invisible button row for routing
-        gc1, gc2, gc3 = st.columns([8, 1, 1])
-        with gc2:
-            if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
-        with gc3:
-            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
-                go("register")
-        # Overlay the buttons onto the navbar visually
-        st.markdown("""
-        <style>
-        /* Pull guest nav buttons up into navbar area */
-        div[data-testid="stHorizontalBlock"]:has(button[kind]):first-of-type {
-            margin-top: -52px !important;
-            margin-bottom: 24px !important;
-        }
-        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            display: flex;
-            align-items: center;
-        }
-        </style>""", unsafe_allow_html=True)
-        return
+        nav_items = [
+            ("CollabSkill AI", "__logo__"),
+            ("Sign In",        "login"),
+            ("Sign Up",        "register"),
+        ]
 
-    # ── Build admin pill ─────────────────────────────────────
-    admin_pill = ""
-    if is_admin():
-        admin_pill = (" <span style='font-size:9px;background:#EFF6FF;color:#2563EB;"
-                      "border:1px solid #BFDBFE;border-radius:4px;padding:2px 7px;"
-                      "letter-spacing:.04em;font-weight:700;'>ADMIN</span>")
+    active_idx = _active_col_idx(nav_items, cur)
+    n          = len(nav_items)
 
-    # ── Notification label with live dot ─────────────────────
-    notif_display = {}
-    for lbl, pg in nav_items:
-        if pg == "notifications" and unread > 0:
-            notif_display[pg] = f"Notifications ({unread})"
-        else:
-            notif_display[pg] = lbl
-
-    # ── HTML navbar shell (visual only) ──────────────────────
+    # ── Inject scoped CSS via an id anchor placed just before the columns ──
     st.markdown(
-        f"<div class='cs-navbar'>"
-        f"<div class='cs-navbar-logo'>Collab<span>Skill</span> AI{admin_pill}</div>"
-        f"</div>",
+        f"""<style>
+        #nav-anchor + div [data-testid="stHorizontalBlock"] {{
+            display:flex !important; flex-wrap:nowrap !important;
+            align-items:center !important; gap:0 !important;
+            padding:6px 12px !important; margin-bottom:24px !important;
+            background:#FFFFFF !important;
+            border-bottom:1.5px solid #E5E7EB !important;
+            box-shadow:0 2px 8px rgba(0,0,0,.06) !important;
+            overflow-x:auto !important; scrollbar-width:none !important;
+        }}
+        #nav-anchor + div [data-testid="stHorizontalBlock"]::-webkit-scrollbar{{display:none!important;}}
+        #nav-anchor + div [data-testid="stHorizontalBlock"] [data-testid="column"]{{
+            padding:0 1px!important; flex-shrink:0!important; min-width:fit-content!important;
+        }}
+        #nav-anchor + div [data-testid="stHorizontalBlock"] .stButton > button {{
+            background:transparent!important; color:#4B5563!important;
+            border:none!important; border-radius:8px!important;
+            font-family:'Inter',sans-serif!important; font-weight:500!important;
+            font-size:13.5px!important; padding:7px 13px!important;
+            height:38px!important; white-space:nowrap!important;
+            overflow:visible!important; text-overflow:clip!important;
+            box-shadow:none!important; min-width:max-content!important;
+            width:auto!important; letter-spacing:0!important;
+            transition:background .15s,color .15s!important;
+        }}
+        #nav-anchor + div [data-testid="stHorizontalBlock"] .stButton > button:hover {{
+            background:#F3F4F6!important; color:#111827!important;
+        }}
+        /* Logo col — big bold, no hover bg */
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:first-child .stButton > button {{
+            font-size:17px!important; font-weight:800!important;
+            color:#111827!important; letter-spacing:-.02em!important;
+            padding:7px 20px 7px 0!important;
+        }}
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:first-child .stButton > button:hover {{
+            background:transparent!important;
+        }}
+        /* Active page */
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:nth-child({active_idx}) .stButton > button {{
+            background:#EFF6FF!important; color:#2563EB!important;
+            font-weight:600!important;
+        }}
+        /* Sign Out — last col, always red */
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:last-child .stButton > button {{
+            color:#DC2626!important;
+        }}
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:last-child .stButton > button:hover {{
+            background:#FEF2F2!important; color:#B91C1C!important;
+        }}
+        /* Guest Sign Up — second-to-last col, blue */
+        {"" if logged_in() else """
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:last-child .stButton > button {
+            background:#2563EB!important; color:#FFFFFF!important;
+            font-weight:600!important;
+        }
+        #nav-anchor + div [data-testid="stHorizontalBlock"]
+            [data-testid="column"]:last-child .stButton > button:hover {
+            background:#1D4ED8!important;
+        }
+        """}
+        </style><div id="nav-anchor"></div>""",
         unsafe_allow_html=True)
 
-    # ── Actual Streamlit buttons — one per column, NO wrapper divs ──
-    # Wrapper divs inside columns cause DeltaGenerator locking errors.
-    # All styling is done purely via the CSS block below.
-    total = len(nav_items)
-    cols = st.columns([5.2] + [10]*total)
-
-    # Empty logo placeholder
-    with cols[0]:
-        st.markdown("<div style='height:36px;'></div>", unsafe_allow_html=True)
-
-    for col, (lbl, pg) in zip(cols[1:], nav_items):
-        display_lbl = notif_display.get(pg, lbl)
+    # ── One flat column per item — ZERO wrapper divs ──────────
+    cols = st.columns([2.2] + [1.0] * (n - 1))
+    for col, (lbl, pg) in zip(cols, nav_items):
         with col:
-            if st.button(display_lbl, key=f"nav__{pg}", use_container_width=True):
-                if pg == "__logout__":
+            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+                if pg in ("__logo__", "landing"):
+                    go("landing")
+                elif pg == "__logout__":
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
                 else:
                     go(pg)
 
-    st.markdown(f"""
-    <style>
-    /* ── Lift button row into the navbar bar ── */
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
-        margin-top: -56px !important;
-        padding-bottom: 4px !important;
-        background: #FFFFFF !important;
-        border-bottom: 1px solid #E5E7EB !important;
-        padding-left: 0 !important;
-        padding-right: 0 !important;
-        align-items: center !important;
-    }}
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        > div[data-testid="column"] {{
-        padding: 0 2px !important;
-        display: flex !important;
-        align-items: center !important;
-    }}
-    /* All nav buttons */
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        .stButton > button {{
-        background: transparent !important;
-        color: #374151 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 6px 10px !important;
-        height: 36px !important;
-        white-space: nowrap !important;
-        overflow: visible !important;
-        text-overflow: clip !important;
-        box-shadow: none !important;
-        width: 100% !important;
-        transition: background 0.15s, color 0.15s !important;
-    }}
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        .stButton > button:hover {{
-        background: #F3F4F6 !important;
-        color: #111827 !important;
-    }}
-    /* Active page button — target by data attribute matching current page label */
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        [data-testid="column"]:nth-child({_active_col_idx(nav_items, cur)})
-        .stButton > button {{
-        background: #EFF6FF !important;
-        color: #2563EB !important;
-        font-weight: 600 !important;
-    }}
-    /* Sign Out = last nav button — always red */
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        [data-testid="column"]:last-child .stButton > button {{
-        color: #DC2626 !important;
-        border: 1px solid #FECACA !important;
-        background: transparent !important;
-    }}
-    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
-        [data-testid="column"]:last-child .stButton > button:hover {{
-        background: #FEF2F2 !important;
-        color: #B91C1C !important;
-    }}
-    </style>""", unsafe_allow_html=True)
-
-    st.markdown("<div style='height:4px;'></div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
+#  LANDING  — Work / Learn cards══════════════════════════════════════════
 #  LANDING  — Work / Learn cards
 # ═══════════════════════════════════════════════════════════════
 def page_landing():
@@ -1034,10 +934,9 @@ def page_landing():
     st.markdown(
         "<div style='text-align:center;font-size:10px;font-weight:700;"
         "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
-        "margin-bottom:18px; position:relative; z-index:10;'>"
-        "Choose how you want to get started</div>",
+        "margin-bottom:18px;'>Choose how you want to get started</div>",
         unsafe_allow_html=True)
-    st.markdown("<div style='height:60px;'></div>", unsafe_allow_html=True)
+
     lc, rc = st.columns(2, gap="large")
 
     with lc:
@@ -1058,11 +957,9 @@ def page_landing():
             <div class='mode-card-cta cta-work'>Task Collaboration &rarr;</div>
         </div>""", unsafe_allow_html=True)
         st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-        st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
         if st.button("Get Started — Work", key="land_work", use_container_width=True):
             st.session_state.mode = "work"
             go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
-        st.markdown("</div>", unsafe_allow_html=True)
 
     with rc:
         st.markdown("""
@@ -1080,11 +977,9 @@ def page_landing():
             <div class='mode-card-cta cta-learn'>Knowledge Exchange &rarr;</div>
         </div>""", unsafe_allow_html=True)
         st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-        st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
         if st.button("Get Started — Learn", key="land_learn", use_container_width=True):
             st.session_state.mode = "learn"
             go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
-        st.markdown("</div>", unsafe_allow_html=True)
 
     # Stats
     total_users = db_fetchone("SELECT COUNT(*) AS c FROM users")["c"]
@@ -1123,7 +1018,29 @@ def page_landing():
         </div>""", unsafe_allow_html=True)
 
     # How it works
-    
+    section_divider("How It Works")
+    h1, h2, h3, h4 = st.columns(4)
+    steps = [
+        ("01", "Create account",   "Register and build your profile with skills and experience."),
+        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
+        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
+    ]
+    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
+        col.markdown(f"""
+        <div class='cs-card'>
+            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    </div>""", unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════
 #  LOGIN
@@ -1148,7 +1065,6 @@ def page_login():
         password = st.text_input("Password", type="password", placeholder="Your password", key="lp_password")
         st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
 
-        st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
         if st.button("Sign In", key="lp_submit", use_container_width=True):
             if not username or not password:
                 st.warning("Please enter both username and password.")
@@ -1160,7 +1076,6 @@ def page_login():
                     go("admin_dashboard" if user["role"] == "admin" else "dashboard")
                 else:
                     st.error("Invalid username or password.")
-        st.markdown("</div>", unsafe_allow_html=True)
 
         st.markdown("""
         <div style='text-align:center;margin-top:18px;padding-top:18px;
@@ -1170,7 +1085,6 @@ def page_login():
 
         if st.button("Create an Account", key="lp_to_register", use_container_width=True):
             go("register")
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -1237,7 +1151,6 @@ def page_register():
             placeholder="Type your specific skill here...",
             key="rp_custom_skill")
 
-    st.markdown("</div>", unsafe_allow_html=True)
 
     if submitted:
         # Resolve the final skill string
@@ -1325,7 +1238,6 @@ def page_dashboard():
         st.markdown("<div style='padding-top:8px;'>", unsafe_allow_html=True)
         if st.button("Edit Profile", key="dash_edit", use_container_width=True):
             go("profile")
-        st.markdown("</div>", unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
@@ -1377,9 +1289,7 @@ def page_dashboard():
 
         q1, q2, q3, q4 = st.columns(4)
         with q1:
-            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
-            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
@@ -1438,13 +1348,11 @@ def page_dashboard():
                         st.session_state.chat_partner = pid
                         go("chat")
                 with lc2:
-                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                     if st.button("Book Session", key=f"dash_lc_book_{pair['id']}",
                                  use_container_width=True):
                         st.session_state.book_post_id    = pair["post_id"]
                         st.session_state.book_teacher_id = pair.get("teacher_id")
                         go("book_session")
-                    st.markdown("</div>", unsafe_allow_html=True)
 
     # ── AI Recommendations ────────────────────────────────────
     render_ai_recommendations(u)
@@ -1479,9 +1387,7 @@ def _render_entry_card(t, owner=False):
                     if st.button("Close",  key=f"tc_{t['id']}"): update_task_status(t["id"], "closed"); st.rerun()
                 else:
                     if st.button("Reopen", key=f"to_{t['id']}"): update_task_status(t["id"], "open"); st.rerun()
-                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button("Delete", key=f"td_{t['id']}"): delete_task(t["id"]); st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
                 # For knowledge LEARN posts — show interested teachers
                 if is_know and intent == INTENT_LEARN and interest_cnt > 0:
                     st.markdown("<div style='margin-top:8px;'>", unsafe_allow_html=True)
@@ -1489,7 +1395,6 @@ def _render_entry_card(t, owner=False):
                                  use_container_width=True):
                         st.session_state[f"show_interested_{t['id']}"] = \
                             not st.session_state.get(f"show_interested_{t['id']}", False)
-                    st.markdown("</div>", unsafe_allow_html=True)
 
                 # For knowledge TEACH posts — show interested learners
                 if is_know and intent == INTENT_TEACH and interest_cnt > 0:
@@ -1498,7 +1403,6 @@ def _render_entry_card(t, owner=False):
                                  use_container_width=True):
                         st.session_state[f"show_interested_{t['id']}"] = \
                             not st.session_state.get(f"show_interested_{t['id']}", False)
-                    st.markdown("</div>", unsafe_allow_html=True)
 
         # ── Show interested users panel ────────────────────────
         if (owner and is_know
@@ -1552,7 +1456,6 @@ def _render_interested_teachers(t):
         if r["status"] == "pending" and not accepted_exists:
             ba, br = st.columns(2)
             with ba:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Accept", key=f"acc_teach_{r['id']}_{t['id']}",
                              use_container_width=True):
                     accept_teacher(r["id"], t["id"])
@@ -1560,14 +1463,11 @@ def _render_interested_teachers(t):
                         f"{st.session_state.user['username']} accepted your offer to teach: {t['title']}")
                     st.success(f"Accepted {r['teacher_name']}! You can now chat and book sessions.")
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
             with br:
-                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button("Decline", key=f"rej_teach_{r['id']}_{t['id']}",
                              use_container_width=True):
                     reject_interest(r["id"])
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
         elif r["status"] == "accepted":
             # Show Chat + Book Session buttons for accepted teacher
@@ -1578,15 +1478,12 @@ def _render_interested_teachers(t):
                     st.session_state.chat_partner = r["teacher_id"]
                     go("chat")
             with bc2:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Book Session", key=f"book_{r['id']}_{t['id']}",
                              use_container_width=True):
                     st.session_state.book_post_id    = t["id"]
                     st.session_state.book_teacher_id = r["teacher_id"]
                     go("book_session")
-                st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
 
 
 def _render_interested_learners(t):
@@ -1634,7 +1531,6 @@ def _render_interested_learners(t):
         if r["status"] == "pending" and not accepted_exists:
             ba, br = st.columns(2)
             with ba:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Accept", key=f"acc_learn_{r['id']}_{t['id']}",
                              use_container_width=True):
                     accept_learner(r["id"], t["id"])
@@ -1642,14 +1538,11 @@ def _render_interested_learners(t):
                         f"{st.session_state.user['username']} accepted you as a student for: {t['title']}")
                     st.success(f"Accepted {r['learner_name']}! You can now chat and book sessions.")
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
             with br:
-                st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                 if st.button("Decline", key=f"rej_learn_{r['id']}_{t['id']}",
                              use_container_width=True):
                     reject_interest(r["id"])
                     st.rerun()
-                st.markdown("</div>", unsafe_allow_html=True)
 
         elif r["status"] == "accepted":
             # Teacher can chat and book session with accepted learner
@@ -1660,7 +1553,6 @@ def _render_interested_learners(t):
                     st.session_state.chat_partner = r["learner_id"]
                     go("chat")
             with bc2:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Book Session", key=f"book_learn_{r['id']}_{t['id']}",
                              use_container_width=True):
                     # For teach posts: teacher is the post owner (uid), learner is accepted
@@ -1668,9 +1560,7 @@ def _render_interested_learners(t):
                     st.session_state.book_teacher_id = uid         # teacher = post owner
                     st.session_state.book_learner_id = r["learner_id"]
                     go("book_session")
-                st.markdown("</div>", unsafe_allow_html=True)
 
-    st.markdown("</div>", unsafe_allow_html=True)
 def page_book_session():
     require_login()
     render_navbar()
@@ -1814,10 +1704,8 @@ def page_my_sessions():
                     st.session_state.chat_partner = partner_id
                     go("chat")
             with btn_cols[1]:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Join Session", key=f"sjoin_{s['id']}"):
                     st.info("Video sessions open in your external conferencing tool. Use the chat to share your meeting link.")
-                st.markdown("</div>", unsafe_allow_html=True)
             with btn_cols[2]:
                 if st.button("Mark Complete", key=f"scomp_{s['id']}"):
                     mark_session_complete(s["id"])
@@ -1894,10 +1782,8 @@ def page_browse_tasks():
 
     if logged_in():
         post_lbl = "Post Knowledge" if is_know else "Post a Task"
-        st.markdown("<div class='btn-accent' style='display:inline-block;'>", unsafe_allow_html=True)
         if st.button(post_lbl, key=f"br_post_{entry_type}"):
             go("post_task")
-        st.markdown("</div>", unsafe_allow_html=True)
 
     entries = get_all_open_tasks(
         search, category, sort_map.get(sort_by, "newest"),
@@ -1954,19 +1840,16 @@ def page_browse_tasks():
                                              use_container_width=True):
                                     st.session_state.chat_partner = t["created_by"]
                                     go("chat")
-                                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                                 if st.button("Book Session", key=f"br_book_{t['id']}",
                                              use_container_width=True):
                                     st.session_state.book_post_id    = t["id"]
                                     st.session_state.book_teacher_id = uid
                                     go("book_session")
-                                st.markdown("</div>", unsafe_allow_html=True)
                             else:
                                 st.markdown(
                                     "<span class='cs-badge badge-amber'>Interest Sent</span>",
                                     unsafe_allow_html=True)
                         else:
-                            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                             if st.button("I Can Help Teach", key=f"apply_{t['id']}",
                                          use_container_width=True):
                                 ok, msg = express_interest(t["id"], t["created_by"], uid)
@@ -1976,7 +1859,6 @@ def page_browse_tasks():
                                     st.success("Interest sent! The learner will review and accept.")
                                 else:
                                     st.warning(msg)
-                            st.markdown("</div>", unsafe_allow_html=True)
 
                     # ── TEACH post: learner expresses interest ────────
                     elif is_know and intent == INTENT_TEACH:
@@ -1992,20 +1874,17 @@ def page_browse_tasks():
                                              use_container_width=True):
                                     st.session_state.chat_partner = t["created_by"]
                                     go("chat")
-                                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                                 if st.button("Book Session", key=f"br_book_teach_{t['id']}",
                                              use_container_width=True):
                                     st.session_state.book_post_id    = t["id"]
                                     st.session_state.book_teacher_id = t["created_by"]
                                     st.session_state.book_learner_id = uid
                                     go("book_session")
-                                st.markdown("</div>", unsafe_allow_html=True)
                             else:
                                 st.markdown(
                                     "<span class='cs-badge badge-amber'>Request Sent</span>",
                                     unsafe_allow_html=True)
                         else:
-                            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                             if st.button("I Want to Learn This", key=f"apply_{t['id']}",
                                          use_container_width=True):
                                 # learner_id = uid, teacher_id = post owner
@@ -2016,11 +1895,9 @@ def page_browse_tasks():
                                     st.success("Request sent! The teacher will review and accept.")
                                 else:
                                     st.warning(msg)
-                            st.markdown("</div>", unsafe_allow_html=True)
 
                     # ── Task mode or other posts ──────────────────────
                     else:
-                        st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                         if st.button(apply_lbl, key=f"apply_{t['id']}",
                                      use_container_width=True):
                             ok, msg = apply_to_task(t["id"], uid)
@@ -2031,7 +1908,6 @@ def page_browse_tasks():
                                 st.success(msg)
                             else:
                                 st.warning(msg)
-                        st.markdown("</div>", unsafe_allow_html=True)
 
                 elif not logged_in():
                     if st.button("Sign In to Apply", key=f"la_{t['id']}"): go("login")
@@ -2320,7 +2196,6 @@ def page_profile():
                 st.rerun()
 
         elif photo_option == "Remove / Delete Photo":
-            st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
             if st.button("Confirm Remove Photo", key="prof_remove_photo",
                          use_container_width=True):
                 update_avatar_photo(u["id"], None)
@@ -2328,7 +2203,6 @@ def page_profile():
                 fresh = get_user(u["id"])
                 st.session_state.user = fresh
                 st.rerun()
-            st.markdown("</div>", unsafe_allow_html=True)
 
         # ── Avatar color picker (when no photo) ───────────────
         if not avatar_photo:
@@ -2584,7 +2458,6 @@ def page_profile():
                             unsafe_allow_html=True)
                 comment = st.text_area("Comment (optional)",
                                        placeholder="Describe your experience...", key="gr_comment")
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Submit Rating", key="gr_submit", use_container_width=True):
                     ok, msg = submit_feedback(u["id"], to_id, rating, comment)
                     if ok:
@@ -2594,7 +2467,6 @@ def page_profile():
                         st.success(msg)
                     else:
                         st.warning(msg)
-                st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -2688,12 +2560,10 @@ def page_ai_match():
                     <div style='font-size:9px;color:#94A3B8;text-transform:uppercase;letter-spacing:.06em;'>Trust</div>
                 </div>""", unsafe_allow_html=True)
             if row:
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button(f"Notify {m['name']}", key=f"notify_{i}"):
                     add_notification(row["id"], "AI Match Alert",
                         f"{st.session_state.user['username']} wants to collaborate with you.")
                     st.success(f"{m['name']} has been notified.")
-                st.markdown("</div>", unsafe_allow_html=True)
 
     elif st.session_state.ai_done and not st.session_state.ai_matches:
         st.info("No matches found. Invite more people to join the platform.")
@@ -2868,7 +2738,6 @@ def admin_sidebar():
         st.markdown("<div style='color:#f87171;'>", unsafe_allow_html=True)
         if st.button("Sign Out", key="asb_logout", use_container_width=True):
             st.session_state.user = None; go("landing")
-        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3026,13 +2895,11 @@ def page_admin_users():
             with c3:
                 if u["role"] != "admin":
                     if u["is_active"]:
-                        st.markdown("<div class='btn-danger'>",unsafe_allow_html=True)
                         if st.button("Deactivate", key=f"deact_{u['id']}"):
                             db_execute("UPDATE users SET is_active=0 WHERE id=?",(u["id"],))
                             st.success("Deactivated."); st.rerun()
                         st.markdown("</div>",unsafe_allow_html=True)
                     else:
-                        st.markdown("<div class='btn-accent'>",unsafe_allow_html=True)
                         if st.button("Activate", key=f"act_{u['id']}"):
                             db_execute("UPDATE users SET is_active=1 WHERE id=?",(u["id"],))
                             st.success("Activated."); st.rerun()
@@ -3097,10 +2964,8 @@ def page_admin_tasks():
                 new_s = st.selectbox("Status",["open","in_progress","closed"],
                     index=["open","in_progress","closed"].index(t["status"]),
                     key=f"at_stat_{t['id']}")
-                st.markdown("<div class='btn-accent'>",unsafe_allow_html=True)
                 if st.button("Update",key=f"at_upd_{t['id']}"): update_task_status(t["id"],new_s); st.success("Updated."); st.rerun()
                 st.markdown("</div>",unsafe_allow_html=True)
-                st.markdown("<div class='btn-danger'>",unsafe_allow_html=True)
                 if st.button("Delete",key=f"at_del_{t['id']}"): delete_task(t["id"]); st.success("Deleted."); st.rerun()
                 st.markdown("</div>",unsafe_allow_html=True)
 
@@ -3277,7 +3142,6 @@ def page_chat():
                     </div>
                 </div>
             </div>""", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
         # Send message
         with st.form(f"chat_form_{partner_id}", clear_on_submit=True):
@@ -3354,18 +3218,14 @@ def page_network():
                 </div>""", unsafe_allow_html=True)
                 ra1, ra2 = st.columns(2)
                 with ra1:
-                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                     if st.button("Accept", key=f"acc_{r['id']}"):
                         accept_request(r["id"])
                         add_notification(r["sender"], "Connection Accepted",
                                          f"{u['username']} accepted your request.")
                         st.success("Connected!"); st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
                 with ra2:
-                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                     if st.button("Decline", key=f"rej_{r['id']}"):
                         reject_request(r["id"]); st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
 
     with tab3:
         search = st.text_input("", placeholder=f"Search by username or skill to send {btn_lbl} requests...",
@@ -3410,8 +3270,6 @@ def page_network():
                         unsafe_allow_html=True)
                 with col_btn:
                     if status == "none":
-                        st.markdown("<div class='btn-accent' style='padding-top:6px;'>",
-                                    unsafe_allow_html=True)
                         if st.button(btn_lbl, key=f"send_conn_{fu['id']}",
                                      use_container_width=True):
                             ok, msg = send_request(u["id"], fu["id"], mode)
@@ -3420,7 +3278,6 @@ def page_network():
                                     fu["id"], f"New {btn_lbl} Request",
                                     f"{u['username']} wants to {btn_lbl.lower()} with you.")
                             st.success(msg) if ok else st.warning(msg)
-                        st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3457,11 +3314,9 @@ def page_projects():
                         </div>
                     </div>
                 </div>""", unsafe_allow_html=True)
-                st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                 if st.button("Open Workspace", key=f"open_proj_{proj['id']}"):
                     st.session_state.active_project = proj["id"]
                     go("project_workspace")
-                st.markdown("</div>", unsafe_allow_html=True)
 
     with tab2:
         with st.form("create_project_form"):
@@ -3505,7 +3360,6 @@ def page_projects():
                 </div>""", unsafe_allow_html=True)
                 ia1, ia2 = st.columns(2)
                 with ia1:
-                    st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
                     if st.button("Accept", key=f"pinv_acc_{inv['id']}"):
                         accept_project_invite(inv["id"], u["id"], inv["project_id"])
                         # Add to group chat
@@ -3515,12 +3369,9 @@ def page_projects():
                         add_notification(inv["sender_id"], "Invite Accepted",
                                          f"{u['username']} joined '{inv['project_title']}'.")
                         st.success("Joined project!"); st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
                 with ia2:
-                    st.markdown("<div class='btn-danger'>", unsafe_allow_html=True)
                     if st.button("Decline", key=f"pinv_rej_{inv['id']}"):
                         reject_project_invite(inv["id"]); st.rerun()
-                    st.markdown("</div>", unsafe_allow_html=True)
 
 
 # ═══════════════════════════════════════════════════════════════
@@ -3544,13 +3395,16 @@ def page_project_workspace():
     breadcrumb("Home", "Projects", proj["title"])
     section_header(proj["title"], proj["description"][:100])
 
-    # Members + skills badges
-    st.markdown(f"""
-    <div style='margin-bottom:14px;'>
-        <span class='cs-badge badge-blue'>{proj['skills_required'][:60]}</span>
-        {'<span class="cs-badge badge-slate">Duration: '+proj['duration']+'</span>' if proj.get('duration') else ''}
-        <span class='cs-badge badge-green'>{proj['status'].capitalize()}</span>
-    </div>""", unsafe_allow_html=True)
+    # Project header badges
+    dur_badge = (f"<span class='cs-badge badge-slate'>Duration: {proj['duration']}</span>"
+                 if proj.get('duration') else "")
+    st.markdown(
+        f"<div style='margin-bottom:14px;'>"
+        f"<span class='cs-badge badge-blue'>{proj['skills_required'][:60]}</span>"
+        f"{dur_badge}"
+        f"<span class='cs-badge badge-green'>{proj['status'].capitalize()}</span>"
+        f"</div>",
+        unsafe_allow_html=True)
 
     tab_chat, tab_members, tab_res, tab_invite = st.tabs([
         "Group Chat", "Team Members", "Resources", "Invite Users"])
@@ -3585,7 +3439,6 @@ def page_project_workspace():
                     </div>
                 </div>
             </div>""", unsafe_allow_html=True)
-        st.markdown("</div>", unsafe_allow_html=True)
 
         with st.form(f"gc_form_{gid}", clear_on_submit=True):
             gmsg = st.text_input("", placeholder="Type a message to the team...",
