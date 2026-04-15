@@ -517,16 +517,15 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     font-size: 13px !important;
     height: 38px !important;
 
-    width: auto !important;              
-    min-width: fit-content !important;   
+    width: 180px !important;                 
     padding: 6px 20px !important;        
 
     display: flex !important;
     align-items: center !important;
     justify-content: center !important;
     white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: unset !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
 .cs-navbar .stButton > button:hover {
