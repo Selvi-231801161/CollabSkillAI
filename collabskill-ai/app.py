@@ -228,18 +228,13 @@ label, .stTextInput label, .stTextArea label,
     border: 1.5px solid #E2E8F0 !important;
     border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 12px !important;
-    padding: 6px 10px !important;
+    font-size: 13px !important;
+    padding: 8px 16px !important;
     height: 38px !important;
     line-height: 1.2 !important;
-
     white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-
-    width: auto !important;
-    min-width: max-content !important;
-
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
     transition: all 0.2s ease-in-out !important;
     box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
 }
@@ -476,12 +471,12 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: transparent;
-    border-bottom: none;
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
     padding: 0 0 0 0;
     height: 56px;
     margin-bottom: 24px;
-    box-shadow: none;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 .cs-navbar-logo {
     font-size: 17px;
@@ -877,21 +872,18 @@ def render_navbar():
         # Invisible button row for routing
         gc1, gc2, gc3 = st.columns([8, 1, 1])
         with gc2:
-            st.markdown("<div style='margin-top:6px;'>", unsafe_allow_html=True)
-            if st.button("Sign In", key="nav_login_guest", use_container_width=True):
-                go("login")
-            st.markdown("</div>", unsafe_allow_html=True)
-
+            if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
         with gc3:
-            st.markdown("<div class='btn-accent' style='margin-top:6px;'>", unsafe_allow_html=True)
-            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
-                go("register")
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True): go("register")
             st.markdown("</div>", unsafe_allow_html=True)
         # Overlay the buttons onto the navbar visually
         st.markdown("""
         <style>
         /* Pull guest nav buttons up into navbar area */
-        
+        div[data-testid="stHorizontalBlock"]:has(button[kind]):first-of-type {
+            margin-top: -52px !important;
+            margin-bottom: 24px !important;
         }
         </style>""", unsafe_allow_html=True)
         return
@@ -922,7 +914,7 @@ def render_navbar():
     # Wrapper divs inside columns cause DeltaGenerator locking errors.
     # All styling is done purely via the CSS block below.
     total = len(nav_items)
-    cols = st.columns([2.5] + [2.5] * total)
+    cols  = st.columns([2.8] + [1.05] * total)
 
     # Empty logo placeholder
     with cols[0]:
@@ -939,35 +931,25 @@ def render_navbar():
                 else:
                     go(pg)
 
-st.markdown("""
-<style>
-
-/* — Lift button row into the navbar bar — */
-section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {
-    display: flex !important;
-    flex-wrap: nowrap !important;
-    overflow-x: auto !important;
-    gap: 8px !important;
-
-    margin-top: -40px !important;
-    padding: 6px 10px !important;
-
-    background: transparent !important;
-    border-bottom: none !important;
-
-    align-items: center !important;
-}
-/* Fix button alignment */
-section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] 
-.stButton {
-    width: auto !important;
-    flex: 0 0 auto !important;
-    display: inline-block !important;
-}
-</style>
-""", unsafe_allow_html=True)
-    
-    
+    st.markdown(f"""
+    <style>
+    /* ── Lift button row into the navbar bar ── */
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"] {{
+        margin-top: -56px !important;
+        padding-bottom: 4px !important;
+        background: #FFFFFF !important;
+        border-bottom: 1px solid #E5E7EB !important;
+        padding-left: 0 !important;
+        padding-right: 0 !important;
+        align-items: center !important;
+    }}
+    section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
+        > div[data-testid="column"] {{
+        padding: 0 2px !important;
+        display: flex !important;
+        align-items: center !important;
+    }}
+    /* All nav buttons */
     section.main > div > div:nth-child(2) > div[data-testid="stHorizontalBlock"]
         .stButton > button {{
         background: transparent !important;
@@ -1037,7 +1019,7 @@ def page_landing():
         "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
         "margin-bottom:18px;'>Choose how you want to get started</div>",
         unsafe_allow_html=True)
-    st.markdown("<div style='height:40px;'></div>", unsafe_allow_html=True)
+
     lc, rc = st.columns(2, gap="large")
 
     with lc:
@@ -1123,7 +1105,29 @@ def page_landing():
         </div>""", unsafe_allow_html=True)
 
     # How it works
-   
+    section_divider("How It Works")
+    h1, h2, h3, h4 = st.columns(4)
+    steps = [
+        ("01", "Create account",   "Register and build your profile with skills and experience."),
+        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
+        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
+    ]
+    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
+        col.markdown(f"""
+        <div class='cs-card'>
+            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    </div>""", unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════
 #  LOGIN
@@ -1377,7 +1381,9 @@ def page_dashboard():
 
         q1, q2, q3, q4 = st.columns(4)
         with q1:
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
+            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
@@ -1385,7 +1391,16 @@ def page_dashboard():
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
-        
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        q5, q6, q7, q8 = st.columns(4)
+        with q5:
+            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
+        with q6:
+            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
+        with q7:
+            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
+        with q8:
+            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
 
     # ── My Learning Connections (only in Learn mode) ──────────
     if is_learn_mode():
