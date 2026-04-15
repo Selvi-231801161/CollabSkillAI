@@ -471,12 +471,12 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #FFFFFF;
-    border-bottom: 1px solid #E5E7EB;
+    background: transparent;
+    border-bottom: none;
     padding: 0 0 0 0;
     height: 56px;
     margin-bottom: 24px;
-    box-shadow: 0 1px 4px rgba(0,0,0,.06);
+    box-shadow: none;
 }
 .cs-navbar-logo {
     font-size: 17px;
