@@ -3716,6 +3716,7 @@ PAGES = {
     "admin_users":         page_admin_users,
     "admin_tasks":         page_admin_tasks,
 }
-render_navbar()
+
+
 page_fn = PAGES.get(st.session_state.page, page_landing)
 page_fn()
