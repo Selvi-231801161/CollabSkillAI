@@ -939,7 +939,7 @@ def render_navbar():
                 else:
                     go(pg)
 
-    st.markdown("""
+st.markdown("""
 <style>
 
 /* — Lift button row into the navbar bar — */
