@@ -517,10 +517,10 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     font-weight: 500 !important;
     font-size: 13px !important;
 
-    height: 38px !important;
-    min-width: 180px !important;   /* ✅ enough for "Dashboard" */
+    height: 44px !important;
+    min-width: 220px !important;   /* ✅ enough for "Dashboard" */
 
-    padding: 6px 20px !important;
+    padding: 8px 24px !important;
 
     display: flex !important;
     align-items: center !important;
