@@ -1436,7 +1436,7 @@ def page_dashboard():
                     st.markdown("</div>", unsafe_allow_html=True)
 
     # ── AI Recommendations ────────────────────────────────────
-    render_ai_recommendations(u)
+    #render_ai_recommendations(u)
 
 
 # ═══════════════════════════════════════════════════════════════
