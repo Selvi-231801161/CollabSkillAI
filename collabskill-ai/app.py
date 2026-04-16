@@ -1180,7 +1180,7 @@ def page_dashboard():
 
         q1, q2, q3, q4 = st.columns(4)
         with q1:
-            if st.button(lbl1,         key="qa_post",    use_container_width=True): go("post_tasks")
+            if st.button(lbl1,         key="qa_post",    use_container_width=True): go("post_task")
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
