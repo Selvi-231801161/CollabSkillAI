@@ -226,10 +226,10 @@ label, .stTextInput label, .stTextArea label,
     background: #FFFFFF !important;
     color: #334155 !important;
     border: 1.5px solid #E2E8F0 !important;
-    border-radius: 20px !important;
+    border-radius: 10px !important;
     font-weight: 500 !important;
-    font-size: 10px !important;
-    padding: 4px 8px !important;
+    font-size: 13px !important;
+    padding: 8px 16px !important;
     height: 38px !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
@@ -471,16 +471,12 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     display: flex;
     align-items: center;
     justify-content: space-between;
-
-    background: transparent !important;
-    border-bottom: none !important;
-
+    background: #FFFFFF;
+    border-bottom: 1px solid #E5E7EB;
     padding: 0 0 0 0;
     height: 56px;
-
     margin-bottom: 24px;
-
-    box-shadow: none !important;
+    box-shadow: 0 1px 4px rgba(0,0,0,.06);
 }
 .cs-navbar-logo {
     font-size: 17px;
@@ -509,29 +505,21 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* All nav buttons unified */
 .stButton > button.nav-btn,
 .cs-navbar .stButton > button {
-    background: #FFFFFF !important;
+    background: transparent !important;
     color: #374151 !important;
-    border: 1px solid #E2E8F0 !important;
-    border-radius: 10px !important;
-
+    border: none !important;
+    border-radius: 8px !important;
     font-weight: 500 !important;
-    font-size: 10px !important;
-
-    height: 44px !important;
-    min-width: 260px !important;
-    width: 260px !important;
-
-    padding: 2px 8px !important;
-
-    display: flex !important;
-    align-items: center !important;
-    justify-content: center !important;
-
+    font-size: 13.5px !important;
+    padding: 6px 12px !important;
+    height: 36px !important;
+    line-height: 1 !important;
     white-space: nowrap !important;
-    overflow: visible !important;      /* ✅ NO CUT */
-    text-overflow: unset !important;
-
-    box-shadow: 0 1px 3px rgba(0,0,0,.05) !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    transition: background 0.15s ease, color 0.15s ease !important;
+    box-shadow: none !important;
+    letter-spacing: 0 !important;
 }
 .cs-navbar .stButton > button:hover {
     background: #F3F4F6 !important;
@@ -589,7 +577,7 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 /* ══════════════════════════════════════
    HERO SECTION
    ══════════════════════════════════════ */
-.hero-wrap { text-align: center; padding: 15px 0 32px; }
+.hero-wrap { text-align: center; padding: 60px 0 32px; }
 .hero-eyebrow {
     display: inline-block;
     font-size: 10px; font-weight: 700; letter-spacing: .16em;
@@ -622,8 +610,6 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
     text-align: center;
     height: 100%;
     box-shadow: 0 2px 12px rgba(0,0,0,.05);
-    position: relative;
-    z-index: 1;
 }
 .mode-card:hover {
     transform: translateY(-4px);
@@ -888,8 +874,9 @@ def render_navbar():
         with gc2:
             if st.button("Sign In",  key="nav_login_guest",  use_container_width=True): go("login")
         with gc3:
-            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True):
-                go("register")
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
+            if st.button("Sign Up", key="nav_signup_guest", use_container_width=True): go("register")
+            st.markdown("</div>", unsafe_allow_html=True)
         # Overlay the buttons onto the navbar visually
         st.markdown("""
         <style>
@@ -897,10 +884,6 @@ def render_navbar():
         div[data-testid="stHorizontalBlock"]:has(button[kind]):first-of-type {
             margin-top: -52px !important;
             margin-bottom: 24px !important;
-        }
-        div[data-testid="stHorizontalBlock"] > div[data-testid="column"] {
-            display: flex;
-            align-items: center;
         }
         </style>""", unsafe_allow_html=True)
         return
@@ -931,7 +914,7 @@ def render_navbar():
     # Wrapper divs inside columns cause DeltaGenerator locking errors.
     # All styling is done purely via the CSS block below.
     total = len(nav_items)
-    cols = st.columns([5.2] + [10]*total)
+    cols  = st.columns([2.8] + [1.05] * total)
 
     # Empty logo placeholder
     with cols[0]:
@@ -1034,10 +1017,9 @@ def page_landing():
     st.markdown(
         "<div style='text-align:center;font-size:10px;font-weight:700;"
         "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
-        "margin-bottom:18px; position:relative; z-index:10;'>"
-        "Choose how you want to get started</div>",
+        "margin-bottom:18px;'>Choose how you want to get started</div>",
         unsafe_allow_html=True)
-    st.markdown("<div style='height:60px;'></div>", unsafe_allow_html=True)
+
     lc, rc = st.columns(2, gap="large")
 
     with lc:
@@ -1123,7 +1105,29 @@ def page_landing():
         </div>""", unsafe_allow_html=True)
 
     # How it works
-    
+    section_divider("How It Works")
+    h1, h2, h3, h4 = st.columns(4)
+    steps = [
+        ("01", "Create account",   "Register and build your profile with skills and experience."),
+        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
+        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
+    ]
+    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
+        col.markdown(f"""
+        <div class='cs-card'>
+            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
+            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
+            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
+        </div>""", unsafe_allow_html=True)
+
+    st.markdown("<br>", unsafe_allow_html=True)
+    st.markdown("""
+    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
+        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
+        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    </div>""", unsafe_allow_html=True)
+
 
 # ═══════════════════════════════════════════════════════════════
 #  LOGIN
@@ -1377,7 +1381,9 @@ def page_dashboard():
 
         q1, q2, q3, q4 = st.columns(4)
         with q1:
+            st.markdown("<div class='btn-accent'>", unsafe_allow_html=True)
             if st.button(lbl1, key="qa_post", use_container_width=True): go("post_task")
+            st.markdown("</div>", unsafe_allow_html=True)
         with q2:
             if st.button(lbl2,         key="qa_browse",    use_container_width=True): go("browse_tasks")
         with q3:
@@ -1385,7 +1391,16 @@ def page_dashboard():
         with q4:
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
-        
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        q5, q6, q7, q8 = st.columns(4)
+        with q5:
+            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
+        with q6:
+            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
+        with q7:
+            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
+        with q8:
+            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
 
     # ── My Learning Connections (only in Learn mode) ──────────
     if is_learn_mode():
