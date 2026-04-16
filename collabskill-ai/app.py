@@ -3717,6 +3717,4 @@ PAGES = {
     "admin_tasks":         page_admin_tasks,
 }
 
-
-page_fn = PAGES.get(st.session_state.page, page_landing)
-page_fn()
+PAGES.get(st.session_state.page, page_landing)()
