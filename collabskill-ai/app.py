@@ -776,8 +776,12 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Pure Streamlit navbar — no JS, no hidden buttons, no HTML injection issues.
-    Uses st.columns + st.button for 100% reliable routing.
+    Classic flat button-row navbar.
+    ─ White background with shadow
+    ─ Logo (HTML) on the left  
+    ─ All nav buttons flat in one column row — NO wrapper divs
+    ─ CSS targets the first stHorizontalBlock to style it as the navbar
+    ─ Zero DeltaGenerator risk: no st.* calls inside column contexts
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -785,136 +789,178 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    notif_lbl = f"🔔 Notifs ({unread})" if unread else "🔔 Notifs"
+    notif_lbl = f"Notifs ({unread})" if unread else "Notifs"
 
-    # ── Navbar CSS (style only, no HTML structure) ───────────
-    st.markdown("""
-    <style>
-    /* Navbar row container */
-    div[data-testid="stHorizontalBlock"].csn-nav-row {
-        background: #FFFFFF !important;
-        border-bottom: 1.5px solid #E5E7EB !important;
-        box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
-        padding: 4px 8px !important;
-        margin-bottom: 20px !important;
-        position: sticky !important;
-        top: 0 !important;
-        z-index: 9999 !important;
-    }
-    /* All nav buttons */
-    div[data-testid="stHorizontalBlock"].csn-nav-row .stButton > button {
-        background: transparent !important;
-        color: #374151 !important;
-        border: none !important;
-        border-radius: 8px !important;
-        font-weight: 500 !important;
-        font-size: 13px !important;
-        padding: 6px 10px !important;
-        height: 36px !important;
-        white-space: nowrap !important;
-        box-shadow: none !important;
-        width: 100% !important;
-        transition: background .15s, color .15s !important;
-    }
-    div[data-testid="stHorizontalBlock"].csn-nav-row .stButton > button:hover {
-        background: #F3F4F6 !important;
-        color: #111827 !important;
-        border: none !important;
-        box-shadow: none !important;
-    }
-    /* Active page button */
-    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-active .stButton > button {
-        background: #EFF6FF !important;
-        color: #2563EB !important;
-        font-weight: 600 !important;
-    }
-    /* Sign Out button - red */
-    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-signout .stButton > button {
-        color: #DC2626 !important;
-        font-weight: 600 !important;
-    }
-    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-signout .stButton > button:hover {
-        background: #FEF2F2 !important;
-    }
-    /* Sign In / Get Started buttons */
-    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-primary .stButton > button {
-        background: #2563EB !important;
-        color: #FFFFFF !important;
-        border-radius: 9px !important;
-        font-weight: 600 !important;
-        box-shadow: 0 2px 8px rgba(37,99,235,.30) !important;
-    }
-    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-primary .stButton > button:hover {
-        background: #1D4ED8 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
-
-    # ── Logo ─────────────────────────────────────────────────
-    admin_tag = " 🔑" if is_adm else ""
-    st.markdown(
-        f"<div style='font-size:19px;font-weight:800;color:#111827;"
-        f"letter-spacing:-.03em;padding:8px 0 4px;'>"
-        f"Collab<span style='color:#2563EB;'>Skill</span> AI{admin_tag}</div>",
-        unsafe_allow_html=True)
-
-    st.markdown("<div class='csn-nav-row-start'></div>", unsafe_allow_html=True)
-
-    # ── Build button list per auth state ─────────────────────
+    # ── Build nav item list ──────────────────────────────────
     if is_guest:
         nav_items = [
-            ("🏠 Home",        "landing",   False, ""),
-            ("Sign In",        "login",     False, ""),
-            ("🚀 Get Started", "register",  False, "csn-btn-primary"),
+            ("__logo__",  "__logo__"),
+            ("Sign In",   "login"),
+            ("Register",  "register"),
         ]
     elif is_adm:
         nav_items = [
-            ("🏠 Dashboard",  "admin_dashboard", cur == "admin_dashboard", ""),
-            ("👥 Users",      "admin_users",     cur == "admin_users",     ""),
-            ("📋 All Posts",  "admin_tasks",     cur == "admin_tasks",     ""),
-            ("🔍 Browse",     "browse_tasks",    cur == "browse_tasks",    ""),
-            (notif_lbl,       "notifications",   cur == "notifications",   ""),
-            ("👤 Profile",    "profile",         cur == "profile",         ""),
-            ("Sign Out",      "__logout__",      False,                    "csn-btn-signout"),
+            ("__logo__",     "__logo__"),
+            ("Dashboard",    "admin_dashboard"),
+            ("Users",        "admin_users"),
+            ("All Posts",    "admin_tasks"),
+            ("Browse",       "browse_tasks"),
+            (notif_lbl,      "notifications"),
+            ("Profile",      "profile"),
+            ("Sign Out",     "__logout__"),
         ]
     else:
         nav_items = [
-            ("🏠 Home",       "landing",       cur == "landing",       ""),
-            ("📊 Dashboard",  "dashboard",     cur == "dashboard",     ""),
-            ("✏️ Post",       "post_task",     cur == "post_task",     ""),
-            ("🔍 Browse",     "browse_tasks",  cur == "browse_tasks",  ""),
-            ("🤝 Network",    "network",       cur == "network",       ""),
-            ("📁 Projects",   "projects",      cur == "projects",      ""),
-            ("💬 Chat",       "chat",          cur == "chat",          ""),
-            ("📅 Sessions",   "my_sessions",   cur == "my_sessions",   ""),
-            ("🤖 AI Match",   "ai_match",      cur == "ai_match",      ""),
-            ("🌐 Community",  "community",     cur == "community",     ""),
-            (notif_lbl,       "notifications", cur == "notifications", ""),
-            ("👤 Profile",    "profile",       cur == "profile",       ""),
-            ("Sign Out",      "__logout__",    False,                  "csn-btn-signout"),
+            ("__logo__",     "__logo__"),
+            ("Home",         "landing"),
+            ("Dashboard",    "dashboard"),
+            ("Browse",       "browse_tasks"),
+            ("Post",         "post_task"),
+            ("Network",      "network"),
+            ("Projects",     "projects"),
+            ("Chat",         "chat"),
+            ("Sessions",     "my_sessions"),
+            (notif_lbl,      "notifications"),
+            ("Profile",      "profile"),
+            ("Sign Out",     "__logout__"),
         ]
 
-    # ── Render as columns ─────────────────────────────────────
-    cols = st.columns(len(nav_items))
-    for col, (label, pg, is_active, extra_cls) in zip(cols, nav_items):
-        wrap_cls = "csn-btn-active " + extra_cls if is_active else extra_cls
-        if wrap_cls.strip():
-            col.markdown(f"<div class='{wrap_cls.strip()}'>", unsafe_allow_html=True)
+    total = len(nav_items)
+
+    # ── Global navbar CSS injected once ─────────────────────
+    st.markdown("""
+<style>
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+/* ─── hide Streamlit chrome ─────────────────────────── */
+header, #MainMenu, footer { visibility: hidden !important; }
+.block-container { padding-top: 0 !important; }
+
+/* ─── page background ───────────────────────────────── */
+.stApp, html, body { background: #F8FAFC !important; }
+
+/* ─── NAVBAR ROW  ────────────────────────────────────
+   Target the very first horizontal block on the page.
+   This is always the navbar column row.               */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background: #FFFFFF !important;
+    border-bottom: 1.5px solid #E5E7EB !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
+    padding: 0 8px !important;
+    margin-bottom: 24px !important;
+    align-items: center !important;
+    min-height: 58px !important;
+}
+
+/* ─── all column cells inside navbar ────────────────── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"] {
+    padding: 0 1px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+
+/* ─── EVERY button in the navbar ────────────────────── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button {
+    background: transparent !important;
+    color: #374151 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 7px 11px !important;
+    height: 38px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-shadow: none !important;
+    min-width: max-content !important;
+    width: 100% !important;
+    transition: background .15s ease, color .15s ease !important;
+    letter-spacing: 0 !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button:hover {
+    background: #F3F4F6 !important;
+    color: #111827 !important;
+}
+
+/* ─── LOGO button (first col) — big bold, no hover bg ─ */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button {
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    letter-spacing: -.03em !important;
+    padding: 7px 14px 7px 4px !important;
+    background: transparent !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button:hover {
+    background: transparent !important;
+    color: #2563EB !important;
+}
+
+/* ─── SIGN OUT button (last col) — always red ─────────── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button {
+    color: #DC2626 !important;
+    border: 1.5px solid #FECACA !important;
+    background: transparent !important;
+    padding: 6px 14px !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button:hover {
+    background: #FEF2F2 !important;
+    border-color: #FCA5A5 !important;
+    color: #B91C1C !important;
+}
+
+/* ─── Guest: last col = Register — blue ──────────────── */
+/* (only applies when there are 3 cols: logo + signin + register) */
+</style>
+""", unsafe_allow_html=True)
+
+    # ── Per-render: active-page + dynamic label CSS ─────────
+    # Build nth-child index for the active page (1-based)
+    active_idx = 0
+    for i, (lbl, pg) in enumerate(nav_items):
+        if pg == cur:
+            active_idx = i + 1   # CSS nth-child is 1-based
+            break
+
+    st.markdown(f"""
+<style>
+/* Active page highlight */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:nth-child({active_idx}) .stButton > button {{
+    background: #EFF6FF !important;
+    color: #2563EB !important;
+    font-weight: 600 !important;
+}}
+/* Guest mode: Register button = blue filled */
+{'div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"]:last-child .stButton > button { background: #2563EB !important; color: #FFFFFF !important; border: none !important; font-weight: 600 !important; } div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"]:last-child .stButton > button:hover { background: #1D4ED8 !important; }' if is_guest else ''}
+</style>
+""", unsafe_allow_html=True)
+
+    # ── One flat row of buttons — ZERO wrapper divs ─────────
+    cols = st.columns([2.0] + [1.0] * (total - 1))
+
+    for col, (lbl, pg) in zip(cols, nav_items):
         with col:
-            if st.button(label, key=f"nav__{pg}"):
-                if pg == "__logout__":
+            # Logo column shows brand name
+            btn_lbl = "CollabSkill AI" if pg == "__logo__" else lbl
+            if st.button(btn_lbl, key=f"nav__{pg}", use_container_width=True):
+                if pg in ("__logo__", "landing"):
+                    go("landing")
+                elif pg == "__logout__":
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
                 else:
                     go(pg)
-        if wrap_cls.strip():
-            col.markdown("</div>", unsafe_allow_html=True)
-
-    st.markdown("<hr style='margin:0 0 20px 0;border-color:#E5E7EB;'/>",
-                unsafe_allow_html=True)
-
-
 
 
 def page_landing():
