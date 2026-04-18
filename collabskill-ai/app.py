@@ -1045,15 +1045,15 @@ def render_navbar():
     .csn-btn-danger:hover {{ background: #FEF2F2; border-color: #FCA5A5; }}
 
     /* ═══ HIDE STREAMLIT ROUTING BUTTONS COMPLETELY ══════════ */
-    #csn-btn-anchor + div[data-testid="element-container"] + div {{
-        height: 0 !important; overflow: hidden !important;
-        opacity: 0 !important; pointer-events: none !important;
-        position: absolute !important; margin: 0 !important;
-    }}
     #csn-btn-anchor ~ div[data-testid="stHorizontalBlock"] {{
         height: 0 !important; overflow: hidden !important;
         opacity: 0 !important; pointer-events: none !important;
         position: absolute !important; margin: 0 !important; padding: 0 !important;
+        top: 0 !important; left: 0 !important;
+    }}
+    /* Also hide any stButton inside the routing columns */
+    #csn-btn-anchor ~ div[data-testid="stHorizontalBlock"] .stButton > button {{
+        pointer-events: all !important;
     }}
     </style>
 
@@ -1068,22 +1068,35 @@ def render_navbar():
     <script>
     (function() {{
         function triggerNav(page) {{
-            // Find and click the matching hidden Streamlit button
-            const btns = document.querySelectorAll('button[data-testid="baseButton-secondary"]');
-            for (let b of btns) {{
-                if (b.getAttribute('title') === page ||
-                    b.getAttribute('aria-label') === page ||
-                    (b.closest('[data-csn-page]') && b.closest('[data-csn-page]').dataset.csnPage === page)) {{
+            // Streamlit renders button label as aria-label on the button element
+            // Our routing buttons now use page name as label, so aria-label === page
+
+            // Method 1: direct aria-label match (most reliable)
+            let btn = document.querySelector('button[aria-label="' + page + '"]');
+            if (btn) {{ btn.click(); return; }}
+
+            // Method 2: match by button text content
+            const allBtns = document.querySelectorAll('#csn-btn-anchor ~ div button, .stButton button');
+            for (let b of allBtns) {{
+                if ((b.textContent || '').trim() === page) {{
                     b.click(); return;
                 }}
             }}
-            // Fallback: find by help text
-            const helpers = document.querySelectorAll('.stButton button');
-            for (let b of helpers) {{
-                if (b.title === page) {{ b.click(); return; }}
+
+            // Method 3: scan all buttons for title or aria-label
+            for (let b of document.querySelectorAll('button')) {{
+                if (b.getAttribute('title') === page ||
+                    b.getAttribute('aria-label') === page ||
+                    (b.textContent || '').trim() === page) {{
+                    b.click(); return;
+                }}
             }}
         }}
         window.triggerNav = triggerNav;
+
+        // Re-expose after Streamlit re-renders (Streamlit replaces DOM on rerun)
+        const obs = new MutationObserver(() => {{ window.triggerNav = triggerNav; }});
+        obs.observe(document.body, {{ childList: true, subtree: false }});
     }})();
     </script>
     """, unsafe_allow_html=True)
@@ -1122,11 +1135,11 @@ def render_navbar():
     # Anchor for CSS hide rule
     st.markdown('<div id="csn-btn-anchor"></div>', unsafe_allow_html=True)
 
-    # Render all routing buttons in ONE flat row — NO wrapper divs ever
+    # Render all routing buttons with page name as label so JS can find via aria-label
     cols = st.columns(len(routing))
     for col, (key, pg) in zip(cols, routing):
         with col:
-            if st.button(" ", key=f"nav__{pg}", help=pg):
+            if st.button(pg, key=f"nav__{pg}", help=pg):
                 if pg == "__logout__":
                     st.session_state.user    = None
                     st.session_state.history = []
