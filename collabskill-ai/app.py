@@ -776,9 +776,8 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    100% HTML/CSS SaaS flex navbar.
-    Routing via hidden Streamlit buttons triggered by JS.
-    Zero DeltaGenerator risk — no st.* calls inside column contexts.
+    Pure Streamlit navbar — no JS, no hidden buttons, no HTML injection issues.
+    Uses st.columns + st.button for 100% reliable routing.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -786,366 +785,136 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    notif_lbl   = f"Notifs ({unread})" if unread else "Notifs"
-    admin_badge = (
-        "<span style=\'font-size:9px;background:#EFF6FF;color:#2563EB;"
-        "border:1px solid #BFDBFE;border-radius:4px;padding:2px 7px;"
-        "font-weight:700;margin-left:8px;\'>ADMIN</span>" if is_adm else ""
-    )
+    notif_lbl = f"🔔 Notifs ({unread})" if unread else "🔔 Notifs"
 
-    # ── Build nav sections based on auth state ───────────────
-    if is_guest:
-        center_html = ""
-        right_html  = """
-            <div class="csn-right">
-                <a class="csn-btn-ghost" href="#" onclick="triggerNav('login');return false;">Sign In</a>
-                <a class="csn-btn-solid" href="#" onclick="triggerNav('register');return false;">Get Started</a>
-            </div>"""
-    elif is_adm:
-        center_html = f"""
-            <nav class="csn-center">
-                <a class="csn-link{' csn-active' if cur=='admin_dashboard' else ''}"
-                   href="#" onclick="triggerNav('admin_dashboard');return false;">Dashboard</a>
-                <a class="csn-link{' csn-active' if cur=='admin_users' else ''}"
-                   href="#" onclick="triggerNav('admin_users');return false;">Users</a>
-                <a class="csn-link{' csn-active' if cur=='admin_tasks' else ''}"
-                   href="#" onclick="triggerNav('admin_tasks');return false;">All Posts</a>
-                <a class="csn-link{' csn-active' if cur=='browse_tasks' else ''}"
-                   href="#" onclick="triggerNav('browse_tasks');return false;">Browse</a>
-                <a class="csn-link{' csn-active' if cur=='notifications' else ''}"
-                   href="#" onclick="triggerNav('notifications');return false;">{notif_lbl}
-                   {'<span class="csn-dot"></span>' if unread else ''}</a>
-            </nav>"""
-        right_html = f"""
-            <div class="csn-right">
-                <a class="csn-link{' csn-active' if cur=='profile' else ''}"
-                   href="#" onclick="triggerNav('profile');return false;">Profile</a>
-                <a class="csn-btn-danger" href="#" onclick="triggerNav('__logout__');return false;">Sign Out</a>
-            </div>"""
-    else:
-        center_html = f"""
-            <nav class="csn-center">
-                <a class="csn-link{' csn-active' if cur=='landing' else ''}"
-                   href="#" onclick="triggerNav('landing');return false;">Home</a>
-                <a class="csn-link{' csn-active' if cur=='dashboard' else ''}"
-                   href="#" onclick="triggerNav('dashboard');return false;">Dashboard</a>
-
-                <div class="csn-dropdown">
-                    <span class="csn-link csn-has-drop">
-                        Collaborate
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" style="margin-left:3px;vertical-align:middle;">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </span>
-                    <div class="csn-drop-menu">
-                        <div class="csn-drop-group">TASK MODE</div>
-                        <a href="#" onclick="triggerNav('post_task');return false;">
-                            <span class="csn-drop-icon">✏️</span> Post a Task
-                        </a>
-                        <a href="#" onclick="triggerNav('browse_tasks');return false;">
-                            <span class="csn-drop-icon">🔍</span> Browse Tasks
-                        </a>
-                        <a href="#" onclick="triggerNav('projects');return false;">
-                            <span class="csn-drop-icon">📁</span> My Projects
-                        </a>
-                        <a href="#" onclick="triggerNav('network');return false;">
-                            <span class="csn-drop-icon">🤝</span> My Network
-                        </a>
-                    </div>
-                </div>
-
-                <div class="csn-dropdown">
-                    <span class="csn-link csn-has-drop">
-                        Learn
-                        <svg width="12" height="12" viewBox="0 0 24 24" fill="none"
-                             stroke="currentColor" stroke-width="2.5" style="margin-left:3px;vertical-align:middle;">
-                            <polyline points="6 9 12 15 18 9"/>
-                        </svg>
-                    </span>
-                    <div class="csn-drop-menu">
-                        <div class="csn-drop-group">KNOWLEDGE MODE</div>
-                        <a href="#" onclick="triggerNav('post_task');return false;">
-                            <span class="csn-drop-icon">📤</span> Post Knowledge
-                        </a>
-                        <a href="#" onclick="triggerNav('browse_tasks');return false;">
-                            <span class="csn-drop-icon">📚</span> Browse Knowledge
-                        </a>
-                        <a href="#" onclick="triggerNav('my_sessions');return false;">
-                            <span class="csn-drop-icon">📅</span> My Sessions
-                        </a>
-                    </div>
-                </div>
-
-                <a class="csn-link{' csn-active' if cur=='ai_match' else ''}"
-                   href="#" onclick="triggerNav('ai_match');return false;">AI Match</a>
-                <a class="csn-link{' csn-active' if cur=='community' else ''}"
-                   href="#" onclick="triggerNav('community');return false;">Community</a>
-                <a class="csn-link{' csn-active' if cur=='chat' else ''}"
-                   href="#" onclick="triggerNav('chat');return false;">Chat</a>
-                <a class="csn-link{' csn-active' if cur=='notifications' else ''}"
-                   href="#" onclick="triggerNav('notifications');return false;">{notif_lbl}
-                   {'<span class="csn-dot"></span>' if unread else ''}</a>
-            </nav>"""
-        right_html = f"""
-            <div class="csn-right">
-                <a class="csn-link{' csn-active' if cur=='profile' else ''}"
-                   href="#" onclick="triggerNav('profile');return false;">Profile</a>
-                <a class="csn-btn-danger" href="#" onclick="triggerNav('__logout__');return false;">Sign Out</a>
-            </div>"""
-
-    st.markdown(f"""
+    # ── Navbar CSS (style only, no HTML structure) ───────────
+    st.markdown("""
     <style>
-    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-    /* ═══ NAVBAR SHELL ═══════════════════════════════════════ */
-    .csn-wrap {{
-        position: sticky; top: 0; z-index: 9999;
-        display: flex; align-items: center;
-        justify-content: space-between;
-        background: #FFFFFF;
-        border-bottom: 1px solid #F1F5F9;
-        box-shadow: 0 1px 0 #E5E7EB, 0 4px 16px rgba(0,0,0,.06);
-        padding: 0 28px;
-        height: 60px;
-        font-family: 'Inter', sans-serif;
-        gap: 12px;
-        margin-bottom: 28px;
-    }}
-
-    /* ═══ LOGO ═══════════════════════════════════════════════ */
-    .csn-logo {{
-        font-size: 18px; font-weight: 800;
-        color: #111827; letter-spacing: -.03em;
-        cursor: pointer; white-space: nowrap; flex-shrink: 0;
-        text-decoration: none;
-        transition: opacity .15s;
-    }}
-    .csn-logo:hover {{ opacity: .8; }}
-    .csn-logo span {{ color: #2563EB; }}
-    .csn-logo em {{
-        font-style: normal; font-size: 9px; font-weight: 700;
-        background: #EFF6FF; color: #2563EB; border: 1px solid #BFDBFE;
-        border-radius: 4px; padding: 2px 6px; margin-left: 7px;
-        letter-spacing: .04em; vertical-align: middle;
-    }}
-
-    /* ═══ CENTER NAV ═════════════════════════════════════════ */
-    .csn-center {{
-        display: flex; align-items: center; gap: 2px;
-        flex: 1; justify-content: center;
-        flex-wrap: nowrap; overflow: visible;
-        margin: 0; padding: 0; list-style: none;
-    }}
-    .csn-link {{
-        font-size: 14px; font-weight: 500; color: #374151;
-        text-decoration: none; padding: 7px 12px;
-        border-radius: 8px; cursor: pointer; white-space: nowrap;
-        user-select: none; display: inline-flex; align-items: center;
-        transition: background .15s, color .15s;
-    }}
-    .csn-link:hover {{ background: #F9FAFB; color: #111827; }}
-    .csn-active {{
-        background: #EFF6FF !important; color: #2563EB !important;
+    /* Navbar row container */
+    div[data-testid="stHorizontalBlock"].csn-nav-row {
+        background: #FFFFFF !important;
+        border-bottom: 1.5px solid #E5E7EB !important;
+        box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
+        padding: 4px 8px !important;
+        margin-bottom: 20px !important;
+        position: sticky !important;
+        top: 0 !important;
+        z-index: 9999 !important;
+    }
+    /* All nav buttons */
+    div[data-testid="stHorizontalBlock"].csn-nav-row .stButton > button {
+        background: transparent !important;
+        color: #374151 !important;
+        border: none !important;
+        border-radius: 8px !important;
+        font-weight: 500 !important;
+        font-size: 13px !important;
+        padding: 6px 10px !important;
+        height: 36px !important;
+        white-space: nowrap !important;
+        box-shadow: none !important;
+        width: 100% !important;
+        transition: background .15s, color .15s !important;
+    }
+    div[data-testid="stHorizontalBlock"].csn-nav-row .stButton > button:hover {
+        background: #F3F4F6 !important;
+        color: #111827 !important;
+        border: none !important;
+        box-shadow: none !important;
+    }
+    /* Active page button */
+    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-active .stButton > button {
+        background: #EFF6FF !important;
+        color: #2563EB !important;
         font-weight: 600 !important;
-    }}
-    .csn-dot {{
-        display: inline-block; width: 7px; height: 7px;
-        background: #EF4444; border-radius: 50%;
-        margin-left: 4px; vertical-align: middle;
-        animation: csn-pulse 2s infinite;
-    }}
-    @keyframes csn-pulse {{
-        0%,100% {{ opacity:1; }} 50% {{ opacity:.4; }}
-    }}
-
-    /* ═══ DROPDOWN ═══════════════════════════════════════════ */
-    .csn-dropdown {{ position: relative; }}
-    .csn-has-drop {{
-        font-size: 14px; font-weight: 500; color: #374151;
-        padding: 7px 12px; border-radius: 8px; cursor: pointer;
-        user-select: none; white-space: nowrap;
-        display: inline-flex; align-items: center; gap: 3px;
-        transition: background .15s, color .15s;
-    }}
-    .csn-has-drop:hover {{ background: #F9FAFB; color: #111827; }}
-    .csn-drop-menu {{
-        display: none; position: absolute;
-        top: calc(100% + 10px); left: 50%;
-        transform: translateX(-50%);
-        background: #FFFFFF;
-        border: 1px solid #E5E7EB;
-        border-radius: 14px;
-        box-shadow: 0 8px 32px rgba(0,0,0,.12), 0 2px 8px rgba(0,0,0,.06);
-        min-width: 220px; padding: 8px;
-        z-index: 10000;
-        animation: csn-fade .18s ease;
-    }}
-    @keyframes csn-fade {{
-        from {{ opacity:0; transform:translateX(-50%) translateY(-8px); }}
-        to   {{ opacity:1; transform:translateX(-50%) translateY(0); }}
-    }}
-    .csn-dropdown:hover .csn-drop-menu {{ display: block; }}
-    .csn-drop-group {{
-        font-size: 10px; font-weight: 700; letter-spacing: .1em;
-        text-transform: uppercase; color: #94A3B8;
-        padding: 6px 12px 4px; margin-bottom: 2px;
-    }}
-    .csn-drop-menu a {{
-        display: flex; align-items: center; gap: 10px;
-        padding: 10px 12px; font-size: 13.5px; font-weight: 500;
-        color: #374151; text-decoration: none;
-        border-radius: 8px; transition: background .12s, color .12s;
-        white-space: nowrap;
-    }}
-    .csn-drop-menu a:hover {{ background: #EFF6FF; color: #2563EB; }}
-    .csn-drop-icon {{ font-size: 15px; width: 20px; text-align: center; }}
-    .csn-drop-divider {{
-        height: 1px; background: #F1F5F9;
-        margin: 6px 8px;
-    }}
-
-    /* ═══ RIGHT BUTTONS ══════════════════════════════════════ */
-    .csn-right {{
-        display: flex; align-items: center; gap: 8px; flex-shrink: 0;
-    }}
-    .csn-btn-ghost {{
-        background: transparent; color: #374151;
-        border: 1.5px solid #D1D5DB; border-radius: 9px;
-        font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
-        padding: 7px 18px; cursor: pointer;
-        transition: all .15s; white-space: nowrap;
-        text-decoration: none; display: inline-block;
-    }}
-    .csn-btn-ghost:hover {{
-        border-color: #2563EB; color: #2563EB; background: #EFF6FF;
-    }}
-    .csn-btn-solid {{
-        background: #2563EB; color: #FFFFFF;
-        border: none; border-radius: 9px;
-        font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
-        padding: 7px 20px; cursor: pointer;
-        box-shadow: 0 2px 8px rgba(37,99,235,.30);
-        transition: all .15s; white-space: nowrap;
-        text-decoration: none; display: inline-block;
-    }}
-    .csn-btn-solid:hover {{
-        background: #1D4ED8;
-        box-shadow: 0 4px 16px rgba(37,99,235,.40);
-        transform: translateY(-1px);
-    }}
-    .csn-btn-danger {{
-        background: transparent; color: #DC2626;
-        border: 1.5px solid #FECACA; border-radius: 9px;
-        font-family: 'Inter', sans-serif; font-size: 13.5px; font-weight: 600;
-        padding: 7px 16px; cursor: pointer;
-        transition: all .15s; white-space: nowrap;
-        text-decoration: none; display: inline-block;
-    }}
-    .csn-btn-danger:hover {{ background: #FEF2F2; border-color: #FCA5A5; }}
-
-    /* ═══ HIDE STREAMLIT ROUTING BUTTONS COMPLETELY ══════════ */
-    #csn-btn-anchor ~ div[data-testid="stHorizontalBlock"] {{
-        height: 0 !important; overflow: hidden !important;
-        opacity: 0 !important; pointer-events: none !important;
-        position: absolute !important; margin: 0 !important; padding: 0 !important;
-        top: 0 !important; left: 0 !important;
-    }}
-    /* Also hide any stButton inside the routing columns */
-    #csn-btn-anchor ~ div[data-testid="stHorizontalBlock"] .stButton > button {{
-        pointer-events: all !important;
-    }}
+    }
+    /* Sign Out button - red */
+    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-signout .stButton > button {
+        color: #DC2626 !important;
+        font-weight: 600 !important;
+    }
+    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-signout .stButton > button:hover {
+        background: #FEF2F2 !important;
+    }
+    /* Sign In / Get Started buttons */
+    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-primary .stButton > button {
+        background: #2563EB !important;
+        color: #FFFFFF !important;
+        border-radius: 9px !important;
+        font-weight: 600 !important;
+        box-shadow: 0 2px 8px rgba(37,99,235,.30) !important;
+    }
+    div[data-testid="stHorizontalBlock"].csn-nav-row .csn-btn-primary .stButton > button:hover {
+        background: #1D4ED8 !important;
+    }
     </style>
-
-    <div class="csn-wrap">
-        <a class="csn-logo" href="#" onclick="triggerNav('landing');return false;">
-            Collab<span>Skill</span> AI{'<em>ADMIN</em>' if is_adm else ''}
-        </a>
-        {center_html}
-        {right_html}
-    </div>
-
-    <script>
-    (function() {{
-        function triggerNav(page) {{
-            // Streamlit renders button label as aria-label on the button element
-            // Our routing buttons now use page name as label, so aria-label === page
-
-            // Method 1: direct aria-label match (most reliable)
-            let btn = document.querySelector('button[aria-label="' + page + '"]');
-            if (btn) {{ btn.click(); return; }}
-
-            // Method 2: match by button text content
-            const allBtns = document.querySelectorAll('#csn-btn-anchor ~ div button, .stButton button');
-            for (let b of allBtns) {{
-                if ((b.textContent || '').trim() === page) {{
-                    b.click(); return;
-                }}
-            }}
-
-            // Method 3: scan all buttons for title or aria-label
-            for (let b of document.querySelectorAll('button')) {{
-                if (b.getAttribute('title') === page ||
-                    b.getAttribute('aria-label') === page ||
-                    (b.textContent || '').trim() === page) {{
-                    b.click(); return;
-                }}
-            }}
-        }}
-        window.triggerNav = triggerNav;
-
-        // Re-expose after Streamlit re-renders (Streamlit replaces DOM on rerun)
-        const obs = new MutationObserver(() => {{ window.triggerNav = triggerNav; }});
-        obs.observe(document.body, {{ childList: true, subtree: false }});
-    }})();
-    </script>
     """, unsafe_allow_html=True)
 
-    # ── Hidden Streamlit routing buttons ────────────────────
-    # These are visually hidden via CSS. JS clicks them for routing.
+    # ── Logo ─────────────────────────────────────────────────
+    admin_tag = " 🔑" if is_adm else ""
+    st.markdown(
+        f"<div style='font-size:19px;font-weight:800;color:#111827;"
+        f"letter-spacing:-.03em;padding:8px 0 4px;'>"
+        f"Collab<span style='color:#2563EB;'>Skill</span> AI{admin_tag}</div>",
+        unsafe_allow_html=True)
+
+    st.markdown("<div class='csn-nav-row-start'></div>", unsafe_allow_html=True)
+
+    # ── Build button list per auth state ─────────────────────
     if is_guest:
-        routing = [("login", "login"), ("register", "register")]
+        nav_items = [
+            ("🏠 Home",        "landing",   False, ""),
+            ("Sign In",        "login",     False, ""),
+            ("🚀 Get Started", "register",  False, "csn-btn-primary"),
+        ]
     elif is_adm:
-        routing = [
-            ("admin_dashboard", "admin_dashboard"),
-            ("admin_users",     "admin_users"),
-            ("admin_tasks",     "admin_tasks"),
-            ("browse_tasks",    "browse_tasks"),
-            ("notifications",   "notifications"),
-            ("profile",         "profile"),
-            ("__logout__",      "__logout__"),
+        nav_items = [
+            ("🏠 Dashboard",  "admin_dashboard", cur == "admin_dashboard", ""),
+            ("👥 Users",      "admin_users",     cur == "admin_users",     ""),
+            ("📋 All Posts",  "admin_tasks",     cur == "admin_tasks",     ""),
+            ("🔍 Browse",     "browse_tasks",    cur == "browse_tasks",    ""),
+            (notif_lbl,       "notifications",   cur == "notifications",   ""),
+            ("👤 Profile",    "profile",         cur == "profile",         ""),
+            ("Sign Out",      "__logout__",      False,                    "csn-btn-signout"),
         ]
     else:
-        routing = [
-            ("landing",       "landing"),
-            ("dashboard",     "dashboard"),
-            ("browse_tasks",  "browse_tasks"),
-            ("post_task",     "post_task"),
-            ("network",       "network"),
-            ("projects",      "projects"),
-            ("chat",          "chat"),
-            ("my_sessions",   "my_sessions"),
-            ("notifications", "notifications"),
-            ("profile",       "profile"),
-            ("community",     "community"),
-            ("ai_match",      "ai_match"),
-            ("__logout__",    "__logout__"),
+        nav_items = [
+            ("🏠 Home",       "landing",       cur == "landing",       ""),
+            ("📊 Dashboard",  "dashboard",     cur == "dashboard",     ""),
+            ("✏️ Post",       "post_task",     cur == "post_task",     ""),
+            ("🔍 Browse",     "browse_tasks",  cur == "browse_tasks",  ""),
+            ("🤝 Network",    "network",       cur == "network",       ""),
+            ("📁 Projects",   "projects",      cur == "projects",      ""),
+            ("💬 Chat",       "chat",          cur == "chat",          ""),
+            ("📅 Sessions",   "my_sessions",   cur == "my_sessions",   ""),
+            ("🤖 AI Match",   "ai_match",      cur == "ai_match",      ""),
+            ("🌐 Community",  "community",     cur == "community",     ""),
+            (notif_lbl,       "notifications", cur == "notifications", ""),
+            ("👤 Profile",    "profile",       cur == "profile",       ""),
+            ("Sign Out",      "__logout__",    False,                  "csn-btn-signout"),
         ]
 
-    # Anchor for CSS hide rule
-    st.markdown('<div id="csn-btn-anchor"></div>', unsafe_allow_html=True)
-
-    # Render all routing buttons with page name as label so JS can find via aria-label
-    cols = st.columns(len(routing))
-    for col, (key, pg) in zip(cols, routing):
+    # ── Render as columns ─────────────────────────────────────
+    cols = st.columns(len(nav_items))
+    for col, (label, pg, is_active, extra_cls) in zip(cols, nav_items):
+        wrap_cls = "csn-btn-active " + extra_cls if is_active else extra_cls
+        if wrap_cls.strip():
+            col.markdown(f"<div class='{wrap_cls.strip()}'>", unsafe_allow_html=True)
         with col:
-            if st.button(pg, key=f"nav__{pg}", help=pg):
+            if st.button(label, key=f"nav__{pg}"):
                 if pg == "__logout__":
                     st.session_state.user    = None
                     st.session_state.history = []
                     go("landing")
                 else:
                     go(pg)
+        if wrap_cls.strip():
+            col.markdown("</div>", unsafe_allow_html=True)
+
+    st.markdown("<hr style='margin:0 0 20px 0;border-color:#E5E7EB;'/>",
+                unsafe_allow_html=True)
+
+
 
 
 def page_landing():
