@@ -461,70 +461,90 @@ hr { border-color: #E2E8F0 !important; margin: 20px 0 !important; }
 }
 
 /* ══════════════════════════════════════
-   NAVBAR — Modern responsive flex bar
+   NAVBAR — Premium Dark Theme
    ══════════════════════════════════════ */
-.cs-navbar-logo { font-size: 18px; font-weight: 800; color: #111827; letter-spacing: -.02em; }
-.cs-navbar-logo span { color: #2563EB; }
 
-/* The column row itself becomes the flex navbar */
-div[data-testid="stHorizontalBlock"].cs-nav-row {
-    display: flex !important;
-    flex-wrap: nowrap !important;
+/* ── The first stHorizontalBlock = navbar row ── */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background: #000000 !important;
+    border-bottom: 1px solid #1F1F1F !important;
+    box-shadow: 0 2px 20px rgba(0,0,0,.4) !important;
+    padding: 0 16px !important;
+    margin-bottom: 28px !important;
     align-items: center !important;
-    gap: 0 !important;
-    padding: 8px 16px !important;
-    background: #FFFFFF !important;
-    border-bottom: 1.5px solid #E5E7EB !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,.06) !important;
-    overflow-x: auto !important;
-    scrollbar-width: none !important;
-    margin-bottom: 24px !important;
+    min-height: 60px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
 }
-div[data-testid="stHorizontalBlock"].cs-nav-row::-webkit-scrollbar { display: none !important; }
-
-div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"] {
-    padding: 0 2px !important;
-    flex-shrink: 0 !important;
-    min-width: fit-content !important;
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"] {
+    padding: 0 1px !important;
+    display: flex !important;
+    align-items: center !important;
 }
 
-/* ALL buttons in the nav row */
-div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button {
+/* ── ALL nav buttons ── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button {
     background: transparent !important;
-    color: #4B5563 !important;
+    color: #A1A1AA !important;
     border: none !important;
-    border-radius: 8px !important;
+    border-radius: 6px !important;
     font-family: 'Inter', sans-serif !important;
     font-weight: 500 !important;
     font-size: 13.5px !important;
-    padding: 7px 13px !important;
-    height: 38px !important;
+    padding: 7px 12px !important;
+    height: 40px !important;
     white-space: nowrap !important;
     overflow: visible !important;
     text-overflow: clip !important;
     box-shadow: none !important;
     min-width: max-content !important;
-    transition: background 0.15s ease, color 0.15s ease !important;
-    letter-spacing: 0 !important;
+    width: 100% !important;
+    letter-spacing: .01em !important;
+    transition: background .15s ease, color .15s ease !important;
 }
-div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button:hover {
-    background: #F3F4F6 !important;
-    color: #111827 !important;
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button:hover {
+    background: #1A1A1A !important;
+    color: #FFFFFF !important;
     border: none !important;
     box-shadow: none !important;
 }
-div[data-testid="stHorizontalBlock"].cs-nav-row .stButton > button:active {
-    background: #E5E7EB !important;
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button:active {
+    background: #222222 !important;
 }
 
-/* Last column = Sign Out — always red */
-div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"]:last-child .stButton > button {
-    color: #DC2626 !important;
-    font-weight: 500 !important;
+/* ── LOGO col (first) — white bold brand ── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #FFFFFF !important;
+    letter-spacing: -.02em !important;
+    padding: 7px 20px 7px 4px !important;
+    background: transparent !important;
 }
-div[data-testid="stHorizontalBlock"].cs-nav-row > div[data-testid="column"]:last-child .stButton > button:hover {
-    background: #FEF2F2 !important;
-    color: #B91C1C !important;
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button:hover {
+    background: transparent !important;
+    color: #FFFFFF !important;
+}
+
+/* ── SIGN OUT col (last) — red tinted ── */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button {
+    color: #F87171 !important;
+    border: 1px solid #3F1F1F !important;
+    padding: 6px 14px !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button:hover {
+    background: #2D1111 !important;
+    color: #FCA5A5 !important;
+    border-color: #7F1D1D !important;
 }
 
 
@@ -776,12 +796,11 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Classic flat button-row navbar.
-    ─ White background with shadow
-    ─ Logo (HTML) on the left  
-    ─ All nav buttons flat in one column row — NO wrapper divs
-    ─ CSS targets the first stHorizontalBlock to style it as the navbar
-    ─ Zero DeltaGenerator risk: no st.* calls inside column contexts
+    Premium dark navbar — black bg, white text.
+    Same safe pattern: one flat column row, no wrapper divs.
+    Active page = white text + subtle highlight.
+    Sign Out = red tint (last col via CSS nth-child).
+    Notification badge rendered in button label.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -789,170 +808,106 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    notif_lbl = f"Notifs ({unread})" if unread else "Notifs"
+    # Notification label with badge count
+    notif_lbl = f"Notifs  🔴{unread}" if unread else "Notifs"
 
-    # ── Build nav item list ──────────────────────────────────
+    # ── Build nav list ───────────────────────────────────────
     if is_guest:
         nav_items = [
-            ("__logo__",  "__logo__"),
-            ("Sign In",   "login"),
-            ("Register",  "register"),
+            ("CollabSkill AI", "__logo__"),
+            ("Sign In",        "login"),
+            ("Sign Up",        "register"),
         ]
     elif is_adm:
         nav_items = [
-            ("__logo__",     "__logo__"),
-            ("Dashboard",    "admin_dashboard"),
-            ("Users",        "admin_users"),
-            ("All Posts",    "admin_tasks"),
-            ("Browse",       "browse_tasks"),
-            (notif_lbl,      "notifications"),
-            ("Profile",      "profile"),
-            ("Sign Out",     "__logout__"),
+            ("CollabSkill AI",  "__logo__"),
+            ("Dashboard",       "admin_dashboard"),
+            ("Users",           "admin_users"),
+            ("All Posts",       "admin_tasks"),
+            ("Browse",          "browse_tasks"),
+            (notif_lbl,         "notifications"),
+            ("Profile",         "profile"),
+            ("Sign Out",        "__logout__"),
         ]
     else:
         nav_items = [
-            ("__logo__",     "__logo__"),
-            ("Home",         "landing"),
-            ("Dashboard",    "dashboard"),
-            ("Browse",       "browse_tasks"),
-            ("Post",         "post_task"),
-            ("Network",      "network"),
-            ("Projects",     "projects"),
-            ("Chat",         "chat"),
-            ("Sessions",     "my_sessions"),
-            (notif_lbl,      "notifications"),
-            ("Profile",      "profile"),
-            ("Sign Out",     "__logout__"),
+            ("CollabSkill AI",  "__logo__"),
+            ("Home",            "landing"),
+            ("Dashboard",       "dashboard"),
+            ("Browse",          "browse_tasks"),
+            ("Post",            "post_task"),
+            ("Network",         "network"),
+            ("Projects",        "projects"),
+            ("Chat",            "chat"),
+            ("Sessions",        "my_sessions"),
+            (notif_lbl,         "notifications"),
+            ("Profile",         "profile"),
+            ("Sign Out",        "__logout__"),
         ]
 
     total = len(nav_items)
 
-    # ── Global navbar CSS injected once ─────────────────────
-    st.markdown("""
-<style>
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
-
-/* ─── hide Streamlit chrome ─────────────────────────── */
-header, #MainMenu, footer { visibility: hidden !important; }
-.block-container { padding-top: 0 !important; }
-
-/* ─── page background ───────────────────────────────── */
-.stApp, html, body { background: #F8FAFC !important; }
-
-/* ─── NAVBAR ROW  ────────────────────────────────────
-   Target the very first horizontal block on the page.
-   This is always the navbar column row.               */
-div[data-testid="stHorizontalBlock"]:first-of-type {
-    background: #FFFFFF !important;
-    border-bottom: 1.5px solid #E5E7EB !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.07) !important;
-    padding: 0 8px !important;
-    margin-bottom: 24px !important;
-    align-items: center !important;
-    min-height: 58px !important;
-}
-
-/* ─── all column cells inside navbar ────────────────── */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"] {
-    padding: 0 1px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-
-/* ─── EVERY button in the navbar ────────────────────── */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button {
-    background: transparent !important;
-    color: #374151 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 13.5px !important;
-    padding: 7px 11px !important;
-    height: 38px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    box-shadow: none !important;
-    min-width: max-content !important;
-    width: 100% !important;
-    transition: background .15s ease, color .15s ease !important;
-    letter-spacing: 0 !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button:hover {
-    background: #F3F4F6 !important;
-    color: #111827 !important;
-}
-
-/* ─── LOGO button (first col) — big bold, no hover bg ─ */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button {
-    font-size: 17px !important;
-    font-weight: 800 !important;
-    color: #111827 !important;
-    letter-spacing: -.03em !important;
-    padding: 7px 14px 7px 4px !important;
-    background: transparent !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button:hover {
-    background: transparent !important;
-    color: #2563EB !important;
-}
-
-/* ─── SIGN OUT button (last col) — always red ─────────── */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button {
-    color: #DC2626 !important;
-    border: 1.5px solid #FECACA !important;
-    background: transparent !important;
-    padding: 6px 14px !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button:hover {
-    background: #FEF2F2 !important;
-    border-color: #FCA5A5 !important;
-    color: #B91C1C !important;
-}
-
-/* ─── Guest: last col = Register — blue ──────────────── */
-/* (only applies when there are 3 cols: logo + signin + register) */
-</style>
-""", unsafe_allow_html=True)
-
-    # ── Per-render: active-page + dynamic label CSS ─────────
-    # Build nth-child index for the active page (1-based)
+    # ── Active-page highlight via nth-child ─────────────────
     active_idx = 0
-    for i, (lbl, pg) in enumerate(nav_items):
+    for i, (_, pg) in enumerate(nav_items):
         if pg == cur:
-            active_idx = i + 1   # CSS nth-child is 1-based
+            active_idx = i + 1
             break
+
+    # Dynamic CSS for active page + guest Sign Up blue
+    guest_extra = ""
+    if is_guest:
+        guest_extra = """
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button {
+            background: #2563EB !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 7px 18px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button:hover {
+            background: #1D4ED8 !important;
+            color: #FFFFFF !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-last-child(2) .stButton > button {
+            border: 1.5px solid #3F3F46 !important;
+            color: #E4E4E7 !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-last-child(2) .stButton > button:hover {
+            border-color: #71717A !important;
+            color: #FFFFFF !important;
+            background: #111111 !important;
+        }
+        """
+
+    active_css = ""
+    if active_idx > 0:
+        active_css = f"""
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-child({active_idx}) .stButton > button {{
+            color: #FFFFFF !important;
+            background: #1A1A1A !important;
+            font-weight: 600 !important;
+        }}
+        """
 
     st.markdown(f"""
 <style>
-/* Active page highlight */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:nth-child({active_idx}) .stButton > button {{
-    background: #EFF6FF !important;
-    color: #2563EB !important;
-    font-weight: 600 !important;
-}}
-/* Guest mode: Register button = blue filled */
-{'div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"]:last-child .stButton > button { background: #2563EB !important; color: #FFFFFF !important; border: none !important; font-weight: 600 !important; } div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"]:last-child .stButton > button:hover { background: #1D4ED8 !important; }' if is_guest else ''}
+{active_css}
+{guest_extra}
 </style>
 """, unsafe_allow_html=True)
 
-    # ── One flat row of buttons — ZERO wrapper divs ─────────
+    # ── Flat column row — ZERO wrapper divs ─────────────────
     cols = st.columns([2.0] + [1.0] * (total - 1))
-
     for col, (lbl, pg) in zip(cols, nav_items):
         with col:
-            # Logo column shows brand name
-            btn_lbl = "CollabSkill AI" if pg == "__logo__" else lbl
-            if st.button(btn_lbl, key=f"nav__{pg}", use_container_width=True):
+            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                 if pg in ("__logo__", "landing"):
                     go("landing")
                 elif pg == "__logout__":
@@ -966,125 +921,264 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 def page_landing():
     render_navbar()
 
+    # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
-    <div class='hero-wrap'>
-        <div class='hero-eyebrow'>AI-Powered Skill Exchange Platform</div>
-        <div class='hero-h1'>Connect. Collaborate.</div>
-        <div class='hero-gradient'>Exchange Skills Smarter.</div>
-        <div class='hero-sub'>
+    <style>
+    /* Landing page: white background */
+    .stApp { background: #FFFFFF !important; }
+    html, body, [class*="css"] { background-color: #FFFFFF !important; }
+
+    /* Hero */
+    .lp-hero {
+        text-align: center;
+        padding: 72px 24px 48px;
+        max-width: 820px;
+        margin: 0 auto;
+    }
+    .lp-eyebrow {
+        display: inline-block;
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .18em; text-transform: uppercase;
+        color: #2563EB;
+        background: #EFF6FF; border: 1px solid #BFDBFE;
+        border-radius: 999px; padding: 6px 18px;
+        margin-bottom: 32px;
+    }
+    .lp-h1 {
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
+        letter-spacing: -.04em; color: #0F172A;
+        margin: 0 0 6px;
+    }
+    .lp-gradient {
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
+        letter-spacing: -.04em;
+        background: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    .lp-sub {
+        font-size: 17px; color: #64748B;
+        line-height: 1.7; max-width: 520px;
+        margin: 22px auto 0;
+    }
+    .lp-choose {
+        font-size: 11px; font-weight: 700;
+        letter-spacing: .18em; text-transform: uppercase;
+        color: #94A3B8; text-align: center;
+        margin: 48px 0 20px;
+    }
+
+    /* Mode Cards */
+    .lp-card {
+        background: #FAFAFA;
+        border: 1.5px solid #E5E7EB;
+        border-radius: 20px;
+        padding: 40px 32px;
+        text-align: center;
+        transition: all .22s ease;
+        min-height: 320px;
+        display: flex; flex-direction: column;
+        align-items: center;
+    }
+    .lp-card:hover {
+        border-color: #2563EB;
+        box-shadow: 0 16px 48px rgba(37,99,235,.12);
+        transform: translateY(-4px);
+        background: #FFFFFF;
+    }
+    .lp-card-learn:hover { border-color: #0D9488; box-shadow: 0 16px 48px rgba(13,148,136,.12); }
+    .lp-icon-wrap {
+        width: 72px; height: 72px; border-radius: 18px;
+        display: flex; align-items: center; justify-content: center;
+        margin: 0 auto 24px;
+    }
+    .lp-card-title {
+        font-size: 22px; font-weight: 800; color: #0F172A;
+        margin-bottom: 12px; letter-spacing: -.02em;
+    }
+    .lp-card-desc {
+        font-size: 14px; color: #64748B;
+        line-height: 1.7; flex: 1;
+    }
+    .lp-card-cta {
+        display: inline-block; margin-top: 24px;
+        font-size: 12px; font-weight: 700;
+        letter-spacing: .1em; text-transform: uppercase;
+    }
+    .lp-cta-work  { color: #2563EB; }
+    .lp-cta-learn { color: #0D9488; }
+
+    /* Stats strip */
+    .lp-stats {
+        display: grid; grid-template-columns: repeat(4, 1fr);
+        border: 1.5px solid #E5E7EB; border-radius: 16px;
+        background: #FFFFFF; margin: 48px 0; overflow: hidden;
+        box-shadow: 0 2px 16px rgba(0,0,0,.05);
+    }
+    .lp-stat { padding: 28px 0; text-align: center; border-right: 1.5px solid #E5E7EB; }
+    .lp-stat:last-child { border-right: none; }
+    .lp-stat-num { font-size: 32px; font-weight: 900; color: #0F172A; line-height: 1; }
+    .lp-stat-lbl { font-size: 11px; color: #94A3B8; margin-top: 6px; letter-spacing: .1em; text-transform: uppercase; }
+
+    /* Feature cards */
+    .lp-feature {
+        background: #FFFFFF; border: 1.5px solid #E5E7EB;
+        border-radius: 16px; padding: 28px 24px;
+        transition: all .2s ease;
+        box-shadow: 0 2px 8px rgba(0,0,0,.04);
+    }
+    .lp-feature:hover { box-shadow: 0 8px 32px rgba(0,0,0,.10); transform: translateY(-3px); }
+    .lp-feature-icon {
+        width: 44px; height: 44px; border-radius: 12px;
+        display: flex; align-items: center; justify-content: center;
+        margin-bottom: 16px;
+    }
+    .lp-feature-title { font-size: 15px; font-weight: 700; color: #0F172A; margin-bottom: 8px; }
+    .lp-feature-desc  { font-size: 13px; color: #64748B; line-height: 1.65; }
+
+    /* Steps */
+    .lp-step {
+        background: #FFFFFF; border: 1.5px solid #E5E7EB;
+        border-radius: 14px; padding: 24px 20px;
+    }
+    .lp-step-num { font-size: 32px; font-weight: 900; color: #E2E8F0; line-height: 1; margin-bottom: 12px; }
+    .lp-step-title { font-size: 13px; font-weight: 700; color: #0F172A; margin-bottom: 6px; }
+    .lp-step-desc  { font-size: 12px; color: #64748B; line-height: 1.6; }
+
+    /* Section label */
+    .lp-section-lbl {
+        text-align: center; font-size: 11px; font-weight: 700;
+        letter-spacing: .14em; text-transform: uppercase;
+        color: #94A3B8; margin: 56px 0 28px;
+    }
+    </style>
+
+    <div class="lp-hero">
+        <div class="lp-eyebrow">AI-Powered Skill Exchange Platform</div>
+        <div class="lp-h1">Connect. Collaborate.</div>
+        <div class="lp-gradient">Exchange Skills Smarter.</div>
+        <div class="lp-sub">
             An intelligent platform that matches you with the right people —
             connecting skill providers with those who need them.
         </div>
-    </div>""", unsafe_allow_html=True)
+    </div>
+    <div class="lp-choose">Choose how you want to get started</div>
+    """, unsafe_allow_html=True)
 
-    st.markdown(
-        "<div style='text-align:center;font-size:10px;font-weight:700;"
-        "letter-spacing:.14em;text-transform:uppercase;color:#64748B;"
-        "margin-bottom:18px;'>Choose how you want to get started</div>",
-        unsafe_allow_html=True)
-
+    # ── Mode Cards ────────────────────────────────────────────
     lc, rc = st.columns(2, gap="large")
 
     with lc:
         st.markdown("""
-        <div class='mode-card mode-card-work'>
-            <div class='mode-card-icon' style='background:rgba(56,189,248,.08);'>
-                <svg width="22" height="22" fill="none" stroke="#38bdf8" stroke-width="1.8"
-                    viewBox="0 0 24 24"><rect x="2" y="7" width="20" height="14" rx="2"/>
+        <div class="lp-card">
+            <div class="lp-icon-wrap" style="background:#EFF6FF;">
+                <svg width="28" height="28" fill="none" stroke="#2563EB" stroke-width="1.8"
+                    viewBox="0 0 24 24">
+                    <rect x="2" y="7" width="20" height="14" rx="2"/>
                     <path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/>
                     <line x1="12" y1="12" x2="12" y2="16"/>
-                    <line x1="10" y1="14" x2="14" y2="14"/></svg>
+                    <line x1="10" y1="14" x2="14" y2="14"/>
+                </svg>
             </div>
-            <div class='mode-card-title'>Work</div>
-            <div class='mode-card-desc'>
+            <div class="lp-card-title">Work</div>
+            <div class="lp-card-desc">
                 Post tasks, find skilled collaborators, and get projects done.
                 Connect with professionals ready to help.
             </div>
-            <div class='mode-card-cta cta-work'>Task Collaboration &rarr;</div>
+            <div class="lp-card-cta lp-cta-work">TASK COLLABORATION &rarr;</div>
         </div>""", unsafe_allow_html=True)
-        st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-        if st.button("Get Started — Work", key="land_work", use_container_width=True):
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        if st.button("Get Started — Work Mode", key="land_work", use_container_width=True):
             st.session_state.mode = "work"
             go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
 
     with rc:
         st.markdown("""
-        <div class='mode-card mode-card-learn'>
-            <div class='mode-card-icon' style='background:rgba(20,184,166,.08);'>
-                <svg width="22" height="22" fill="none" stroke="#2dd4bf" stroke-width="1.8"
-                    viewBox="0 0 24 24"><path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
-                    <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/></svg>
+        <div class="lp-card lp-card-learn">
+            <div class="lp-icon-wrap" style="background:#F0FDFA;">
+                <svg width="28" height="28" fill="none" stroke="#0D9488" stroke-width="1.8"
+                    viewBox="0 0 24 24">
+                    <path d="M2 3h6a4 4 0 014 4v14a3 3 0 00-3-3H2z"/>
+                    <path d="M22 3h-6a4 4 0 00-4 4v14a3 3 0 013-3h7z"/>
+                </svg>
             </div>
-            <div class='mode-card-title'>Learn</div>
-            <div class='mode-card-desc'>
+            <div class="lp-card-title">Learn</div>
+            <div class="lp-card-desc">
                 Request tutoring, share your expertise, and grow your skills.
                 Connect with experts who guide your learning journey.
             </div>
-            <div class='mode-card-cta cta-learn'>Knowledge Exchange &rarr;</div>
+            <div class="lp-card-cta lp-cta-learn">KNOWLEDGE EXCHANGE &rarr;</div>
         </div>""", unsafe_allow_html=True)
-        st.markdown("<div style='height:6px;'></div>", unsafe_allow_html=True)
-        if st.button("Get Started — Learn", key="land_learn", use_container_width=True):
+        st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
+        if st.button("Get Started — Learn Mode", key="land_learn", use_container_width=True):
             st.session_state.mode = "learn"
             go("register" if not logged_in() else ("admin_dashboard" if is_admin() else "dashboard"))
 
-    # Stats
+    # ── Stats Strip ───────────────────────────────────────────
     total_users = db_fetchone("SELECT COUNT(*) AS c FROM users")["c"]
     total_tasks = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE type='task'")["c"]
     open_tasks  = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE status='open' AND type='task'")["c"]
     total_know  = db_fetchone("SELECT COUNT(*) AS c FROM tasks WHERE type='knowledge'")["c"]
 
     st.markdown(f"""
-    <div class='stat-strip'>
-        <div class='stat-item'><div class='stat-num'>{total_users}</div><div class='stat-lbl'>Members</div></div>
-        <div class='stat-item'><div class='stat-num'>{total_tasks}</div><div class='stat-lbl'>Tasks Posted</div></div>
-        <div class='stat-item'><div class='stat-num'>{open_tasks}</div><div class='stat-lbl'>Open Tasks</div></div>
-        <div class='stat-item'><div class='stat-num'>{total_know}</div><div class='stat-lbl'>Knowledge Posts</div></div>
+    <div class="lp-stats">
+        <div class="lp-stat"><div class="lp-stat-num">{total_users}</div><div class="lp-stat-lbl">Members</div></div>
+        <div class="lp-stat"><div class="lp-stat-num">{total_tasks}</div><div class="lp-stat-lbl">Tasks Posted</div></div>
+        <div class="lp-stat"><div class="lp-stat-num">{open_tasks}</div><div class="lp-stat-lbl">Open Tasks</div></div>
+        <div class="lp-stat"><div class="lp-stat-num">{total_know}</div><div class="lp-stat-lbl">Knowledge Posts</div></div>
     </div>""", unsafe_allow_html=True)
 
-    # Features
-    section_divider("Platform Features")
+    # ── Platform Features ─────────────────────────────────────
+    st.markdown("<div class='lp-section-lbl'>Platform Features</div>", unsafe_allow_html=True)
     fc1, fc2, fc3 = st.columns(3)
     features = [
-        ("AI Matching",         "rgba(56,189,248,.08)", "#38bdf8",
-         "Our AI reads task requirements and user profiles to surface the best matches."),
-        ("Trust Score System",  "rgba(124,58,237,.08)", "#a78bfa",
-         "Every collaboration builds your reputation through peer-reviewed ratings."),
-        ("Dual Mode Platform",  "rgba(20,184,166,.08)", "#2dd4bf",
-         "Switch between Task Collaboration and Knowledge Exchange anytime."),
+        ("🤖", "AI Matching",         "#EFF6FF", "#2563EB",
+         "Our AI reads task requirements and user profiles to surface the best skill matches instantly."),
+        ("🏆", "Trust Score System",  "#F5F3FF", "#7C3AED",
+         "Every collaboration builds your reputation through peer-reviewed ratings and badges."),
+        ("⚡", "Dual Mode Platform",  "#F0FDFA", "#0D9488",
+         "Switch between Task Collaboration and Knowledge Exchange anytime — one platform, two modes."),
     ]
-    for col, (title, bg, accent, desc) in zip([fc1,fc2,fc3], features):
+    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3], features):
         col.markdown(f"""
-        <div class='cs-card' style='min-height:165px;'>
-            <div style='width:36px;height:36px;border-radius:8px;background:{bg};
-                display:flex;align-items:center;justify-content:center;margin-bottom:12px;'>
-                <div style='width:12px;height:12px;border-radius:50%;background:{accent};'></div>
+        <div class="lp-feature">
+            <div class="lp-feature-icon" style="background:{bg};">
+                <span style="font-size:20px;">{icon}</span>
             </div>
-            <div style='font-size:13px;font-weight:700;color:#0F172A;margin-bottom:6px;'>{title}</div>
-            <div style='font-size:12px;color:#64748B;line-height:1.65;'>{desc}</div>
+            <div class="lp-feature-title">{title}</div>
+            <div class="lp-feature-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
 
-    # How it works
-    section_divider("How It Works")
+    # ── How It Works ──────────────────────────────────────────
+    st.markdown("<div class='lp-section-lbl'>How It Works</div>", unsafe_allow_html=True)
     h1, h2, h3, h4 = st.columns(4)
     steps = [
-        ("01", "Create account",   "Register and build your profile with skills and experience."),
-        ("02", "Choose your mode", "Work for task collaboration or Learn for knowledge exchange."),
-        ("03", "Post or browse",   "Post what you need or discover opportunities that match you."),
-        ("04", "Collaborate",      "Connect, complete work, rate each other, and grow together."),
+        ("01", "Create Account",    "Register and build your profile with skills and experience."),
+        ("02", "Choose Your Mode",  "Work for task collaboration or Learn for knowledge exchange."),
+        ("03", "Post or Browse",    "Post what you need or discover opportunities that match you."),
+        ("04", "Collaborate",       "Connect, complete work, rate each other, and grow together."),
     ]
-    for col, (num, title, desc) in zip([h1,h2,h3,h4], steps):
+    for col, (num, title, desc) in zip([h1, h2, h3, h4], steps):
         col.markdown(f"""
-        <div class='cs-card'>
-            <div style='font-size:28px;font-weight:900;color:#94A3B8;line-height:1;margin-bottom:10px;'>{num}</div>
-            <div style='font-size:12px;font-weight:700;color:#64748B;margin-bottom:5px;'>{title}</div>
-            <div style='font-size:11px;color:#64748B;line-height:1.6;'>{desc}</div>
+        <div class="lp-step">
+            <div class="lp-step-num">{num}</div>
+            <div class="lp-step-title">{title}</div>
+            <div class="lp-step-desc">{desc}</div>
         </div>""", unsafe_allow_html=True)
 
+    # ── Footer ────────────────────────────────────────────────
     st.markdown("<br>", unsafe_allow_html=True)
     st.markdown("""
-    <div style='text-align:center;padding:20px 0;border-top:1px solid #E2E8F0;'>
-        <div style='font-size:12px;font-weight:700;color:#64748B;'>CollabSkill AI</div>
-        <div style='font-size:11px;color:#94A3B8;margin-top:3px;'>Connecting skilled people with those who need them.</div>
+    <div style='text-align:center;padding:24px 0;border-top:1.5px solid #E5E7EB;'>
+        <div style='font-size:15px;font-weight:800;color:#0F172A;letter-spacing:-.02em;'>
+            Collab<span style='color:#2563EB;'>Skill</span> AI
+        </div>
+        <div style='font-size:12px;color:#94A3B8;margin-top:6px;'>
+            Connecting skilled people with those who need them.
+        </div>
     </div>""", unsafe_allow_html=True)
 
 
