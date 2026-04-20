@@ -874,7 +874,7 @@ def page_landing():
     /* Hero */
     .lp-hero {
         text-align: center;
-        padding: 72px 24px 48px;
+        padding:60px 24px 20px;
         max-width: 820px;
         margin: 0 auto;
     }
