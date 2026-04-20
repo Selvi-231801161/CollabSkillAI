@@ -749,13 +749,13 @@ def render_navbar():
     # ── Build nav list ───────────────────────────────────────
     if is_guest:
         nav_items = [
-            ("CollabSkill AI", "__logo__"),
+            
             ("Sign In",        "login"),
             ("Sign Up",        "register"),
         ]
     elif is_adm:
         nav_items = [
-            ("CollabSkill AI",  "__logo__"),
+            
             ("Dashboard",       "admin_dashboard"),
             ("Users",           "admin_users"),
             ("All Posts",       "admin_tasks"),
@@ -766,7 +766,7 @@ def render_navbar():
         ]
     else:
         nav_items = [
-            ("CollabSkill AI",  "__logo__"),
+           
             ("Home",            "landing"),
             ("Dashboard",       "dashboard"),
             ("Browse",          "browse_tasks"),
@@ -854,6 +854,14 @@ def render_navbar():
 
 
 def page_landing():
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+            font-size:22px;
+            font-weight:900;
+            color:#2563EB;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
