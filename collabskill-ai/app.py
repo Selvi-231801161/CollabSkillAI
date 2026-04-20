@@ -638,6 +638,26 @@ hr {
     display: none !important;
 }
 }
+section.main div[data-testid="stHorizontalBlock"] {
+    background: transparent !important;
+    box-shadow: none !important;
+    border: none !important;
+}
+
+/* 🔥 REMOVE INNER COLUMN BACKGROUND */
+section.main div[data-testid="stHorizontalBlock"] > div {
+    background: transparent !important;
+}
+
+/* 🔥 REMOVE ANY DEFAULT BOTTOM LINE */
+section.main div[data-testid="stHorizontalBlock"]::after {
+    display: none !important;
+}
+
+/* 🔥 REMOVE STREAMLIT BLOCK CONTAINER BG JUST FOR SAFETY */
+section.main .block-container > div {
+    background: transparent !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
