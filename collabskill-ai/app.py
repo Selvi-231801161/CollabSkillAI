@@ -922,7 +922,7 @@ def page_landing():
         padding: 40px 32px;
         text-align: center;
         transition: all .22s ease;
-        min-height: 320px;
+        min-height: 280px;
         display: flex; flex-direction: column;
         align-items: center;
     }
