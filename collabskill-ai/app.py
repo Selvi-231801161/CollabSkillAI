@@ -1376,36 +1376,15 @@ def page_dashboard():
     open_cnt   = sum(1 for t in my_entries if t["status"] == "open")
     sess_cnt   = count_sessions(u["id"])
 
-    cols = st.columns(6)
+    
+    m1, m2, m3, m4, m5, m6 = st.columns(6)
+    m1.metric("My Posts", len(my_entries))
+    m2.metric("Active", open_cnt)
+    m3.metric("Applications", len(my_apps))
+    m4.metric("Trust Score", f"{u['trust_score']}/10")
+    m5.metric("Ratings", u["total_ratings"])
+    m6.metric("Sessions", sess_cnt)
 
-data = [
-    ("MY POSTS", len(my_entries)),
-    ("ACTIVE", open_cnt),
-    ("APPLICATIONS", len(my_apps)),
-    ("TRUST SCORE", f"{u['trust_score']}/10"),
-    ("RATINGS", u["total_ratings"]),
-    ("SESSIONS", sess_cnt),
-]
-
-for col, (label, value) in zip(cols, data):
-    with col:
-        st.markdown(f"""
-        <div style='padding:10px 0;'>
-            <div style='font-size:11px;
-                        font-weight:700;
-                        color:#6B7280;
-                        letter-spacing:.08em;
-                        text-transform:uppercase;'>
-                {label}
-            </div>
-            <div style='font-size:28px;
-                        font-weight:800;
-                        color:#3B82F6;
-                        margin-top:4px;'>
-                {value}
-            </div>
-        </div>
-        """, unsafe_allow_html=True)
 
     st.markdown("<br>", unsafe_allow_html=True)
 
