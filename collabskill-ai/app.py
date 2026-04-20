@@ -805,8 +805,7 @@ def render_navbar():
     if is_guest:
         nav_items = [
             
-            ("Sign In",        "login"),
-            ("Sign Up",        "register"),
+            
         ]
     elif is_adm:
         nav_items = [
