@@ -263,11 +263,11 @@ label, .stTextInput label, .stTextArea label,
 
 /* ══ METRICS ════════════════════════════════════════════════ */
 [data-testid="metric-container"] {
-    background: #FFFFFF !important;
-    border: 1px solid #E5E7EB !important;
+    background: transparent !important;
+    border: none !important;
     border-radius: 14px !important;
-    padding: 18px 20px !important;
-    box-shadow: 0 1px 6px rgba(0,0,0,.06) !important;
+    padding: 10px 10px !important;
+    box-shadow: none !important;
     transition: all 0.2s ease-in-out !important;
 }
 [data-testid="metric-container"]:hover {
