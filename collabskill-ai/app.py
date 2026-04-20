@@ -627,6 +627,16 @@ section.main > div > div > div > div[data-testid="stHorizontalBlock"]:has(.lp-fe
     background: transparent !important;
     box-shadow: none !important;
     padding: 0 !important;
+div[data-testid="stHorizontalBlock"] {
+    border-bottom: none !important;
+    box-shadow: none !important;
+    background: transparent !important;
+}
+
+/* Remove Streamlit divider */
+hr {
+    display: none !important;
+}
 }
 </style>
 """, unsafe_allow_html=True)
