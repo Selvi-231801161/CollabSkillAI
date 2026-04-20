@@ -911,12 +911,13 @@ def render_navbar():
 def page_landing():
     st.markdown("""
     <div style='padding:10px 0 2px 12px;
-            font-size:22px;
-            font-weight:900;
-            color:#2563EB;'>
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
         Collab<span style='color:#3B82F6;'>Skill</span> AI
     </div>
     """, unsafe_allow_html=True)
+
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
