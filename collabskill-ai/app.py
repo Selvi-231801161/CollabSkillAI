@@ -908,16 +908,36 @@ def render_navbar():
                     go(pg)
 
 
-def page_landing():
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
 
+def page_landing():
+    col1, col2 = st.columns([6, 2])
+
+    with col1:
+        st.markdown("""
+        <div style='padding:10px 0 2px 12px;
+                    font-size:22px;
+                    font-weight:900;'>
+            <span style='color:#111827;'>Collab</span>
+            <span style='color:#3B82F6;'>Skill</span>
+            <span style='color:#111827;'> AI</span>
+        </div>
+        """, unsafe_allow_html=True)
+
+    with col2:
+        c1, c2 = st.columns(2)
+
+        with c1:
+            if st.button("Sign In", key="top_login"):
+                st.session_state.page = "login"
+                st.rerun()
+
+        with c2:
+            if st.button("Sign Up", key="top_signup"):
+                st.session_state.page = "register"
+                st.rerun()
+
+    
+    
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
