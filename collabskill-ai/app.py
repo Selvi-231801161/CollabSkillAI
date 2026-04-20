@@ -418,7 +418,82 @@ hr { border-color: #E5E7EB !important; margin: 20px 0 !important; }
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 
-/* ══ NAVBAR — styling handled inside render_navbar() ═════════ */
+/* ══ NAVBAR — Clean white, first stHorizontalBlock ══════════ */
+div[data-testid="stHorizontalBlock"]:first-of-type {
+    background: #FFFFFF !important;
+    border-bottom: 1px solid #E5E7EB !important;
+    box-shadow: 0 1px 0 #F3F4F6, 0 2px 12px rgba(0,0,0,.06) !important;
+    padding: 0 16px !important;
+    margin-bottom: 28px !important;
+    align-items: center !important;
+    min-height: 60px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"] {
+    padding: 0 1px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+/* All nav links */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button {
+    background: transparent !important;
+    color: #6B7280 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 7px 12px !important;
+    height: 40px !important;
+    white-space: nowrap !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    box-shadow: none !important;
+    min-width: max-content !important;
+    width: 100% !important;
+    letter-spacing: .01em !important;
+    transition: background .18s ease, color .18s ease !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    .stButton > button:hover {
+    background: #F9FAFB !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+/* Logo (first col) */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button {
+    font-size: 16px !important;
+    font-weight: 800 !important;
+    color: #111827 !important;
+    letter-spacing: -.03em !important;
+    padding: 7px 20px 7px 4px !important;
+    background: transparent !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:first-child .stButton > button:hover {
+    background: transparent !important;
+    color: #3B82F6 !important;
+}
+/* Sign Out (last col) */
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button {
+    color: #DC2626 !important;
+    border: 1.5px solid #FECACA !important;
+    padding: 6px 14px !important;
+    background: #FFF5F5 !important;
+}
+div[data-testid="stHorizontalBlock"]:first-of-type
+    > div[data-testid="column"]:last-child .stButton > button:hover {
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+    color: #B91C1C !important;
+}
 
 /* ══ HERO ════════════════════════════════════════════════════ */
 .hero-wrap { text-align: center; padding: 64px 0 40px; }
@@ -656,8 +731,11 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Real Streamlit-button navbar — no JS tricks, no hidden elements.
-    Buttons are styled via CSS to look like a top navigation bar.
+    Premium dark navbar — black bg, white text.
+    Same safe pattern: one flat column row, no wrapper divs.
+    Active page = white text + subtle highlight.
+    Sign Out = red tint (last col via CSS nth-child).
+    Notification badge rendered in button label.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -665,298 +743,114 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    # ── Navbar CSS ───────────────────────────────────────────────
-    st.markdown("""
-<style>
-/* ── Navbar container row ── */
-div[data-testid="stHorizontalBlock"].csn-navbar-row {
-    background: rgba(255,255,255,0.97) !important;
-    border-bottom: 1.5px solid #E5E7EB !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06) !important;
-    padding: 0 8px !important;
-    margin-bottom: 24px !important;
-    align-items: center !important;
-    min-height: 62px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-}
-/* All buttons inside navbar — reset to transparent nav links */
-div.csn-navbar-row .stButton > button {
-    background: transparent !important;
-    color: #6B7280 !important;
-    border: none !important;
-    border-radius: 6px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 13.5px !important;
-    padding: 6px 10px !important;
-    height: 36px !important;
-    line-height: 1 !important;
-    white-space: nowrap !important;
-    box-shadow: none !important;
-    width: 100% !important;
-    transition: background .15s, color .15s !important;
-}
-div.csn-navbar-row .stButton > button:hover {
-    background: #F3F4F6 !important;
-    color: #111827 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-/* Active nav button */
-div.csn-navbar-row .stButton > button.nav-active {
-    color: #111827 !important;
-    font-weight: 700 !important;
-    border-bottom: 2.5px solid #3B82F6 !important;
-    border-radius: 0 !important;
-}
-/* Logo column button */
-div.csn-navbar-row .csn-logo-col .stButton > button {
-    font-size: 20px !important;
-    font-weight: 800 !important;
-    letter-spacing: -.03em !important;
-    color: #111827 !important;
-    padding: 6px 16px 6px 4px !important;
-    border-right: 1.5px solid #E5E7EB !important;
-    border-radius: 0 !important;
-    height: 62px !important;
-    width: 100% !important;
-}
-div.csn-navbar-row .csn-logo-col .stButton > button:hover {
-    background: transparent !important;
-    opacity: 0.75;
-}
-/* Sign out button */
-div.csn-navbar-row .csn-signout-col .stButton > button {
-    color: #DC2626 !important;
-    border: 1.5px solid #FECACA !important;
-    background: #FFF5F5 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    padding: 6px 14px !important;
-}
-div.csn-navbar-row .csn-signout-col .stButton > button:hover {
-    background: #FEE2E2 !important;
-    border-color: #FCA5A5 !important;
-    color: #B91C1C !important;
-}
-/* Sign in / Get Started for guests */
-div.csn-navbar-row .csn-signin-col .stButton > button {
-    color: #374151 !important;
-    border: 1.5px solid #D1D5DB !important;
-    background: transparent !important;
-    border-radius: 8px !important;
-}
-div.csn-navbar-row .csn-getstarted-col .stButton > button {
-    color: #FFFFFF !important;
-    background: #3B82F6 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-    box-shadow: 0 2px 8px rgba(59,130,246,.3) !important;
-}
-div.csn-navbar-row .csn-getstarted-col .stButton > button:hover {
-    background: #2563EB !important;
-}
-/* Notification badge on Sessions/Notifications label */
-.nav-notif-badge {
-    background: #EF4444; color: #fff; font-size: 9px; font-weight: 700;
-    border-radius: 999px; padding: 1px 5px; margin-left: 3px;
-    vertical-align: middle; display: inline-block; line-height: 1.6;
-}
-/* Remove all column padding inside navbar */
-div.csn-navbar-row > div[data-testid="column"] {
-    padding: 0 1px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-</style>
-""", unsafe_allow_html=True)
+    # Notification label with badge count
+    notif_lbl = f"Notifs  🔴{unread}" if unread else "Notifs"
 
-    # ── Render the actual navbar as a styled columns row ─────────
-    st.markdown('<style>/* navbar-marker */</style>', unsafe_allow_html=True)
-
+    # ── Build nav list ───────────────────────────────────────
     if is_guest:
-        cols = st.columns([2, 1, 1, 0.01])
-        with cols[0]:
-            st.markdown(
-                "<div style='font-size:20px;font-weight:800;letter-spacing:-.03em;"
-                "color:#111827;padding:0 16px 0 4px;border-right:1.5px solid #E5E7EB;"
-                "height:62px;display:flex;align-items:center;'>"
-                "<span style='color:#111827;'>Collab</span>"
-                "<span style='color:#3B82F6;'>Skill</span>"
-                "<span style='color:#111827;'> AI</span>"
-                "</div>", unsafe_allow_html=True)
-        with cols[1]:
-            if st.button("Sign In", key="nav__login", use_container_width=True):
-                go("login")
-        with cols[2]:
-            if st.button("Get Started", key="nav__register", use_container_width=True):
-                go("register")
-        st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
-        return
-
-    # ── Logged-in navbar ─────────────────────────────────────────
-    notif_label = f"Notifications 🔴" if unread else "Notifications"
-
-    if is_adm:
         nav_items = [
-            ("Dashboard",    "admin_dashboard"),
-            ("Users",        "admin_users"),
-            ("All Posts",    "admin_tasks"),
-            ("Browse",       "browse_tasks"),
-            (notif_label,    "notifications"),
+            ("CollabSkill AI", "__logo__"),
+            ("Sign In",        "login"),
+            ("Sign Up",        "register"),
+        ]
+    elif is_adm:
+        nav_items = [
+            ("CollabSkill AI",  "__logo__"),
+            ("Dashboard",       "admin_dashboard"),
+            ("Users",           "admin_users"),
+            ("All Posts",       "admin_tasks"),
+            ("Browse",          "browse_tasks"),
+            (notif_lbl,         "notifications"),
+            ("Profile",         "profile"),
+            ("Sign Out",        "__logout__"),
         ]
     else:
         nav_items = [
-            ("Home",         "landing"),
-            ("Dashboard",    "dashboard"),
-            ("Browse",       "browse_tasks"),
-            ("Post",         "post_task"),
-            ("Network",      "network"),
-            ("Projects",     "projects"),
-            ("Chat",         "chat"),
-            ("Sessions",     "my_sessions"),
-            (notif_label,    "notifications"),
+            ("CollabSkill AI",  "__logo__"),
+            ("Home",            "landing"),
+            ("Dashboard",       "dashboard"),
+            ("Browse",          "browse_tasks"),
+            ("Post",            "post_task"),
+            ("Network",         "network"),
+            ("Projects",        "projects"),
+            ("Chat",            "chat"),
+            ("Sessions",        "my_sessions"),
+            (notif_lbl,         "notifications"),
+            ("Profile",         "profile"),
+            ("Sign Out",        "__logout__"),
         ]
 
-    # Column widths: logo | nav items... | profile | signout
-    logo_w    = 1.8
-    nav_w     = [0.85] * len(nav_items)
-    right_w   = [0.7, 0.9]  # Profile + Sign Out
-    all_widths = [logo_w] + nav_w + right_w
+    total = len(nav_items)
 
-    cols = st.columns(all_widths)
+    # ── Active-page highlight via nth-child ─────────────────
+    active_idx = 0
+    for i, (_, pg) in enumerate(nav_items):
+        if pg == cur:
+            active_idx = i + 1
+            break
 
-    # Logo
-    with cols[0]:
-        admin_tag = " 🔑" if is_adm else ""
-        if st.button(f"CollabSkill AI{admin_tag}", key="nav__logo", use_container_width=True):
-            go("landing")
+    # Dynamic CSS for active page + guest Sign Up blue
+    guest_extra = ""
+    if is_guest:
+        guest_extra = """
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button {
+            background: #2563EB !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 8px !important;
+            font-weight: 600 !important;
+            padding: 7px 18px !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button:hover {
+            background: #1D4ED8 !important;
+            color: #FFFFFF !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-last-child(2) .stButton > button {
+            border: 1.5px solid #D1D5DB !important;
+            color: #374151 !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-last-child(2) .stButton > button:hover {
+            border-color: #9CA3AF !important;
+            color: #111827 !important;
+            background: #F9FAFB !important;
+        }
+        """
 
-    # Nav items
-    for i, (label, page) in enumerate(nav_items):
-        with cols[i + 1]:
-            if st.button(label, key=f"nav__{page}", use_container_width=True):
-                go(page)
-
-    # Profile
-    with cols[len(nav_items) + 1]:
-        if st.button("Profile", key="nav__profile", use_container_width=True):
-            go("profile")
-
-    # Sign Out
-    with cols[len(nav_items) + 2]:
-        if st.button("Sign Out", key="nav__logout", use_container_width=True):
-            st.session_state.user = None
-            st.session_state.history = []
-            go("landing")
-
-    # ── Active item highlight + logo styling via CSS ─────────────
-    active_page = cur
-    # Build CSS to highlight active button and style logo
-    active_css_rules = []
-    all_pages = [p for _, p in nav_items] + ["profile"]
-    for i, (label, page) in enumerate(nav_items + [("Profile", "profile")]):
-        col_idx = i + 1  # offset by logo col
-        if page == active_page:
-            active_css_rules.append(f"""
-            /* Active: {page} at col index {col_idx} */
-            div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-child({col_idx + 1})
-            .stButton > button {{
-                color: #111827 !important;
-                font-weight: 700 !important;
-                border-bottom: 2.5px solid #3B82F6 !important;
-                border-radius: 0 !important;
-                background: transparent !important;
-            }}""")
+    active_css = ""
+    if active_idx > 0:
+        active_css = f"""
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-child({active_idx}) .stButton > button {{
+            color: #3B82F6 !important;
+            background: #EFF6FF !important;
+            font-weight: 600 !important;
+        }}
+        """
 
     st.markdown(f"""
 <style>
-/* ── Navbar row: first stHorizontalBlock ── */
-div[data-testid="stHorizontalBlock"]:first-of-type {{
-    background: rgba(255,255,255,0.97) !important;
-    border-bottom: 1.5px solid #E5E7EB !important;
-    box-shadow: 0 2px 12px rgba(0,0,0,.06) !important;
-    padding: 0 8px !important;
-    margin-bottom: 24px !important;
-    align-items: center !important;
-    min-height: 62px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-}}
-div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"] {{
-    padding: 0 1px !important;
-    display: flex !important;
-    align-items: center !important;
-}}
-/* All nav buttons */
-div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {{
-    background: transparent !important;
-    color: #6B7280 !important;
-    border: none !important;
-    border-radius: 6px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 13px !important;
-    padding: 6px 8px !important;
-    height: 36px !important;
-    white-space: nowrap !important;
-    box-shadow: none !important;
-    width: 100% !important;
-    transition: background .15s, color .15s !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-}}
-div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:hover {{
-    background: #F3F4F6 !important;
-    color: #111827 !important;
-    border: none !important;
-    box-shadow: none !important;
-}}
-/* Logo — col 1 */
-div[data-testid="stHorizontalBlock"]:first-of-type
-> div[data-testid="column"]:nth-child(1) .stButton > button {{
-    font-size: 17px !important;
-    font-weight: 800 !important;
-    letter-spacing: -.03em !important;
-    color: #111827 !important;
-    border-right: 1.5px solid #E5E7EB !important;
-    border-radius: 0 !important;
-    height: 62px !important;
-    padding: 0 20px 0 4px !important;
-    background: transparent !important;
-}}
-div[data-testid="stHorizontalBlock"]:first-of-type
-> div[data-testid="column"]:nth-child(1) .stButton > button:hover {{
-    background: transparent !important;
-    opacity: 0.7;
-    border: none !important;
-    border-right: 1.5px solid #E5E7EB !important;
-    border-radius: 0 !important;
-}}
-/* Sign Out — last col */
-div[data-testid="stHorizontalBlock"]:first-of-type
-> div[data-testid="column"]:last-child .stButton > button {{
-    color: #DC2626 !important;
-    border: 1.5px solid #FECACA !important;
-    background: #FFF5F5 !important;
-    border-radius: 8px !important;
-    font-weight: 600 !important;
-}}
-div[data-testid="stHorizontalBlock"]:first-of-type
-> div[data-testid="column"]:last-child .stButton > button:hover {{
-    background: #FEE2E2 !important;
-    border-color: #FCA5A5 !important;
-    color: #B91C1C !important;
-}}
-/* Active page highlight */
-{"".join(active_css_rules)}
+{active_css}
+{guest_extra}
 </style>
 """, unsafe_allow_html=True)
+
+    # ── Flat column row — ZERO wrapper divs ─────────────────
+    cols = st.columns([2.0] + [1.0] * (total - 1))
+    for col, (lbl, pg) in zip(cols, nav_items):
+        with col:
+            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+                if pg in ("__logo__", "landing"):
+                    go("landing")
+                elif pg == "__logout__":
+                    st.session_state.user    = None
+                    st.session_state.history = []
+                    go("landing")
+                else:
+                    go(pg)
 
 
 def page_landing():
@@ -965,91 +859,51 @@ def page_landing():
     # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
     <style>
-    /* ── Landing page base ── */
-    .stApp { background: #FAFBFF !important; }
-    html, body, [class*="css"] { background-color: #FAFBFF !important; }
-
-    /* Subtle gradient mesh background on hero */
-    .lp-hero-bg {
-        position: relative;
-        background: radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,130,246,.08) 0%,transparent 70%);
-        padding: 80px 24px 56px;
-        text-align: center;
-    }
+    /* Landing page: white background */
+    .stApp { background: #FFFFFF !important; }
+    html, body, [class*="css"] { background-color: #FFFFFF !important; }
 
     /* Hero */
-    .lp-hero { max-width: 820px; margin: 0 auto; }
+    .lp-hero {
+        text-align: center;
+        padding: 72px 24px 48px;
+        max-width: 820px;
+        margin: 0 auto;
+    }
     .lp-eyebrow {
-        display: inline-flex; align-items: center; gap: 6px;
+        display: inline-block;
         font-size: 11px; font-weight: 700;
-        letter-spacing: .16em; text-transform: uppercase;
+        letter-spacing: .18em; text-transform: uppercase;
         color: #3B82F6;
-        background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.2);
-        border-radius: 999px; padding: 7px 20px;
-        margin-bottom: 36px;
-        box-shadow: 0 0 0 4px rgba(59,130,246,.04);
-    }
-    .lp-eyebrow-dot {
-        width: 6px; height: 6px; border-radius: 50%;
-        background: #3B82F6; flex-shrink: 0;
-        animation: lp-pulse 2s ease-in-out infinite;
-    }
-    @keyframes lp-pulse {
-        0%,100% { opacity:1; transform:scale(1); }
-        50% { opacity:.5; transform:scale(.8); }
+        background: rgba(59,130,246,.1); border: 1px solid #BFDBFE;
+        border-radius: 999px; padding: 6px 18px;
+        margin-bottom: 32px;
     }
     .lp-h1 {
-        font-size: clamp(42px, 6vw, 72px);
-        font-weight: 900; line-height: 1.04;
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
         letter-spacing: -.04em; color: #111827;
         margin: 0 0 6px;
     }
     .lp-gradient {
-        font-size: clamp(42px, 6vw, 72px);
-        font-weight: 900; line-height: 1.04; letter-spacing: -.04em;
-        background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
+        letter-spacing: -.04em;
+        background: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     .lp-sub {
-        font-size: 18px; color: #6B7280;
-        line-height: 1.75; max-width: 540px;
-        margin: 24px auto 0;
-    }
-    .lp-cta-row {
-        display: flex; gap: 14px; justify-content: center;
-        margin-top: 40px; flex-wrap: wrap;
-    }
-    .lp-cta-primary {
-        display: inline-flex; align-items: center; gap: 8px;
-        background: #3B82F6; color: #FFFFFF;
-        font-size: 15px; font-weight: 600;
-        padding: 14px 28px; border-radius: 10px;
-        text-decoration: none;
-        box-shadow: 0 4px 16px rgba(59,130,246,.35);
-        transition: all .2s ease;
-    }
-    .lp-cta-primary:hover {
-        background: #2563EB; transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(59,130,246,.45);
-    }
-    .lp-cta-secondary {
-        display: inline-flex; align-items: center; gap: 8px;
-        background: #FFFFFF; color: #374151;
-        font-size: 15px; font-weight: 600;
-        padding: 14px 28px; border-radius: 10px;
-        border: 1.5px solid #E5E7EB; text-decoration: none;
-        transition: all .2s ease;
-    }
-    .lp-cta-secondary:hover {
-        border-color: #D1D5DB; background: #F9FAFB;
-        transform: translateY(-2px);
+        font-size: 17px; color: #808080;
+        line-height: 1.7; max-width: 520px;
+        margin: 22px auto 0;
     }
     .lp-choose {
         font-size: 11px; font-weight: 700;
         letter-spacing: .18em; text-transform: uppercase;
-        color: #9CA3AF; text-align: center;
-        margin: 60px 0 24px;
+        color: #4A4A4A; text-align: center;
+        margin: 48px 0 20px;
     }
 
     /* Mode Cards */
@@ -1137,29 +991,14 @@ def page_landing():
     }
     </style>
 
-    <div class="lp-hero-bg">
     <div class="lp-hero">
-        <div class="lp-eyebrow">
-            <span class="lp-eyebrow-dot"></span>
-            AI-Powered Skill Exchange Platform
-        </div>
+        <div class="lp-eyebrow">AI-Powered Skill Exchange Platform</div>
         <div class="lp-h1">Connect. Collaborate.</div>
         <div class="lp-gradient">Exchange Skills Smarter.</div>
         <div class="lp-sub">
             An intelligent platform that matches you with the right people —
             connecting skill providers with those who need them.
         </div>
-        <div class="lp-cta-row">
-            <a href="#" class="lp-cta-primary"
-               onclick="document.querySelector('.stButton button[title=\"register\"]')?.click();return false;">
-                Start for Free →
-            </a>
-            <a href="#" class="lp-cta-secondary"
-               onclick="document.querySelector('.stButton button[title=\"browse_tasks\"]')?.click();return false;">
-                Browse Tasks
-            </a>
-        </div>
-    </div>
     </div>
     <div class="lp-choose">Choose how you want to get started</div>
     """, unsafe_allow_html=True)
@@ -1230,7 +1069,6 @@ def page_landing():
     # ── Platform Features ─────────────────────────────────────
     st.markdown("<div class='lp-section-lbl'>Platform Features</div>", unsafe_allow_html=True)
     fc1, fc2, fc3 = st.columns(3)
-    fc4, fc5, fc6 = st.columns(3)
     features = [
         ("🤖", "AI Matching",         "#EFF6FF", "#2563EB",
          "Our AI reads task requirements and user profiles to surface the best skill matches instantly."),
@@ -1239,7 +1077,7 @@ def page_landing():
         ("⚡", "Dual Mode Platform",  "#F0FDFA", "#0D9488",
          "Switch between Task Collaboration and Knowledge Exchange anytime — one platform, two modes."),
     ]
-    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3, fc4, fc5, fc6], features):
+    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3], features):
         col.markdown(f"""
         <div class="lp-feature">
             <div class="lp-feature-icon" style="background:{bg};">
