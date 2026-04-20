@@ -265,15 +265,15 @@ label, .stTextInput label, .stTextArea label,
 [data-testid="metric-container"] {
     background: transparent !important;
     border: none !important;
-    border-radius: 14px !important;
     padding: 10px 10px !important;
+   
     box-shadow: none !important;
-    transition: all 0.2s ease-in-out !important;
+    
 }
 [data-testid="metric-container"]:hover {
     box-shadow: 0 6px 20px rgba(0,0,0,.10) !important;
     transform: translateY(-2px) !important;
-    border-color: #D1D5DB !important;
+    
 }
 [data-testid="metric-container"] label {
     color: #6B7280 !important;
