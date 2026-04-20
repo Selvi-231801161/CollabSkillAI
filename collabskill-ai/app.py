@@ -803,10 +803,7 @@ def render_navbar():
 
     # ── Build nav list ───────────────────────────────────────
     if is_guest:
-        nav_items = [
-            
-            
-        ]
+        
     elif is_adm:
         nav_items = [
             
