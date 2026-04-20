@@ -802,9 +802,10 @@ def render_navbar():
     notif_lbl = f"Notifs  🔴{unread}" if unread else "Notifs"
 
     # ── Build nav list ───────────────────────────────────────
-    #if is_guest:
+    if is_guest:
+        nav_items=[]
         
-    if is_adm:
+    elif is_adm:
         nav_items = [
             
             ("Dashboard",       "admin_dashboard"),
