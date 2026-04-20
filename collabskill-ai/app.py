@@ -1129,6 +1129,15 @@ def page_landing():
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
 def page_login():
+    
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
 
@@ -1174,6 +1183,15 @@ def page_login():
 #  REGISTER  — cascading skill dropdowns OUTSIDE form
 # ═══════════════════════════════════════════════════════════════
 def page_register():
+    
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
