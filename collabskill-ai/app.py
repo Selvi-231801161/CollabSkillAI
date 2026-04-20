@@ -549,6 +549,27 @@ div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
     position: absolute !important;
     opacity: 0 !important;
 }
+/* Catch-all: any stHorizontalBlock that contains a button with nav routing titles */
+[data-testid="stHorizontalBlock"]:has(button[title="dashboard"]:not([data-testid="baseButton-secondary"])),
+[data-testid="stHorizontalBlock"]:has(button[title="admin_dashboard"]) {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    opacity: 0 !important;
+}
+div.csn-hidden-nav ~ div,
+div.csn-hidden-nav + div {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -845,16 +866,7 @@ def render_navbar():
     box-shadow: 0 4px 14px rgba(59,130,246,.45);
     transform: translateY(-1px);
 }}
-/* Hide routing button row completely */
-#csn-rt,
-#csn-rt + div[data-testid="element-container"],
-#csn-rt ~ div[data-testid="stHorizontalBlock"],
-#csn-rt ~ div[data-testid="stHorizontalBlock"] * {{
-    height: 0 !important; overflow: hidden !important;
-    visibility: hidden !important; pointer-events: none !important;
-    position: absolute !important; margin: 0 !important; padding: 0 !important;
-    max-height: 0 !important; opacity: 0 !important; display: none !important;
-}}
+/* Hide routing button row completely — handled by inline CSS in render_navbar */
 </style>
 
 <div class="csn-bar">
@@ -884,19 +896,56 @@ def render_navbar():
                    ("my_sessions","my_sessions"),("notifications","notifications"),
                    ("profile","profile"),("__logout__","__logout__")]
 
-    st.markdown('<div id="csn-rt"></div>', unsafe_allow_html=True)
-    cols = st.columns(len(routing))
-    for col, (key, pg) in zip(cols, routing):
-        with col:
-            if st.button(" ", key=f"nav__{pg}", help=pg):
-                if pg in ("__logo__", "landing"):
-                    go("landing")
-                elif pg == "__logout__":
-                    st.session_state.user = None
-                    st.session_state.history = []
-                    go("landing")
-                else:
-                    go(pg)
+    # ── Hidden routing buttons — wrapped & fully invisible ──────
+    st.markdown("""
+<style>
+div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:has(div.csn-hidden-nav),
+div.csn-hidden-nav,
+div.csn-hidden-nav * {
+    all: unset !important;
+    display: none !important;
+    visibility: hidden !important;
+    height: 0 !important;
+    width: 0 !important;
+    overflow: hidden !important;
+    position: absolute !important;
+    pointer-events: none !important;
+    opacity: 0 !important;
+    margin: 0 !important;
+    padding: 0 !important;
+    border: none !important;
+}
+/* Target the stHorizontalBlock that holds our nav buttons */
+[data-testid="stHorizontalBlock"]:has(button[title="__logo__"]),
+[data-testid="stHorizontalBlock"]:has(button[title="login"]),
+[data-testid="stHorizontalBlock"]:has(button[title="admin_dashboard"]) {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    position: absolute !important;
+    opacity: 0 !important;
+    pointer-events: none !important;
+    margin: 0 !important;
+    padding: 0 !important;
+}
+</style>
+""", unsafe_allow_html=True)
+
+    with st.container():
+        st.markdown('<div class="csn-hidden-nav"></div>', unsafe_allow_html=True)
+        cols = st.columns(len(routing))
+        for col, (key, pg) in zip(cols, routing):
+            with col:
+                if st.button("​", key=f"nav__{pg}", help=pg):  # zero-width space
+                    if pg in ("__logo__", "landing"):
+                        go("landing")
+                    elif pg == "__logout__":
+                        st.session_state.user = None
+                        st.session_state.history = []
+                        go("landing")
+                    else:
+                        go(pg)
 
 
 def page_landing():
