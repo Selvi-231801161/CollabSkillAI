@@ -133,8 +133,8 @@ st.markdown("""
 header, #MainMenu, footer { visibility: hidden; }
 .block-container {
     padding-top: 0 !important;
-    max-width: 1280px;
-    padding-bottom: 48px !important;
+    max-width: 1300px;
+    padding-bottom: 60px !important;
 }
 html, body, .stApp, [class*="css"] {
     font-family: 'Inter', sans-serif !important;
