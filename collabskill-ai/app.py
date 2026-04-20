@@ -603,6 +603,11 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 ::-webkit-scrollbar-track { background: #F9FAFB; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+section.main > div > div > div > div[data-testid="stHorizontalBlock"]:has(.lp-feature) {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
