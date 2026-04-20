@@ -297,6 +297,16 @@ div[data-testid="stHorizontalBlock"] {
 div[data-testid="stHorizontalBlock"] > div {
     background: transparent !important;
 }
+section.main > div {
+    background: transparent !important;
+}
+
+/* Remove inner container spacing */
+section.main > div > div {
+    background: transparent !important;
+    padding-bottom: 0 !important;
+    margin-bottom: 0 !important;
+}
 
 /* ══ EXPANDER ═══════════════════════════════════════════════ */
 .streamlit-expanderHeader {
