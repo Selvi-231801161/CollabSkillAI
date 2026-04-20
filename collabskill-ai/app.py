@@ -418,81 +418,14 @@ hr { border-color: #E5E7EB !important; margin: 20px 0 !important; }
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 
-/* ══ NAVBAR — Clean white, first stHorizontalBlock ══════════ */
-div[data-testid="stHorizontalBlock"]:first-of-type {
-    background: #FFFFFF !important;
-    border-bottom: 1px solid #E5E7EB !important;
-    box-shadow: 0 1px 0 #F3F4F6, 0 2px 12px rgba(0,0,0,.06) !important;
-    padding: 0 16px !important;
-    margin-bottom: 28px !important;
-    align-items: center !important;
-    min-height: 60px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"] {
-    padding: 0 1px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-/* All nav links */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button {
-    background: transparent !important;
-    color: #6B7280 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 13.5px !important;
-    padding: 7px 12px !important;
-    height: 40px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    box-shadow: none !important;
-    min-width: max-content !important;
-    width: 100% !important;
-    letter-spacing: .01em !important;
-    transition: background .18s ease, color .18s ease !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button:hover {
-    background: #F9FAFB !important;
-    color: #111827 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-/* Logo (first col) */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button {
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    color: #111827 !important;
-    letter-spacing: -.03em !important;
-    padding: 7px 20px 7px 4px !important;
-    background: transparent !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button:hover {
-    background: transparent !important;
-    color: #3B82F6 !important;
-}
-/* Sign Out (last col) */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button {
-    color: #DC2626 !important;
-    border: 1.5px solid #FECACA !important;
-    padding: 6px 14px !important;
-    background: #FFF5F5 !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button:hover {
-    background: #FEE2E2 !important;
-    border-color: #FCA5A5 !important;
-    color: #B91C1C !important;
+/* ══ NAVBAR — hidden routing rows ══════════════════════════ */
+div[data-testid="stHorizontalBlock"]:has(button[title="__logo__"]),
+div[data-testid="stHorizontalBlock"]:has(button[title="landing"]),
+div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
+    height: 0 !important; overflow: hidden !important;
+    visibility: hidden !important; pointer-events: none !important;
+    position: absolute !important; margin: 0 !important; padding: 0 !important;
+    max-height: 0 !important; opacity: 0 !important;
 }
 
 /* ══ HERO ════════════════════════════════════════════════════ */
@@ -603,6 +536,19 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 ::-webkit-scrollbar-track { background: #F9FAFB; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+
+/* ══ HIDE ROUTING BUTTON ROW ═════════════════════════════════ */
+[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="__logo__"]),
+[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="login"]),
+[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="register"]) {
+    display: none !important;
+    height: 0 !important;
+    overflow: hidden !important;
+    visibility: hidden !important;
+    pointer-events: none !important;
+    position: absolute !important;
+    opacity: 0 !important;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -832,18 +778,19 @@ def render_navbar():
     padding: 0 24px; height: 58px;
     font-family: 'Inter', sans-serif;
 }}
-/* Logo — gradient, stands alone */
+/* Logo — Collab+AI black, Skill blue */
 .csn-logo {{
-    font-size: 17px; font-weight: 800; letter-spacing: -.03em;
-    background: linear-gradient(135deg,#3B82F6 0%,#8B5CF6 55%,#EC4899 100%);
-    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
-    background-clip: text;
+    font-size: 22px; font-weight: 800; letter-spacing: -.03em;
     white-space: nowrap; flex-shrink: 0;
-    text-decoration: none; cursor: pointer;
-    padding-right: 12px; transition: opacity .15s;
+    text-decoration: none !important; cursor: pointer;
+    padding-right: 16px; transition: opacity .15s;
     border-right: 1px solid #E5E7EB; margin-right: 4px;
+    color: #111827;
 }}
-.csn-logo:hover {{ opacity: .75; }}
+.csn-logo:hover {{ opacity: .75; text-decoration: none !important; }}
+.csn-logo-collab {{ color: #111827; }}
+.csn-logo-skill  {{ color: #3B82F6; }}
+.csn-logo-ai     {{ color: #111827; }}
 /* Center links */
 .csn-center {{
     display: flex; align-items: center; gap: 2px;
@@ -899,18 +846,21 @@ def render_navbar():
     transform: translateY(-1px);
 }}
 /* Hide routing button row completely */
+#csn-rt,
 #csn-rt + div[data-testid="element-container"],
-#csn-rt ~ div[data-testid="stHorizontalBlock"] {{
+#csn-rt ~ div[data-testid="stHorizontalBlock"],
+#csn-rt ~ div[data-testid="stHorizontalBlock"] * {{
     height: 0 !important; overflow: hidden !important;
     visibility: hidden !important; pointer-events: none !important;
     position: absolute !important; margin: 0 !important; padding: 0 !important;
+    max-height: 0 !important; opacity: 0 !important; display: none !important;
 }}
 </style>
 
 <div class="csn-bar">
     <a class="csn-logo" href="#"
        onclick="document.querySelector('.stButton button[title=\\"__logo__\\"]')?.click();return false;">
-        CollabSkill AI{admin_pill}
+        <span class="csn-logo-collab">Collab</span><span class="csn-logo-skill">Skill</span><span class="csn-logo-ai"> AI</span>{admin_pill}
     </a>
     <div class="csn-center">{center_html}</div>
     <div class="csn-right">{right_html}</div>
