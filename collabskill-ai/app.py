@@ -1290,6 +1290,15 @@ def page_register():
 #  USER DASHBOARD
 # ═══════════════════════════════════════════════════════════════
 def page_dashboard():
+    
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     require_login()
     if is_admin(): go("admin_dashboard"); return
 
