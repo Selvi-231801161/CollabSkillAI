@@ -287,6 +287,16 @@ label, .stTextInput label, .stTextArea label,
     font-size: 26px !important;
     font-weight: 800 !important;
 }
+div[data-testid="stHorizontalBlock"] {
+    background: transparent !important;
+    box-shadow: none !important;
+    padding: 0 !important;
+    margin: 0 !important;
+}
+
+div[data-testid="stHorizontalBlock"] > div {
+    background: transparent !important;
+}
 
 /* ══ EXPANDER ═══════════════════════════════════════════════ */
 .streamlit-expanderHeader {
