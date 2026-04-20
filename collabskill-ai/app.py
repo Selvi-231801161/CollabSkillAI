@@ -418,15 +418,7 @@ hr { border-color: #E5E7EB !important; margin: 20px 0 !important; }
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 
-/* ══ NAVBAR — hidden routing rows ══════════════════════════ */
-div[data-testid="stHorizontalBlock"]:has(button[title="__logo__"]),
-div[data-testid="stHorizontalBlock"]:has(button[title="landing"]),
-div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
-    height: 0 !important; overflow: hidden !important;
-    visibility: hidden !important; pointer-events: none !important;
-    position: absolute !important; margin: 0 !important; padding: 0 !important;
-    max-height: 0 !important; opacity: 0 !important;
-}
+/* ══ NAVBAR — styling handled inside render_navbar() ═════════ */
 
 /* ══ HERO ════════════════════════════════════════════════════ */
 .hero-wrap { text-align: center; padding: 64px 0 40px; }
@@ -536,40 +528,6 @@ div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
 ::-webkit-scrollbar-track { background: #F9FAFB; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-
-/* ══ HIDE ROUTING BUTTON ROW ═════════════════════════════════ */
-[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="__logo__"]),
-[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="login"]),
-[data-testid="stHorizontalBlock"]:has([data-testid="column"] button[title="register"]) {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    position: absolute !important;
-    opacity: 0 !important;
-}
-/* Catch-all: any stHorizontalBlock that contains a button with nav routing titles */
-[data-testid="stHorizontalBlock"]:has(button[title="dashboard"]:not([data-testid="baseButton-secondary"])),
-[data-testid="stHorizontalBlock"]:has(button[title="admin_dashboard"]) {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    visibility: hidden !important;
-    pointer-events: none !important;
-    position: absolute !important;
-    opacity: 0 !important;
-}
-div.csn-hidden-nav ~ div,
-div.csn-hidden-nav + div {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -698,12 +656,8 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Claude.ai-style professional navbar.
-    Logo: far left, standalone gradient — NOT a nav button.
-    Center: clean nav links as HTML (no Streamlit buttons in view).
-    Right: Profile link + Sign Out button.
-    Routing: hidden Streamlit buttons triggered by JS title matching.
-    Zero DeltaGenerator risk.
+    Real Streamlit-button navbar — no JS tricks, no hidden elements.
+    Buttons are styled via CSS to look like a top navigation bar.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -711,241 +665,298 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    # Notification badge inline HTML
-    notif_badge_html = (
-        f"<span style='background:#EF4444;color:#fff;font-size:9px;font-weight:700;"
-        f"border-radius:999px;padding:1px 6px;margin-left:4px;line-height:1.6;"
-        f"vertical-align:middle;display:inline-block;'>{unread}</span>"
-        if unread else ""
-    )
+    # ── Navbar CSS ───────────────────────────────────────────────
+    st.markdown("""
+<style>
+/* ── Navbar container row ── */
+div[data-testid="stHorizontalBlock"].csn-navbar-row {
+    background: rgba(255,255,255,0.97) !important;
+    border-bottom: 1.5px solid #E5E7EB !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06) !important;
+    padding: 0 8px !important;
+    margin-bottom: 24px !important;
+    align-items: center !important;
+    min-height: 62px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
+}
+/* All buttons inside navbar — reset to transparent nav links */
+div.csn-navbar-row .stButton > button {
+    background: transparent !important;
+    color: #6B7280 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 13.5px !important;
+    padding: 6px 10px !important;
+    height: 36px !important;
+    line-height: 1 !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    transition: background .15s, color .15s !important;
+}
+div.csn-navbar-row .stButton > button:hover {
+    background: #F3F4F6 !important;
+    color: #111827 !important;
+    border: none !important;
+    box-shadow: none !important;
+}
+/* Active nav button */
+div.csn-navbar-row .stButton > button.nav-active {
+    color: #111827 !important;
+    font-weight: 700 !important;
+    border-bottom: 2.5px solid #3B82F6 !important;
+    border-radius: 0 !important;
+}
+/* Logo column button */
+div.csn-navbar-row .csn-logo-col .stButton > button {
+    font-size: 20px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.03em !important;
+    color: #111827 !important;
+    padding: 6px 16px 6px 4px !important;
+    border-right: 1.5px solid #E5E7EB !important;
+    border-radius: 0 !important;
+    height: 62px !important;
+    width: 100% !important;
+}
+div.csn-navbar-row .csn-logo-col .stButton > button:hover {
+    background: transparent !important;
+    opacity: 0.75;
+}
+/* Sign out button */
+div.csn-navbar-row .csn-signout-col .stButton > button {
+    color: #DC2626 !important;
+    border: 1.5px solid #FECACA !important;
+    background: #FFF5F5 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    padding: 6px 14px !important;
+}
+div.csn-navbar-row .csn-signout-col .stButton > button:hover {
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
+    color: #B91C1C !important;
+}
+/* Sign in / Get Started for guests */
+div.csn-navbar-row .csn-signin-col .stButton > button {
+    color: #374151 !important;
+    border: 1.5px solid #D1D5DB !important;
+    background: transparent !important;
+    border-radius: 8px !important;
+}
+div.csn-navbar-row .csn-getstarted-col .stButton > button {
+    color: #FFFFFF !important;
+    background: #3B82F6 !important;
+    border: none !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+    box-shadow: 0 2px 8px rgba(59,130,246,.3) !important;
+}
+div.csn-navbar-row .csn-getstarted-col .stButton > button:hover {
+    background: #2563EB !important;
+}
+/* Notification badge on Sessions/Notifications label */
+.nav-notif-badge {
+    background: #EF4444; color: #fff; font-size: 9px; font-weight: 700;
+    border-radius: 999px; padding: 1px 5px; margin-left: 3px;
+    vertical-align: middle; display: inline-block; line-height: 1.6;
+}
+/* Remove all column padding inside navbar */
+div.csn-navbar-row > div[data-testid="column"] {
+    padding: 0 1px !important;
+    display: flex !important;
+    align-items: center !important;
+}
+</style>
+""", unsafe_allow_html=True)
 
-    admin_pill = (
-        "<span style='font-size:9px;background:#EFF6FF;color:#3B82F6;"
-        "border:1px solid #BFDBFE;border-radius:4px;padding:2px 7px;"
-        "font-weight:700;margin-left:8px;'>ADMIN</span>" if is_adm else ""
-    )
+    # ── Render the actual navbar as a styled columns row ─────────
+    st.markdown('<style>/* navbar-marker */</style>', unsafe_allow_html=True)
 
-    # Helper: one HTML nav link
-    def nl(label, page, badge=""):
-        act = cur == page
-        col = "#111827" if act else "#6B7280"
-        fw  = "700"    if act else "500"
-        bb  = "2px solid #3B82F6" if act else "2px solid transparent"
-        # JS finds the hidden button by its title (help) attribute
-        js  = f"document.querySelector('.stButton button[title=\"{page}\"]')?.click();return false;"
-        return (
-            f"<a href='#' onclick=\"{js}\" "
-            f"style='color:{col};font-weight:{fw};font-size:13.5px;text-decoration:none;"
-            f"padding:6px 10px;border-radius:6px;white-space:nowrap;"
-            f"border-bottom:{bb};padding-bottom:4px;"
-            f"transition:color .15s,background .15s;display:inline-flex;align-items:center;"
-            f"'>{label}{badge}</a>"
-        )
-
-    # Build center and right link groups
     if is_guest:
-        center_html = ""
-        right_html  = (
-            "<a href='#' class='csn-ghost' "
-            "onclick=\"document.querySelector('.stButton button[title=\\\"login\\\"]')?.click();return false;\">"
-            "Sign In</a>"
-            "<a href='#' class='csn-solid' "
-            "onclick=\"document.querySelector('.stButton button[title=\\\"register\\\"]')?.click();return false;\">"
-            "Get Started</a>"
-        )
-    elif is_adm:
-        center_html = (
-            nl("Dashboard", "admin_dashboard") +
-            nl("Users",     "admin_users") +
-            nl("All Posts", "admin_tasks") +
-            nl("Browse",    "browse_tasks") +
-            nl("Notifications", "notifications", notif_badge_html)
-        )
-        right_html = (
-            nl("Profile", "profile") +
-            "<a href='#' class='csn-signout' "
-            "onclick=\"document.querySelector('.stButton button[title=\\\"__logout__\\\"]')?.click();return false;\">"
-            "Sign Out</a>"
-        )
+        cols = st.columns([2, 1, 1, 0.01])
+        with cols[0]:
+            st.markdown(
+                "<div style='font-size:20px;font-weight:800;letter-spacing:-.03em;"
+                "color:#111827;padding:0 16px 0 4px;border-right:1.5px solid #E5E7EB;"
+                "height:62px;display:flex;align-items:center;'>"
+                "<span style='color:#111827;'>Collab</span>"
+                "<span style='color:#3B82F6;'>Skill</span>"
+                "<span style='color:#111827;'> AI</span>"
+                "</div>", unsafe_allow_html=True)
+        with cols[1]:
+            if st.button("Sign In", key="nav__login", use_container_width=True):
+                go("login")
+        with cols[2]:
+            if st.button("Get Started", key="nav__register", use_container_width=True):
+                go("register")
+        st.markdown("<div style='margin-bottom:20px;'></div>", unsafe_allow_html=True)
+        return
+
+    # ── Logged-in navbar ─────────────────────────────────────────
+    notif_label = f"Notifications 🔴" if unread else "Notifications"
+
+    if is_adm:
+        nav_items = [
+            ("Dashboard",    "admin_dashboard"),
+            ("Users",        "admin_users"),
+            ("All Posts",    "admin_tasks"),
+            ("Browse",       "browse_tasks"),
+            (notif_label,    "notifications"),
+        ]
     else:
-        center_html = (
-            nl("Home",      "landing") +
-            nl("Dashboard", "dashboard") +
-            nl("Browse",    "browse_tasks") +
-            nl("Post",      "post_task") +
-            nl("Network",   "network") +
-            nl("Projects",  "projects") +
-            nl("Chat",      "chat") +
-            nl("Sessions",  "my_sessions") +
-            nl("Notifications", "notifications", notif_badge_html)
-        )
-        right_html = (
-            nl("Profile", "profile") +
-            "<a href='#' class='csn-signout' "
-            "onclick=\"document.querySelector('.stButton button[title=\\\"__logout__\\\"]')?.click();return false;\">"
-            "Sign Out</a>"
-        )
+        nav_items = [
+            ("Home",         "landing"),
+            ("Dashboard",    "dashboard"),
+            ("Browse",       "browse_tasks"),
+            ("Post",         "post_task"),
+            ("Network",      "network"),
+            ("Projects",     "projects"),
+            ("Chat",         "chat"),
+            ("Sessions",     "my_sessions"),
+            (notif_label,    "notifications"),
+        ]
+
+    # Column widths: logo | nav items... | profile | signout
+    logo_w    = 1.8
+    nav_w     = [0.85] * len(nav_items)
+    right_w   = [0.7, 0.9]  # Profile + Sign Out
+    all_widths = [logo_w] + nav_w + right_w
+
+    cols = st.columns(all_widths)
+
+    # Logo
+    with cols[0]:
+        admin_tag = " 🔑" if is_adm else ""
+        if st.button(f"CollabSkill AI{admin_tag}", key="nav__logo", use_container_width=True):
+            go("landing")
+
+    # Nav items
+    for i, (label, page) in enumerate(nav_items):
+        with cols[i + 1]:
+            if st.button(label, key=f"nav__{page}", use_container_width=True):
+                go(page)
+
+    # Profile
+    with cols[len(nav_items) + 1]:
+        if st.button("Profile", key="nav__profile", use_container_width=True):
+            go("profile")
+
+    # Sign Out
+    with cols[len(nav_items) + 2]:
+        if st.button("Sign Out", key="nav__logout", use_container_width=True):
+            st.session_state.user = None
+            st.session_state.history = []
+            go("landing")
+
+    # ── Active item highlight + logo styling via CSS ─────────────
+    active_page = cur
+    # Build CSS to highlight active button and style logo
+    active_css_rules = []
+    all_pages = [p for _, p in nav_items] + ["profile"]
+    for i, (label, page) in enumerate(nav_items + [("Profile", "profile")]):
+        col_idx = i + 1  # offset by logo col
+        if page == active_page:
+            active_css_rules.append(f"""
+            /* Active: {page} at col index {col_idx} */
+            div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:nth-child({col_idx + 1})
+            .stButton > button {{
+                color: #111827 !important;
+                font-weight: 700 !important;
+                border-bottom: 2.5px solid #3B82F6 !important;
+                border-radius: 0 !important;
+                background: transparent !important;
+            }}""")
 
     st.markdown(f"""
 <style>
-/* ─── Navbar ───────────────────────────────────────── */
-.csn-bar {{
-    position: sticky; top: 0; z-index: 9999;
-    display: flex; align-items: center; gap: 0;
-    background: rgba(255,255,255,0.95);
-    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
-    border-bottom: 1px solid #E5E7EB;
-    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
-    padding: 0 24px; height: 58px;
-    font-family: 'Inter', sans-serif;
+/* ── Navbar row: first stHorizontalBlock ── */
+div[data-testid="stHorizontalBlock"]:first-of-type {{
+    background: rgba(255,255,255,0.97) !important;
+    border-bottom: 1.5px solid #E5E7EB !important;
+    box-shadow: 0 2px 12px rgba(0,0,0,.06) !important;
+    padding: 0 8px !important;
+    margin-bottom: 24px !important;
+    align-items: center !important;
+    min-height: 62px !important;
+    position: sticky !important;
+    top: 0 !important;
+    z-index: 9999 !important;
 }}
-/* Logo — Collab+AI black, Skill blue */
-.csn-logo {{
-    font-size: 22px; font-weight: 800; letter-spacing: -.03em;
-    white-space: nowrap; flex-shrink: 0;
-    text-decoration: none !important; cursor: pointer;
-    padding-right: 16px; transition: opacity .15s;
-    border-right: 1px solid #E5E7EB; margin-right: 4px;
-    color: #111827;
+div[data-testid="stHorizontalBlock"]:first-of-type > div[data-testid="column"] {{
+    padding: 0 1px !important;
+    display: flex !important;
+    align-items: center !important;
 }}
-.csn-logo:hover {{ opacity: .75; text-decoration: none !important; }}
-.csn-logo-collab {{ color: #111827; }}
-.csn-logo-skill  {{ color: #3B82F6; }}
-.csn-logo-ai     {{ color: #111827; }}
-/* Center links */
-.csn-center {{
-    display: flex; align-items: center; gap: 2px;
-    flex: 1; overflow-x: auto; scrollbar-width: none;
-    padding: 0 12px;
+/* All nav buttons */
+div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button {{
+    background: transparent !important;
+    color: #6B7280 !important;
+    border: none !important;
+    border-radius: 6px !important;
+    font-family: 'Inter', sans-serif !important;
+    font-weight: 500 !important;
+    font-size: 13px !important;
+    padding: 6px 8px !important;
+    height: 36px !important;
+    white-space: nowrap !important;
+    box-shadow: none !important;
+    width: 100% !important;
+    transition: background .15s, color .15s !important;
+    overflow: hidden !important;
+    text-overflow: ellipsis !important;
 }}
-.csn-center::-webkit-scrollbar {{ display:none; }}
-.csn-center a:hover {{
+div[data-testid="stHorizontalBlock"]:first-of-type .stButton > button:hover {{
     background: #F3F4F6 !important;
     color: #111827 !important;
-    border-radius: 6px !important;
+    border: none !important;
+    box-shadow: none !important;
 }}
-/* Right */
-.csn-right {{
-    display: flex; align-items: center;
-    gap: 6px; flex-shrink: 0; padding-left: 12px;
-    border-left: 1px solid #E5E7EB;
-}}
-.csn-right a:hover {{
-    background: #F3F4F6 !important;
+/* Logo — col 1 */
+div[data-testid="stHorizontalBlock"]:first-of-type
+> div[data-testid="column"]:nth-child(1) .stButton > button {{
+    font-size: 17px !important;
+    font-weight: 800 !important;
+    letter-spacing: -.03em !important;
     color: #111827 !important;
-    border-radius: 6px !important;
+    border-right: 1.5px solid #E5E7EB !important;
+    border-radius: 0 !important;
+    height: 62px !important;
+    padding: 0 20px 0 4px !important;
+    background: transparent !important;
 }}
-/* Sign Out */
-.csn-signout {{
-    font-size: 13px; font-weight: 600; color: #DC2626 !important;
-    background: #FFF5F5 !important; border: 1.5px solid #FECACA;
-    border-radius: 8px; padding: 6px 14px; text-decoration: none;
-    transition: all .15s; white-space: nowrap; display:inline-block;
+div[data-testid="stHorizontalBlock"]:first-of-type
+> div[data-testid="column"]:nth-child(1) .stButton > button:hover {{
+    background: transparent !important;
+    opacity: 0.7;
+    border: none !important;
+    border-right: 1.5px solid #E5E7EB !important;
+    border-radius: 0 !important;
 }}
-.csn-signout:hover {{
-    background: #FEE2E2 !important; border-color: #FCA5A5 !important;
+/* Sign Out — last col */
+div[data-testid="stHorizontalBlock"]:first-of-type
+> div[data-testid="column"]:last-child .stButton > button {{
+    color: #DC2626 !important;
+    border: 1.5px solid #FECACA !important;
+    background: #FFF5F5 !important;
+    border-radius: 8px !important;
+    font-weight: 600 !important;
+}}
+div[data-testid="stHorizontalBlock"]:first-of-type
+> div[data-testid="column"]:last-child .stButton > button:hover {{
+    background: #FEE2E2 !important;
+    border-color: #FCA5A5 !important;
     color: #B91C1C !important;
 }}
-/* Guest buttons */
-.csn-ghost {{
-    font-size: 13px; font-weight: 500; color: #374151;
-    background: transparent; border: 1.5px solid #D1D5DB;
-    border-radius: 8px; padding: 6px 16px; text-decoration: none;
-    transition: all .15s; white-space: nowrap; display:inline-block;
-}}
-.csn-ghost:hover {{ border-color:#9CA3AF;color:#111827;background:#F9FAFB; }}
-.csn-solid {{
-    font-size: 13px; font-weight: 600; color: #FFFFFF !important;
-    background: #3B82F6; border: none; border-radius: 8px;
-    padding: 7px 18px; text-decoration: none;
-    transition: all .15s; white-space: nowrap; display:inline-block;
-    box-shadow: 0 2px 8px rgba(59,130,246,.3);
-}}
-.csn-solid:hover {{
-    background: #2563EB !important;
-    box-shadow: 0 4px 14px rgba(59,130,246,.45);
-    transform: translateY(-1px);
-}}
-/* Hide routing button row completely — handled by inline CSS in render_navbar */
-</style>
-
-<div class="csn-bar">
-    <a class="csn-logo" href="#"
-       onclick="document.querySelector('.stButton button[title=\\"__logo__\\"]')?.click();return false;">
-        <span class="csn-logo-collab">Collab</span><span class="csn-logo-skill">Skill</span><span class="csn-logo-ai"> AI</span>{admin_pill}
-    </a>
-    <div class="csn-center">{center_html}</div>
-    <div class="csn-right">{right_html}</div>
-</div>
-<div style="height:20px;"></div>
-""", unsafe_allow_html=True)
-
-    # ── Hidden routing buttons ───────────────────────────────
-    if is_guest:
-        routing = [("__logo__","__logo__"),("login","login"),("register","register")]
-    elif is_adm:
-        routing = [("__logo__","__logo__"),("admin_dashboard","admin_dashboard"),
-                   ("admin_users","admin_users"),("admin_tasks","admin_tasks"),
-                   ("browse_tasks","browse_tasks"),("notifications","notifications"),
-                   ("profile","profile"),("__logout__","__logout__")]
-    else:
-        routing = [("__logo__","__logo__"),("landing","landing"),
-                   ("dashboard","dashboard"),("browse_tasks","browse_tasks"),
-                   ("post_task","post_task"),("network","network"),
-                   ("projects","projects"),("chat","chat"),
-                   ("my_sessions","my_sessions"),("notifications","notifications"),
-                   ("profile","profile"),("__logout__","__logout__")]
-
-    # ── Hidden routing buttons — wrapped & fully invisible ──────
-    st.markdown("""
-<style>
-div[data-testid="stVerticalBlock"] > div[data-testid="stVerticalBlockBorderWrapper"]:has(div.csn-hidden-nav),
-div.csn-hidden-nav,
-div.csn-hidden-nav * {
-    all: unset !important;
-    display: none !important;
-    visibility: hidden !important;
-    height: 0 !important;
-    width: 0 !important;
-    overflow: hidden !important;
-    position: absolute !important;
-    pointer-events: none !important;
-    opacity: 0 !important;
-    margin: 0 !important;
-    padding: 0 !important;
-    border: none !important;
-}
-/* Target the stHorizontalBlock that holds our nav buttons */
-[data-testid="stHorizontalBlock"]:has(button[title="__logo__"]),
-[data-testid="stHorizontalBlock"]:has(button[title="login"]),
-[data-testid="stHorizontalBlock"]:has(button[title="admin_dashboard"]) {
-    display: none !important;
-    height: 0 !important;
-    overflow: hidden !important;
-    visibility: hidden !important;
-    position: absolute !important;
-    opacity: 0 !important;
-    pointer-events: none !important;
-    margin: 0 !important;
-    padding: 0 !important;
-}
+/* Active page highlight */
+{"".join(active_css_rules)}
 </style>
 """, unsafe_allow_html=True)
-
-    with st.container():
-        st.markdown('<div class="csn-hidden-nav"></div>', unsafe_allow_html=True)
-        cols = st.columns(len(routing))
-        for col, (key, pg) in zip(cols, routing):
-            with col:
-                if st.button("​", key=f"nav__{pg}", help=pg):  # zero-width space
-                    if pg in ("__logo__", "landing"):
-                        go("landing")
-                    elif pg == "__logout__":
-                        st.session_state.user = None
-                        st.session_state.history = []
-                        go("landing")
-                    else:
-                        go(pg)
 
 
 def page_landing():
