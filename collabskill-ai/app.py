@@ -609,39 +609,39 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 /* ══ FLAT STATS ROW ═════════════════════════════════════════ */
 .stats-flat-row {
     display: flex; align-items: flex-end; gap: 0;
-    padding: 20px 0 24px; margin-bottom: 8px;
+    padding: 28px 0 32px; margin-bottom: 12px;
     border-bottom: 1px solid #F3F4F6;
 }
 .stat-flat-item {
-    padding: 0 28px 0 0; margin-right: 28px;
-    border-right: 1px solid #F3F4F6;
+    padding: 0 36px 0 0; margin-right: 36px;
+    border-right: 1px solid #EBEBEB;
 }
 .stat-flat-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
 .stat-flat-lbl {
-    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    font-size: 11px; font-weight: 700; letter-spacing: .1em;
     text-transform: uppercase; color: #9CA3AF;
-    margin-bottom: 5px;
+    margin-bottom: 8px;
 }
 .stat-flat-val {
-    font-size: 24px; font-weight: 800; color: #111827;
-    line-height: 1; letter-spacing: -.02em;
+    font-size: 36px; font-weight: 800; color: #111827;
+    line-height: 1; letter-spacing: -.03em;
 }
 .stat-flat-val.accent { color: #3B82F6; }
 
 /* ══ PROFILE STRIP — flat, no card ══════════════════════════ */
 .profile-strip {
     display: flex; align-items: center; gap: 14px;
-    padding: 20px 0 16px;
+    padding: 22px 0 18px;
     border-bottom: 1px solid #F3F4F6;
     margin-bottom: 4px;
 }
 .profile-strip-info { flex: 1; }
 .profile-strip-name {
-    font-size: 15px; font-weight: 700; color: #111827;
-    margin-bottom: 2px;
+    font-size: 16px; font-weight: 700; color: #111827;
+    margin-bottom: 3px;
 }
-.profile-strip-skill { font-size: 12px; color: #6B7280; }
-.profile-strip-exp   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+.profile-strip-skill { font-size: 13px; color: #6B7280; }
+.profile-strip-exp   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
 
 /* ══ SCROLLBAR — light ═══════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -899,16 +899,81 @@ def render_navbar():
 
 
 def page_landing():
+    # ── Top bar: logo left + auth buttons right ───────────────
     st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    <style>
+    .lp-topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        padding: 14px 4px 8px;
+        border-bottom: 1px solid #F3F4F6;
+        margin-bottom: 8px;
+    }
+    .lp-topbar-logo {
+        font-size: 20px; font-weight: 900; color: #111827;
+        letter-spacing: -.03em;
+    }
+    .lp-topbar-logo span { color: #3B82F6; }
+    .lp-topbar-btns {
+        display: flex; gap: 8px; align-items: center;
+    }
+    .lp-topbar-btns a.lp-signin {
+        font-size: 13px; font-weight: 500; color: #374151;
+        border: 1px solid #D1D5DB; border-radius: 6px;
+        padding: 5px 14px; text-decoration: none;
+        background: transparent;
+        transition: all .15s;
+        display: inline-block;
+    }
+    .lp-topbar-btns a.lp-signin:hover {
+        border-color: #9CA3AF; color: #111827; background: #F9FAFB;
+    }
+    .lp-topbar-btns a.lp-signup {
+        font-size: 13px; font-weight: 600; color: #FFFFFF;
+        border-radius: 6px; padding: 5px 14px;
+        background: #3B82F6; text-decoration: none;
+        box-shadow: 0 1px 6px rgba(59,130,246,.3);
+        transition: all .15s;
+        display: inline-block;
+    }
+    .lp-topbar-btns a.lp-signup:hover {
+        background: #2563EB;
+    }
+    </style>
+    <div class="lp-topbar">
+        <div class="lp-topbar-logo">
+            Collab<span>Skill</span> AI
+        </div>
+        <div class="lp-topbar-btns">
+            <a class="lp-signin" href="#"
+               onclick="window.parent.document.querySelectorAll('button').forEach(b=>{if(b.innerText.trim()==='nav__login')b.click()});return false;">
+               Sign In</a>
+            <a class="lp-signup" href="#"
+               onclick="window.parent.document.querySelectorAll('button').forEach(b=>{if(b.innerText.trim()==='nav__register')b.click()});return false;">
+               Sign Up</a>
+        </div>
     </div>
     """, unsafe_allow_html=True)
 
-    render_navbar()
+    # Hidden routing buttons for Sign In / Sign Up
+    hc1, hc2 = st.columns(2)
+    with hc1:
+        if st.button(" ", key="nav__login", help="login"):
+            go("login")
+    with hc2:
+        if st.button(" ", key="nav__register", help="register"):
+            go("register")
+    st.markdown("""
+    <style>
+    /* Hide the routing buttons — only logo+buttons bar is visible */
+    div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
+        height: 0 !important; overflow: hidden !important;
+        visibility: hidden !important; pointer-events: none !important;
+        position: absolute !important; margin: 0 !important; padding: 0 !important;
+    }
+    </style>
+    """, unsafe_allow_html=True)
 
     # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
