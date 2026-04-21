@@ -899,96 +899,65 @@ def render_navbar():
 
 
 def page_landing():
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
+
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
     <style>
-    /* ── Landing page base ── */
-    .stApp { background: #FAFBFF !important; }
-    html, body, [class*="css"] { background-color: #FAFBFF !important; }
-
-    /* Subtle gradient mesh background on hero */
-    .lp-hero-bg {
-        position: relative;
-        background: radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,130,246,.08) 0%,transparent 70%);
-        padding: 80px 24px 56px;
-        text-align: center;
-    }
+    /* Landing page: white background */
+    .stApp { background: #FFFFFF !important; }
+    html, body, [class*="css"] { background-color: #FFFFFF !important; }
 
     /* Hero */
-    .lp-hero { max-width: 820px; margin: 0 auto; }
+    .lp-hero {
+        text-align: center;
+        padding:60px 24px 20px;
+        max-width: 820px;
+        margin: 0 auto;
+    }
     .lp-eyebrow {
-        display: inline-flex; align-items: center; gap: 6px;
+        display: inline-block;
         font-size: 11px; font-weight: 700;
-        letter-spacing: .16em; text-transform: uppercase;
+        letter-spacing: .18em; text-transform: uppercase;
         color: #3B82F6;
-        background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.2);
-        border-radius: 999px; padding: 7px 20px;
-        margin-bottom: 36px;
-        box-shadow: 0 0 0 4px rgba(59,130,246,.04);
-    }
-    .lp-eyebrow-dot {
-        width: 6px; height: 6px; border-radius: 50%;
-        background: #3B82F6; flex-shrink: 0;
-        animation: lp-pulse 2s ease-in-out infinite;
-    }
-    @keyframes lp-pulse {
-        0%,100% { opacity:1; transform:scale(1); }
-        50% { opacity:.5; transform:scale(.8); }
+        background: rgba(59,130,246,.1); border: 1px solid #BFDBFE;
+        border-radius: 999px; padding: 6px 18px;
+        margin-bottom: 32px;
     }
     .lp-h1 {
-        font-size: clamp(42px, 6vw, 72px);
-        font-weight: 900; line-height: 1.04;
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
         letter-spacing: -.04em; color: #111827;
         margin: 0 0 6px;
     }
     .lp-gradient {
-        font-size: clamp(42px, 6vw, 72px);
-        font-weight: 900; line-height: 1.04; letter-spacing: -.04em;
-        background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
-        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+        font-size: clamp(38px, 5.5vw, 64px);
+        font-weight: 900; line-height: 1.06;
+        letter-spacing: -.04em;
+        background: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     .lp-sub {
-        font-size: 18px; color: #6B7280;
-        line-height: 1.75; max-width: 540px;
-        margin: 24px auto 0;
-    }
-    .lp-cta-row {
-        display: flex; gap: 14px; justify-content: center;
-        margin-top: 40px; flex-wrap: wrap;
-    }
-    .lp-cta-primary {
-        display: inline-flex; align-items: center; gap: 8px;
-        background: #3B82F6; color: #FFFFFF;
-        font-size: 15px; font-weight: 600;
-        padding: 14px 28px; border-radius: 10px;
-        text-decoration: none;
-        box-shadow: 0 4px 16px rgba(59,130,246,.35);
-        transition: all .2s ease;
-    }
-    .lp-cta-primary:hover {
-        background: #2563EB; transform: translateY(-2px);
-        box-shadow: 0 8px 24px rgba(59,130,246,.45);
-    }
-    .lp-cta-secondary {
-        display: inline-flex; align-items: center; gap: 8px;
-        background: #FFFFFF; color: #374151;
-        font-size: 15px; font-weight: 600;
-        padding: 14px 28px; border-radius: 10px;
-        border: 1.5px solid #E5E7EB; text-decoration: none;
-        transition: all .2s ease;
-    }
-    .lp-cta-secondary:hover {
-        border-color: #D1D5DB; background: #F9FAFB;
-        transform: translateY(-2px);
+        font-size: 17px; color: #808080;
+        line-height: 1.7; max-width: 520px;
+        margin: 22px auto 0;
     }
     .lp-choose {
         font-size: 11px; font-weight: 700;
         letter-spacing: .18em; text-transform: uppercase;
-        color: #9CA3AF; text-align: center;
-        margin: 60px 0 24px;
+        color: #4A4A4A; text-align: center;
+        margin: 48px 0 20px;
     }
 
     /* Mode Cards */
@@ -1076,29 +1045,14 @@ def page_landing():
     }
     </style>
 
-    <div class="lp-hero-bg">
     <div class="lp-hero">
-        <div class="lp-eyebrow">
-            <span class="lp-eyebrow-dot"></span>
-            AI-Powered Skill Exchange Platform
-        </div>
+        <div class="lp-eyebrow">AI-Powered Skill Exchange Platform</div>
         <div class="lp-h1">Connect. Collaborate.</div>
         <div class="lp-gradient">Exchange Skills Smarter.</div>
         <div class="lp-sub">
             An intelligent platform that matches you with the right people —
             connecting skill providers with those who need them.
         </div>
-        <div class="lp-cta-row">
-            <a href="#" class="lp-cta-primary"
-               onclick="document.querySelector('.stButton button[title=\"register\"]')?.click();return false;">
-                Start for Free →
-            </a>
-            <a href="#" class="lp-cta-secondary"
-               onclick="document.querySelector('.stButton button[title=\"browse_tasks\"]')?.click();return false;">
-                Browse Tasks
-            </a>
-        </div>
-    </div>
     </div>
     <div class="lp-choose">Choose how you want to get started</div>
     """, unsafe_allow_html=True)
@@ -1169,7 +1123,6 @@ def page_landing():
     # ── Platform Features ─────────────────────────────────────
     st.markdown("<div class='lp-section-lbl'>Platform Features</div>", unsafe_allow_html=True)
     fc1, fc2, fc3 = st.columns(3)
-    fc4, fc5, fc6 = st.columns(3)
     features = [
         ("🤖", "AI Matching",         "#EFF6FF", "#2563EB",
          "Our AI reads task requirements and user profiles to surface the best skill matches instantly."),
@@ -1178,7 +1131,7 @@ def page_landing():
         ("⚡", "Dual Mode Platform",  "#F0FDFA", "#0D9488",
          "Switch between Task Collaboration and Knowledge Exchange anytime — one platform, two modes."),
     ]
-    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3, fc4, fc5, fc6], features):
+    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3], features):
         col.markdown(f"""
         <div class="lp-feature">
             <div class="lp-feature-icon" style="background:{bg};">
@@ -1222,6 +1175,14 @@ def page_landing():
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
 def page_login():
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
 
@@ -1267,6 +1228,14 @@ def page_login():
 #  REGISTER  — cascading skill dropdowns OUTSIDE form
 # ═══════════════════════════════════════════════════════════════
 def page_register():
+    st.markdown("""
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
+    </div>
+    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
