@@ -133,8 +133,8 @@ st.markdown("""
 header, #MainMenu, footer { visibility: hidden; }
 .block-container {
     padding-top: 0 !important;
-    max-width: 1300px;
-    padding-bottom: 60px !important;
+    max-width: 1280px;
+    padding-bottom: 48px !important;
 }
 html, body, .stApp, [class*="css"] {
     font-family: 'Inter', sans-serif !important;
@@ -211,28 +211,28 @@ label, .stTextInput label, .stTextArea label,
     box-shadow: 0 4px 16px rgba(59,130,246,.40) !important;
 }
 
-/* Regular buttons */
+/* Regular buttons — minimal ghost style */
 .stButton > button {
-    background: #F9FAFB !important;
+    background: transparent !important;
     color: #374151 !important;
-    border: 1.5px solid #E5E7EB !important;
-    border-radius: 10px !important;
+    border: 1px solid #E5E7EB !important;
+    border-radius: 7px !important;
     font-weight: 500 !important;
     font-size: 13px !important;
-    padding: 8px 16px !important;
-    height: 38px !important;
+    padding: 7px 16px !important;
+    height: 36px !important;
     line-height: 1.2 !important;
     white-space: nowrap !important;
-    overflow: hidden !important;
-    text-overflow: ellipsis !important;
-    transition: all 0.2s ease-in-out !important;
-    box-shadow: 0 1px 2px rgba(0,0,0,.05) !important;
+    overflow: visible !important;
+    text-overflow: clip !important;
+    transition: all 0.18s ease !important;
+    box-shadow: none !important;
 }
 .stButton > button:hover {
-    background: #F3F4F6 !important;
+    background: #F9FAFB !important;
     color: #111827 !important;
     border-color: #D1D5DB !important;
-    box-shadow: 0 2px 8px rgba(0,0,0,.08) !important;
+    box-shadow: none !important;
 }
 
 /* Accent button — blue */
@@ -261,51 +261,35 @@ label, .stTextInput label, .stTextArea label,
     border-color: #FCA5A5 !important;
 }
 
-/* ══ METRICS ════════════════════════════════════════════════ */
+/* ══ METRICS — flat, no box ═════════════════════════════════ */
 [data-testid="metric-container"] {
     background: transparent !important;
     border: none !important;
-    padding: 10px 10px !important;
-   
+    border-right: 1px solid #F3F4F6 !important;
+    border-radius: 0 !important;
+    padding: 8px 24px 8px 0 !important;
     box-shadow: none !important;
-    
+    transition: none !important;
+}
+[data-testid="metric-container"]:last-child {
+    border-right: none !important;
 }
 [data-testid="metric-container"]:hover {
-    box-shadow: 0 6px 20px rgba(0,0,0,.10) !important;
-    transform: translateY(-2px) !important;
-    
+    box-shadow: none !important;
+    transform: none !important;
+    border-color: #F3F4F6 !important;
 }
 [data-testid="metric-container"] label {
-    color: #6B7280 !important;
-    font-size: 11px !important;
+    color: #9CA3AF !important;
+    font-size: 10px !important;
     font-weight: 700 !important;
     text-transform: uppercase !important;
-    letter-spacing: .08em !important;
+    letter-spacing: .1em !important;
 }
 [data-testid="stMetricValue"] {
-    color: #3B82F6 !important;
-    font-size: 26px !important;
+    color: #111827 !important;
+    font-size: 22px !important;
     font-weight: 800 !important;
-}
-div[data-testid="stHorizontalBlock"] {
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-    margin: 0 !important;
-}
-
-div[data-testid="stHorizontalBlock"] > div {
-    background: transparent !important;
-}
-section.main > div {
-    background: transparent !important;
-}
-
-/* Remove inner container spacing */
-section.main > div > div {
-    background: transparent !important;
-    padding-bottom: 0 !important;
-    margin-bottom: 0 !important;
 }
 
 /* ══ EXPANDER ═══════════════════════════════════════════════ */
@@ -438,82 +422,19 @@ hr { border-color: #E5E7EB !important; margin: 20px 0 !important; }
     letter-spacing: .06em; text-transform: uppercase; margin-bottom: 16px;
 }
 
-/* ══ NAVBAR — Clean white, first stHorizontalBlock ══════════ */
-div[data-testid="stHorizontalBlock"]:first-of-type {
-    background: #FFFFFF !important;
-    border-bottom: 1px solid #E5E7EB !important;
-    box-shadow: 0 1px 0 #F3F4F6, 0 2px 12px rgba(0,0,0,.06) !important;
-    padding: 0 16px !important;
-    margin-bottom: 28px !important;
-    align-items: center !important;
-    min-height: 60px !important;
-    position: sticky !important;
-    top: 0 !important;
-    z-index: 9999 !important;
+
+/* ══ HIDE ROUTING BUTTON ROW (navbar uses pure HTML now) ════ */
+#csn-rt ~ div,
+#csn-rt + div,
+#csn-rt ~ div[data-testid="stHorizontalBlock"],
+#csn-rt ~ div[data-testid="element-container"] {
+    height: 0 !important; max-height: 0 !important;
+    overflow: hidden !important; visibility: hidden !important;
+    pointer-events: none !important; position: absolute !important;
+    margin: 0 !important; padding: 0 !important; opacity: 0 !important;
 }
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"] {
-    padding: 0 1px !important;
-    display: flex !important;
-    align-items: center !important;
-}
-/* All nav links */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button {
-    background: transparent !important;
-    color: #6B7280 !important;
-    border: none !important;
-    border-radius: 8px !important;
-    font-family: 'Inter', sans-serif !important;
-    font-weight: 500 !important;
-    font-size: 13.5px !important;
-    padding: 7px 12px !important;
-    height: 40px !important;
-    white-space: nowrap !important;
-    overflow: visible !important;
-    text-overflow: clip !important;
-    box-shadow: none !important;
-    min-width: max-content !important;
-    width: 100% !important;
-    letter-spacing: .01em !important;
-    transition: background .18s ease, color .18s ease !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    .stButton > button:hover {
-    background: #F9FAFB !important;
-    color: #111827 !important;
-    border: none !important;
-    box-shadow: none !important;
-}
-/* Logo (first col) */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button {
-    font-size: 16px !important;
-    font-weight: 800 !important;
-    color: #111827 !important;
-    letter-spacing: -.03em !important;
-    padding: 7px 20px 7px 4px !important;
-    background: transparent !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:first-child .stButton > button:hover {
-    background: transparent !important;
-    color: #3B82F6 !important;
-}
-/* Sign Out (last col) */
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button {
-    color: #DC2626 !important;
-    border: 1.5px solid #FECACA !important;
-    padding: 6px 14px !important;
-    background: #FFF5F5 !important;
-}
-div[data-testid="stHorizontalBlock"]:first-of-type
-    > div[data-testid="column"]:last-child .stButton > button:hover {
-    background: #FEE2E2 !important;
-    border-color: #FCA5A5 !important;
-    color: #B91C1C !important;
-}
+
+
 
 /* ══ HERO ════════════════════════════════════════════════════ */
 .hero-wrap { text-align: center; padding: 64px 0 40px; }
@@ -618,46 +539,49 @@ div[data-testid="stHorizontalBlock"]:first-of-type
     margin-left: 5px; vertical-align: middle;
 }
 
+
+/* ══ FLAT STATS ROW ═════════════════════════════════════════ */
+.stats-flat-row {
+    display: flex; align-items: flex-end; gap: 0;
+    padding: 20px 0 24px; margin-bottom: 8px;
+    border-bottom: 1px solid #F3F4F6;
+}
+.stat-flat-item {
+    padding: 0 28px 0 0; margin-right: 28px;
+    border-right: 1px solid #F3F4F6;
+}
+.stat-flat-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
+.stat-flat-lbl {
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
+    text-transform: uppercase; color: #9CA3AF;
+    margin-bottom: 5px;
+}
+.stat-flat-val {
+    font-size: 24px; font-weight: 800; color: #111827;
+    line-height: 1; letter-spacing: -.02em;
+}
+.stat-flat-val.accent { color: #3B82F6; }
+
+/* ══ PROFILE STRIP — flat, no card ══════════════════════════ */
+.profile-strip {
+    display: flex; align-items: center; gap: 14px;
+    padding: 20px 0 16px;
+    border-bottom: 1px solid #F3F4F6;
+    margin-bottom: 4px;
+}
+.profile-strip-info { flex: 1; }
+.profile-strip-name {
+    font-size: 15px; font-weight: 700; color: #111827;
+    margin-bottom: 2px;
+}
+.profile-strip-skill { font-size: 12px; color: #6B7280; }
+.profile-strip-exp   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
+
 /* ══ SCROLLBAR — light ═══════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
 ::-webkit-scrollbar-track { background: #F9FAFB; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
-section.main > div > div > div > div[data-testid="stHorizontalBlock"]:has(.lp-feature) {
-    background: transparent !important;
-    box-shadow: none !important;
-    padding: 0 !important;
-div[data-testid="stHorizontalBlock"] {
-    border-bottom: none !important;
-    box-shadow: none !important;
-    background: transparent !important;
-}
-
-/* Remove Streamlit divider */
-hr {
-    display: none !important;
-}
-}
-section.main div[data-testid="stHorizontalBlock"] {
-    background: transparent !important;
-    box-shadow: none !important;
-    border: none !important;
-}
-
-/* 🔥 REMOVE INNER COLUMN BACKGROUND */
-section.main div[data-testid="stHorizontalBlock"] > div {
-    background: transparent !important;
-}
-
-/* 🔥 REMOVE ANY DEFAULT BOTTOM LINE */
-section.main div[data-testid="stHorizontalBlock"]::after {
-    display: none !important;
-}
-
-/* 🔥 REMOVE STREAMLIT BLOCK CONTAINER BG JUST FOR SAFETY */
-section.main .block-container > div {
-    background: transparent !important;
-}
 </style>
 """, unsafe_allow_html=True)
 
@@ -786,11 +710,12 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Premium dark navbar — black bg, white text.
-    Same safe pattern: one flat column row, no wrapper divs.
-    Active page = white text + subtle highlight.
-    Sign Out = red tint (last col via CSS nth-child).
-    Notification badge rendered in button label.
+    Claude.ai-style professional navbar.
+    Logo: far left, standalone gradient — NOT a nav button.
+    Center: clean nav links as HTML (no Streamlit buttons in view).
+    Right: Profile link + Sign Out button.
+    Routing: hidden Streamlit buttons triggered by JS title matching.
+    Zero DeltaGenerator risk.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -798,110 +723,208 @@ def render_navbar():
     is_guest = not logged_in()
     is_adm   = is_admin()
 
-    # Notification label with badge count
-    notif_lbl = f"Notifs  🔴{unread}" if unread else "Notifs"
+    # Notification badge inline HTML
+    notif_badge_html = (
+        f"<span style='background:#EF4444;color:#fff;font-size:9px;font-weight:700;"
+        f"border-radius:999px;padding:1px 6px;margin-left:4px;line-height:1.6;"
+        f"vertical-align:middle;display:inline-block;'>{unread}</span>"
+        if unread else ""
+    )
 
-    # ── Build nav list ───────────────────────────────────────
+    admin_pill = (
+        "<span style='font-size:9px;background:#EFF6FF;color:#3B82F6;"
+        "border:1px solid #BFDBFE;border-radius:4px;padding:2px 7px;"
+        "font-weight:700;margin-left:8px;'>ADMIN</span>" if is_adm else ""
+    )
+
+    # Helper: one HTML nav link
+    def nl(label, page, badge=""):
+        act = cur == page
+        col = "#111827" if act else "#6B7280"
+        fw  = "700"    if act else "500"
+        bb  = "2px solid #3B82F6" if act else "2px solid transparent"
+        # JS finds the hidden button by its title (help) attribute
+        js  = f"document.querySelector('.stButton button[title=\"{page}\"]')?.click();return false;"
+        return (
+            f"<a href='#' onclick=\"{js}\" "
+            f"style='color:{col};font-weight:{fw};font-size:13.5px;text-decoration:none;"
+            f"padding:6px 10px;border-radius:6px;white-space:nowrap;"
+            f"border-bottom:{bb};padding-bottom:4px;"
+            f"transition:color .15s,background .15s;display:inline-flex;align-items:center;"
+            f"'>{label}{badge}</a>"
+        )
+
+    # Build center and right link groups
     if is_guest:
-        nav_items = [
-            
-            ("Sign In",        "login"),
-            ("Sign Up",        "register"),
-        ]
+        center_html = ""
+        right_html  = (
+            "<a href='#' class='csn-ghost' "
+            "onclick=\"document.querySelector('.stButton button[title=\\\"login\\\"]')?.click();return false;\">"
+            "Sign In</a>"
+            "<a href='#' class='csn-solid' "
+            "onclick=\"document.querySelector('.stButton button[title=\\\"register\\\"]')?.click();return false;\">"
+            "Get Started</a>"
+        )
     elif is_adm:
-        nav_items = [
-            
-            ("Dashboard",       "admin_dashboard"),
-            ("Users",           "admin_users"),
-            ("All Posts",       "admin_tasks"),
-            ("Browse",          "browse_tasks"),
-            (notif_lbl,         "notifications"),
-            ("Profile",         "profile"),
-            ("Sign Out",        "__logout__"),
-        ]
+        center_html = (
+            nl("Dashboard", "admin_dashboard") +
+            nl("Users",     "admin_users") +
+            nl("All Posts", "admin_tasks") +
+            nl("Browse",    "browse_tasks") +
+            nl("Notifications", "notifications", notif_badge_html)
+        )
+        right_html = (
+            nl("Profile", "profile") +
+            "<a href='#' class='csn-signout' "
+            "onclick=\"document.querySelector('.stButton button[title=\\\"__logout__\\\"]')?.click();return false;\">"
+            "Sign Out</a>"
+        )
     else:
-        nav_items = [
-           
-            ("Home",            "landing"),
-            ("Dashboard",       "dashboard"),
-            ("Browse",          "browse_tasks"),
-            ("Post",            "post_task"),
-            ("Network",         "network"),
-            ("Projects",        "projects"),
-            ("Chat",            "chat"),
-            ("Sessions",        "my_sessions"),
-            (notif_lbl,         "notifications"),
-            ("Profile",         "profile"),
-            ("Sign Out",        "__logout__"),
-        ]
-
-    total = len(nav_items)
-
-    # ── Active-page highlight via nth-child ─────────────────
-    active_idx = 0
-    for i, (_, pg) in enumerate(nav_items):
-        if pg == cur:
-            active_idx = i + 1
-            break
-
-    # Dynamic CSS for active page + guest Sign Up blue
-    guest_extra = ""
-    if is_guest:
-        guest_extra = """
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:last-child .stButton > button {
-            background: #2563EB !important;
-            color: #FFFFFF !important;
-            border: none !important;
-            border-radius: 8px !important;
-            font-weight: 600 !important;
-            padding: 7px 18px !important;
-        }
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:last-child .stButton > button:hover {
-            background: #1D4ED8 !important;
-            color: #FFFFFF !important;
-        }
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-last-child(2) .stButton > button {
-            border: 1.5px solid #D1D5DB !important;
-            color: #374151 !important;
-        }
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-last-child(2) .stButton > button:hover {
-            border-color: #9CA3AF !important;
-            color: #111827 !important;
-            background: #F9FAFB !important;
-        }
-        """
-
-    active_css = ""
-    if active_idx > 0:
-        active_css = f"""
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-child({active_idx}) .stButton > button {{
-            color: #3B82F6 !important;
-            background: #EFF6FF !important;
-            font-weight: 600 !important;
-        }}
-        """
+        center_html = (
+            nl("Home",      "landing") +
+            nl("Dashboard", "dashboard") +
+            nl("Browse",    "browse_tasks") +
+            nl("Post",      "post_task") +
+            nl("Network",   "network") +
+            nl("Projects",  "projects") +
+            nl("Chat",      "chat") +
+            nl("Sessions",  "my_sessions") +
+            nl("Notifications", "notifications", notif_badge_html)
+        )
+        right_html = (
+            nl("Profile", "profile") +
+            "<a href='#' class='csn-signout' "
+            "onclick=\"document.querySelector('.stButton button[title=\\\"__logout__\\\"]')?.click();return false;\">"
+            "Sign Out</a>"
+        )
 
     st.markdown(f"""
 <style>
-{active_css}
-{guest_extra}
+/* ─── Navbar ───────────────────────────────────────── */
+.csn-bar {{
+    position: sticky; top: 0; z-index: 9999;
+    display: flex; align-items: center; gap: 0;
+    background: rgba(255,255,255,0.95);
+    backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px);
+    border-bottom: 1px solid #E5E7EB;
+    box-shadow: 0 1px 0 rgba(0,0,0,.04), 0 4px 16px rgba(0,0,0,.04);
+    padding: 0 24px; height: 58px;
+    font-family: 'Inter', sans-serif;
+}}
+/* Logo — gradient, stands alone */
+.csn-logo {{
+    font-size: 17px; font-weight: 800; letter-spacing: -.03em;
+    background: linear-gradient(135deg,#3B82F6 0%,#8B5CF6 55%,#EC4899 100%);
+    -webkit-background-clip: text; -webkit-text-fill-color: transparent;
+    background-clip: text;
+    white-space: nowrap; flex-shrink: 0;
+    text-decoration: none; cursor: pointer;
+    padding-right: 12px; transition: opacity .15s;
+    border-right: 1px solid #E5E7EB; margin-right: 4px;
+}}
+.csn-logo:hover {{ opacity: .75; }}
+/* Center links */
+.csn-center {{
+    display: flex; align-items: center; gap: 2px;
+    flex: 1; overflow-x: auto; scrollbar-width: none;
+    padding: 0 12px;
+}}
+.csn-center::-webkit-scrollbar {{ display:none; }}
+.csn-center a:hover {{
+    background: #F3F4F6 !important;
+    color: #111827 !important;
+    border-radius: 6px !important;
+}}
+/* Right */
+.csn-right {{
+    display: flex; align-items: center;
+    gap: 6px; flex-shrink: 0; padding-left: 12px;
+    border-left: 1px solid #E5E7EB;
+}}
+.csn-right a:hover {{
+    background: #F3F4F6 !important;
+    color: #111827 !important;
+    border-radius: 6px !important;
+}}
+/* Sign Out */
+.csn-signout {{
+    font-size: 13px; font-weight: 600; color: #DC2626 !important;
+    background: #FFF5F5 !important; border: 1.5px solid #FECACA;
+    border-radius: 8px; padding: 6px 14px; text-decoration: none;
+    transition: all .15s; white-space: nowrap; display:inline-block;
+}}
+.csn-signout:hover {{
+    background: #FEE2E2 !important; border-color: #FCA5A5 !important;
+    color: #B91C1C !important;
+}}
+/* Guest buttons */
+.csn-ghost {{
+    font-size: 13px; font-weight: 500; color: #374151;
+    background: transparent; border: 1.5px solid #D1D5DB;
+    border-radius: 8px; padding: 6px 16px; text-decoration: none;
+    transition: all .15s; white-space: nowrap; display:inline-block;
+}}
+.csn-ghost:hover {{ border-color:#9CA3AF;color:#111827;background:#F9FAFB; }}
+.csn-solid {{
+    font-size: 13px; font-weight: 600; color: #FFFFFF !important;
+    background: #3B82F6; border: none; border-radius: 8px;
+    padding: 7px 18px; text-decoration: none;
+    transition: all .15s; white-space: nowrap; display:inline-block;
+    box-shadow: 0 2px 8px rgba(59,130,246,.3);
+}}
+.csn-solid:hover {{
+    background: #2563EB !important;
+    box-shadow: 0 4px 14px rgba(59,130,246,.45);
+    transform: translateY(-1px);
+}}
+/* Hide routing button row completely */
+#csn-rt ~ div,
+#csn-rt + div,
+#csn-rt ~ div[data-testid="stHorizontalBlock"],
+#csn-rt ~ div[data-testid="element-container"] {
+    height: 0 !important; max-height: 0 !important;
+    overflow: hidden !important; visibility: hidden !important;
+    pointer-events: none !important; position: absolute !important;
+    margin: 0 !important; padding: 0 !important; opacity: 0 !important;
+}
 </style>
+
+<div class="csn-bar">
+    <a class="csn-logo" href="#"
+       onclick="document.querySelector('.stButton button[title=\\"__logo__\\"]')?.click();return false;">
+        CollabSkill AI{admin_pill}
+    </a>
+    <div class="csn-center">{center_html}</div>
+    <div class="csn-right">{right_html}</div>
+</div>
+<div style="height:20px;"></div>
 """, unsafe_allow_html=True)
 
-    # ── Flat column row — ZERO wrapper divs ─────────────────
-    cols = st.columns([2.0] + [1.0] * (total - 1))
-    for col, (lbl, pg) in zip(cols, nav_items):
+    # ── Hidden routing buttons ───────────────────────────────
+    if is_guest:
+        routing = [("__logo__","__logo__"),("login","login"),("register","register")]
+    elif is_adm:
+        routing = [("__logo__","__logo__"),("admin_dashboard","admin_dashboard"),
+                   ("admin_users","admin_users"),("admin_tasks","admin_tasks"),
+                   ("browse_tasks","browse_tasks"),("notifications","notifications"),
+                   ("profile","profile"),("__logout__","__logout__")]
+    else:
+        routing = [("__logo__","__logo__"),("landing","landing"),
+                   ("dashboard","dashboard"),("browse_tasks","browse_tasks"),
+                   ("post_task","post_task"),("network","network"),
+                   ("projects","projects"),("chat","chat"),
+                   ("my_sessions","my_sessions"),("notifications","notifications"),
+                   ("profile","profile"),("__logout__","__logout__")]
+
+    st.markdown('<div id="csn-rt"></div>', unsafe_allow_html=True)
+    cols = st.columns(len(routing))
+    for col, (key, pg) in zip(cols, routing):
         with col:
-            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+            if st.button(" ", key=f"nav__{pg}", help=pg):
                 if pg in ("__logo__", "landing"):
                     go("landing")
                 elif pg == "__logout__":
-                    st.session_state.user    = None
+                    st.session_state.user = None
                     st.session_state.history = []
                     go("landing")
                 else:
@@ -909,65 +932,96 @@ def render_navbar():
 
 
 def page_landing():
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
-
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
     <style>
-    /* Landing page: white background */
-    .stApp { background: #FFFFFF !important; }
-    html, body, [class*="css"] { background-color: #FFFFFF !important; }
+    /* ── Landing page base ── */
+    .stApp { background: #FAFBFF !important; }
+    html, body, [class*="css"] { background-color: #FAFBFF !important; }
+
+    /* Subtle gradient mesh background on hero */
+    .lp-hero-bg {
+        position: relative;
+        background: radial-gradient(ellipse 80% 50% at 50% -10%,rgba(59,130,246,.08) 0%,transparent 70%);
+        padding: 80px 24px 56px;
+        text-align: center;
+    }
 
     /* Hero */
-    .lp-hero {
-        text-align: center;
-        padding:60px 24px 20px;
-        max-width: 820px;
-        margin: 0 auto;
-    }
+    .lp-hero { max-width: 820px; margin: 0 auto; }
     .lp-eyebrow {
-        display: inline-block;
+        display: inline-flex; align-items: center; gap: 6px;
         font-size: 11px; font-weight: 700;
-        letter-spacing: .18em; text-transform: uppercase;
+        letter-spacing: .16em; text-transform: uppercase;
         color: #3B82F6;
-        background: rgba(59,130,246,.1); border: 1px solid #BFDBFE;
-        border-radius: 999px; padding: 6px 18px;
-        margin-bottom: 32px;
+        background: rgba(59,130,246,.08); border: 1px solid rgba(59,130,246,.2);
+        border-radius: 999px; padding: 7px 20px;
+        margin-bottom: 36px;
+        box-shadow: 0 0 0 4px rgba(59,130,246,.04);
+    }
+    .lp-eyebrow-dot {
+        width: 6px; height: 6px; border-radius: 50%;
+        background: #3B82F6; flex-shrink: 0;
+        animation: lp-pulse 2s ease-in-out infinite;
+    }
+    @keyframes lp-pulse {
+        0%,100% { opacity:1; transform:scale(1); }
+        50% { opacity:.5; transform:scale(.8); }
     }
     .lp-h1 {
-        font-size: clamp(38px, 5.5vw, 64px);
-        font-weight: 900; line-height: 1.06;
+        font-size: clamp(42px, 6vw, 72px);
+        font-weight: 900; line-height: 1.04;
         letter-spacing: -.04em; color: #111827;
         margin: 0 0 6px;
     }
     .lp-gradient {
-        font-size: clamp(38px, 5.5vw, 64px);
-        font-weight: 900; line-height: 1.06;
-        letter-spacing: -.04em;
-        background: linear-gradient(135deg, #2563EB 0%, #4F46E5 55%, #7C3AED 100%);
-        -webkit-background-clip: text;
-        -webkit-text-fill-color: transparent;
+        font-size: clamp(42px, 6vw, 72px);
+        font-weight: 900; line-height: 1.04; letter-spacing: -.04em;
+        background: linear-gradient(135deg, #3B82F6 0%, #8B5CF6 50%, #EC4899 100%);
+        -webkit-background-clip: text; -webkit-text-fill-color: transparent;
         background-clip: text;
     }
     .lp-sub {
-        font-size: 17px; color: #808080;
-        line-height: 1.7; max-width: 520px;
-        margin: 22px auto 0;
+        font-size: 18px; color: #6B7280;
+        line-height: 1.75; max-width: 540px;
+        margin: 24px auto 0;
+    }
+    .lp-cta-row {
+        display: flex; gap: 14px; justify-content: center;
+        margin-top: 40px; flex-wrap: wrap;
+    }
+    .lp-cta-primary {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #3B82F6; color: #FFFFFF;
+        font-size: 15px; font-weight: 600;
+        padding: 14px 28px; border-radius: 10px;
+        text-decoration: none;
+        box-shadow: 0 4px 16px rgba(59,130,246,.35);
+        transition: all .2s ease;
+    }
+    .lp-cta-primary:hover {
+        background: #2563EB; transform: translateY(-2px);
+        box-shadow: 0 8px 24px rgba(59,130,246,.45);
+    }
+    .lp-cta-secondary {
+        display: inline-flex; align-items: center; gap: 8px;
+        background: #FFFFFF; color: #374151;
+        font-size: 15px; font-weight: 600;
+        padding: 14px 28px; border-radius: 10px;
+        border: 1.5px solid #E5E7EB; text-decoration: none;
+        transition: all .2s ease;
+    }
+    .lp-cta-secondary:hover {
+        border-color: #D1D5DB; background: #F9FAFB;
+        transform: translateY(-2px);
     }
     .lp-choose {
         font-size: 11px; font-weight: 700;
         letter-spacing: .18em; text-transform: uppercase;
-        color: #4A4A4A; text-align: center;
-        margin: 48px 0 20px;
+        color: #9CA3AF; text-align: center;
+        margin: 60px 0 24px;
     }
 
     /* Mode Cards */
@@ -1055,14 +1109,29 @@ def page_landing():
     }
     </style>
 
+    <div class="lp-hero-bg">
     <div class="lp-hero">
-        <div class="lp-eyebrow">AI-Powered Skill Exchange Platform</div>
+        <div class="lp-eyebrow">
+            <span class="lp-eyebrow-dot"></span>
+            AI-Powered Skill Exchange Platform
+        </div>
         <div class="lp-h1">Connect. Collaborate.</div>
         <div class="lp-gradient">Exchange Skills Smarter.</div>
         <div class="lp-sub">
             An intelligent platform that matches you with the right people —
             connecting skill providers with those who need them.
         </div>
+        <div class="lp-cta-row">
+            <a href="#" class="lp-cta-primary"
+               onclick="document.querySelector('.stButton button[title=\"register\"]')?.click();return false;">
+                Start for Free →
+            </a>
+            <a href="#" class="lp-cta-secondary"
+               onclick="document.querySelector('.stButton button[title=\"browse_tasks\"]')?.click();return false;">
+                Browse Tasks
+            </a>
+        </div>
+    </div>
     </div>
     <div class="lp-choose">Choose how you want to get started</div>
     """, unsafe_allow_html=True)
@@ -1133,6 +1202,7 @@ def page_landing():
     # ── Platform Features ─────────────────────────────────────
     st.markdown("<div class='lp-section-lbl'>Platform Features</div>", unsafe_allow_html=True)
     fc1, fc2, fc3 = st.columns(3)
+    fc4, fc5, fc6 = st.columns(3)
     features = [
         ("🤖", "AI Matching",         "#EFF6FF", "#2563EB",
          "Our AI reads task requirements and user profiles to surface the best skill matches instantly."),
@@ -1141,7 +1211,7 @@ def page_landing():
         ("⚡", "Dual Mode Platform",  "#F0FDFA", "#0D9488",
          "Switch between Task Collaboration and Knowledge Exchange anytime — one platform, two modes."),
     ]
-    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3], features):
+    for col, (icon, title, bg, accent, desc) in zip([fc1, fc2, fc3, fc4, fc5, fc6], features):
         col.markdown(f"""
         <div class="lp-feature">
             <div class="lp-feature-icon" style="background:{bg};">
@@ -1185,15 +1255,6 @@ def page_landing():
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
 def page_login():
-    
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
 
@@ -1239,15 +1300,6 @@ def page_login():
 #  REGISTER  — cascading skill dropdowns OUTSIDE form
 # ═══════════════════════════════════════════════════════════════
 def page_register():
-    
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
@@ -1346,15 +1398,6 @@ def page_register():
 #  USER DASHBOARD
 # ═══════════════════════════════════════════════════════════════
 def page_dashboard():
-    
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
     require_login()
     if is_admin(): go("admin_dashboard"); return
 
@@ -1377,37 +1420,41 @@ def page_dashboard():
     open_cnt   = sum(1 for t in my_entries if t["status"] == "open")
     sess_cnt   = count_sessions(u["id"])
 
-    
-    m1, m2, m3, m4, m5, m6 = st.columns(6)
-    m1.metric("My Posts", len(my_entries))
-    m2.metric("Active", open_cnt)
-    m3.metric("Applications", len(my_apps))
-    m4.metric("Trust Score", f"{u['trust_score']}/10")
-    m5.metric("Ratings", u["total_ratings"])
-    m6.metric("Sessions", sess_cnt)
+    # ── Flat stats row — no boxes, pure typography ───────────
+    trust_val = f"{u['trust_score']}/10"
+    st.markdown(
+        f"<div class='stats-flat-row'>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>My Posts</div>"
+        f"<div class='stat-flat-val'>{len(my_entries)}</div></div>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>Active</div>"
+        f"<div class='stat-flat-val'>{open_cnt}</div></div>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>Applications</div>"
+        f"<div class='stat-flat-val'>{len(my_apps)}</div></div>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>Trust Score</div>"
+        f"<div class='stat-flat-val accent'>{trust_val}</div></div>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>Ratings</div>"
+        f"<div class='stat-flat-val'>{u['total_ratings']}</div></div>"
+        f"<div class='stat-flat-item'><div class='stat-flat-lbl'>Sessions</div>"
+        f"<div class='stat-flat-val'>{sess_cnt}</div></div>"
+        f"</div>",
+        unsafe_allow_html=True)
 
-
-    st.markdown("<br>", unsafe_allow_html=True)
-
-    # Profile banner — just avatar info + Edit Profile, NO sign out here
-    avatar_color = u.get("avatar_color", "#2563EB")
-    pc1, pc2 = st.columns([6, 1])
-    with pc1:
-        st.markdown(f"""
-        <div class='cs-card' style='display:flex;align-items:center;gap:16px;margin-bottom:0;'>
-            {mk_avatar_html(u['username'], 48, avatar_color)}
-            <div>
-                <div style='font-size:15px;font-weight:800;color:#111827;'>{u['username']}</div>
-                <div style='font-size:12px;color:#6B7280;margin-top:3px;'>{u['skills'] or 'No skills listed'}</div>
-                <div style='font-size:11px;color:#9CA3AF;margin-top:2px;'>{u['experience']}</div>
-            </div>
-        </div>""", unsafe_allow_html=True)
-    with pc2:
-        st.markdown("<div style='padding-top:8px;'>", unsafe_allow_html=True)
-        if st.button("Edit Profile", key="dash_edit", use_container_width=True):
+    # ── Flat profile strip — no card box ─────────────────────
+    avatar_color = u.get("avatar_color", "#3B82F6")
+    strip_c1, strip_c2 = st.columns([10, 1])
+    with strip_c1:
+        st.markdown(
+            f"<div class='profile-strip'>"
+            f"{mk_avatar_html(u['username'], 40, avatar_color)}"
+            f"<div class='profile-strip-info'>"
+            f"<div class='profile-strip-name'>{u['username']}</div>"
+            f"<div class='profile-strip-skill'>{u['skills'] or 'No skills listed'}</div>"
+            f"<div class='profile-strip-exp'>{u['experience']}</div>"
+            f"</div></div>",
+            unsafe_allow_html=True)
+    with strip_c2:
+        if st.button("Edit Profile", key="dash_edit"):
             go("profile")
-
-    st.markdown("<br>", unsafe_allow_html=True)
 
     t1_lbl = "My Knowledge Posts" if is_learn_mode() else "My Tasks"
     tab1, tab2, tab3 = st.tabs([t1_lbl, "My Applications", "Quick Actions"])
@@ -1466,7 +1513,15 @@ def page_dashboard():
             if st.button("Community",   key="qa_community", use_container_width=True): go("community")
 
         st.markdown("<div style='height:8px;'></div>", unsafe_allow_html=True)
-       
+        q5, q6, q7, q8 = st.columns(4)
+        with q5:
+            if st.button("Network",      key="qa_network",   use_container_width=True): go("network")
+        with q6:
+            if st.button("Projects",     key="qa_projects",  use_container_width=True): go("projects")
+        with q7:
+            if st.button("My Sessions",  key="qa_sessions",  use_container_width=True): go("my_sessions")
+        with q8:
+            if st.button("Chat",         key="qa_chat",      use_container_width=True): go("chat")
 
     # ── My Learning Connections (only in Learn mode) ──────────
     if is_learn_mode():
