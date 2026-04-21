@@ -849,7 +849,7 @@ def render_navbar():
             border-radius: 7px !important;
             font-weight: 600 !important;
             font-size: 12px !important;
-            padding: 5px 14px !important;
+            padding: 3px 10px !important;
             height: 32px !important;
             min-width: unset !important;
         }
@@ -864,7 +864,7 @@ def render_navbar():
             border: 1.5px solid #D1D5DB !important;
             color: #374151 !important;
             font-size: 12px !important;
-            padding: 5px 14px !important;
+            padding: 3px 10px !important;
             height: 32px !important;
             min-width: unset !important;
         }
@@ -897,7 +897,7 @@ def render_navbar():
     # ── Flat column row — ZERO wrapper divs ─────────────────
     if is_guest:
         # Spacer takes most space, then two compact auth buttons
-        cols = st.columns([8.0, 1.0, 1.0])
+        cols = st.columns([10.0, 0.8, 0.8])
     else:
         cols = st.columns([2.0] + [1.0] * (total - 1))
 
