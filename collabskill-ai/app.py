@@ -776,11 +776,9 @@ def render_skill_selector(cat_key, skill_key, label_prefix=""):
 
 def render_navbar():
     """
-    Premium dark navbar — black bg, white text.
-    Same safe pattern: one flat column row, no wrapper divs.
-    Active page = white text + subtle highlight.
-    Sign Out = red tint (last col via CSS nth-child).
-    Notification badge rendered in button label.
+    Navbar with logo always visible on every page.
+    Guest: logo left, Sign In + Sign Up small at far right.
+    Logged in: logo + nav links left, Sign Out right.
     """
     u        = st.session_state.user
     unread   = get_unread_count(u["id"]) if u else 0
@@ -791,79 +789,141 @@ def render_navbar():
     # Notification label with badge count
     notif_lbl = f"Notifs  🔴{unread}" if unread else "Notifs"
 
-    # ── Build nav list ───────────────────────────────────────
+    # ── Logo always first ────────────────────────────────────
+    LOGO = ("__logo__", "🅒 CollabSkill AI")
+
+    # ── Build nav list (logo is always first item) ───────────
     if is_guest:
+        # Logo takes wide left col; spacer fills middle; Sign In + Sign Up right
         nav_items = [
-            
-            ("Sign In",        "login"),
-            ("Sign Up",        "register"),
+            LOGO,
+            ("__spacer__", ""),
+            ("Sign In",  "login"),
+            ("Sign Up",  "register"),
         ]
     elif is_adm:
         nav_items = [
-            
-            ("Dashboard",       "admin_dashboard"),
-            ("Users",           "admin_users"),
-            ("All Posts",       "admin_tasks"),
-            ("Browse",          "browse_tasks"),
-            (notif_lbl,         "notifications"),
-            ("Profile",         "profile"),
-            ("Sign Out",        "__logout__"),
+            LOGO,
+            ("Dashboard",   "admin_dashboard"),
+            ("Users",       "admin_users"),
+            ("All Posts",   "admin_tasks"),
+            ("Browse",      "browse_tasks"),
+            (notif_lbl,     "notifications"),
+            ("Profile",     "profile"),
+            ("Sign Out",    "__logout__"),
         ]
     else:
         nav_items = [
-           
-            ("Home",            "landing"),
-            ("Dashboard",       "dashboard"),
-            ("Browse",          "browse_tasks"),
-            ("Post",            "post_task"),
-            ("Network",         "network"),
-            ("Projects",        "projects"),
-            ("Chat",            "chat"),
-            ("Sessions",        "my_sessions"),
-            (notif_lbl,         "notifications"),
-            ("Profile",         "profile"),
-            ("Sign Out",        "__logout__"),
+            LOGO,
+            ("Home",        "landing"),
+            ("Dashboard",   "dashboard"),
+            ("Browse",      "browse_tasks"),
+            ("Post",        "post_task"),
+            ("Network",     "network"),
+            ("Projects",    "projects"),
+            ("Chat",        "chat"),
+            ("Sessions",    "my_sessions"),
+            (notif_lbl,     "notifications"),
+            ("Profile",     "profile"),
+            ("Sign Out",    "__logout__"),
         ]
 
     total = len(nav_items)
 
-    # ── Active-page highlight via nth-child ─────────────────
+    # ── Active-page highlight (offset by 1 for logo col) ────
     active_idx = 0
     for i, (_, pg) in enumerate(nav_items):
         if pg == cur:
             active_idx = i + 1
             break
 
-    # Dynamic CSS for active page + guest Sign Up blue
+    # ── CSS ──────────────────────────────────────────────────
+    # Logo column always styled as brand text
+    logo_css = """
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:first-child .stButton > button {
+            font-size: 15px !important;
+            font-weight: 800 !important;
+            color: #111827 !important;
+            letter-spacing: -.03em !important;
+            padding: 7px 20px 7px 4px !important;
+            background: transparent !important;
+            border: none !important;
+            box-shadow: none !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:first-child .stButton > button:hover {
+            background: transparent !important;
+            color: #3B82F6 !important;
+        }
+    """
+
+    # Guest: spacer invisible, Sign In ghost, Sign Up blue — small & right
     guest_extra = ""
     if is_guest:
         guest_extra = """
+        /* Spacer col — completely invisible */
         div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:last-child .stButton > button {
-            background: #2563EB !important;
-            color: #FFFFFF !important;
+            > div[data-testid="column"]:nth-child(2) .stButton > button {
+            visibility: hidden !important;
+            pointer-events: none !important;
             border: none !important;
-            border-radius: 8px !important;
-            font-weight: 600 !important;
-            padding: 7px 18px !important;
+            background: transparent !important;
+            box-shadow: none !important;
         }
+        /* Sign In — small ghost */
         div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:last-child .stButton > button:hover {
-            background: #1D4ED8 !important;
-            color: #FFFFFF !important;
-        }
-        div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-last-child(2) .stButton > button {
-            border: 1.5px solid #D1D5DB !important;
+            > div[data-testid="column"]:nth-child(3) .stButton > button {
+            font-size: 12px !important;
+            font-weight: 500 !important;
             color: #374151 !important;
+            background: transparent !important;
+            border: 1.5px solid #D1D5DB !important;
+            border-radius: 7px !important;
+            padding: 5px 14px !important;
+            height: 32px !important;
         }
         div[data-testid="stHorizontalBlock"]:first-of-type
-            > div[data-testid="column"]:nth-last-child(2) .stButton > button:hover {
+            > div[data-testid="column"]:nth-child(3) .stButton > button:hover {
             border-color: #9CA3AF !important;
             color: #111827 !important;
             background: #F9FAFB !important;
         }
+        /* Sign Up — small blue */
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button {
+            font-size: 12px !important;
+            font-weight: 600 !important;
+            background: #2563EB !important;
+            color: #FFFFFF !important;
+            border: none !important;
+            border-radius: 7px !important;
+            padding: 5px 14px !important;
+            height: 32px !important;
+            box-shadow: 0 2px 6px rgba(37,99,235,.3) !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button:hover {
+            background: #1D4ED8 !important;
+        }
         """
+
+    # Sign Out always red
+    signout_css = """
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button {
+            color: #DC2626 !important;
+            border: 1.5px solid #FECACA !important;
+            padding: 6px 14px !important;
+            background: #FFF5F5 !important;
+        }
+        div[data-testid="stHorizontalBlock"]:first-of-type
+            > div[data-testid="column"]:last-child .stButton > button:hover {
+            background: #FEE2E2 !important;
+            border-color: #FCA5A5 !important;
+            color: #B91C1C !important;
+        }
+    """ if not is_guest else ""
 
     active_css = ""
     if active_idx > 0:
@@ -878,16 +938,28 @@ def render_navbar():
 
     st.markdown(f"""
 <style>
+{logo_css}
 {active_css}
 {guest_extra}
+{signout_css}
 </style>
 """, unsafe_allow_html=True)
 
-    # ── Flat column row — ZERO wrapper divs ─────────────────
-    cols = st.columns([2.0] + [1.0] * (total - 1))
-    for col, (lbl, pg) in zip(cols, nav_items):
+    # ── Column widths: logo wide, spacer fills gap for guest ─
+    if is_guest:
+        col_widths = [2.2, 6.0, 0.9, 0.9]   # logo | big spacer | Sign In | Sign Up
+    else:
+        col_widths = [2.0] + [1.0] * (total - 1)
+
+    cols = st.columns(col_widths)
+    for col, (pg, lbl) in zip(cols, nav_items):
         with col:
-            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+            if pg == "__spacer__":
+                st.button(" ", key="nav____spacer__", use_container_width=True,
+                          disabled=False)
+                continue
+            btn_lbl = lbl
+            if st.button(btn_lbl, key=f"nav__{pg}", use_container_width=True):
                 if pg in ("__logo__", "landing"):
                     go("landing")
                 elif pg == "__logout__":
@@ -899,15 +971,6 @@ def render_navbar():
 
 
 def page_landing():
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
-
     render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
@@ -1175,14 +1238,6 @@ def page_landing():
 #  LOGIN
 # ═══════════════════════════════════════════════════════════════
 def page_login():
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
 
@@ -1228,14 +1283,6 @@ def page_login():
 #  REGISTER  — cascading skill dropdowns OUTSIDE form
 # ═══════════════════════════════════════════════════════════════
 def page_register():
-    st.markdown("""
-    <div style='padding:10px 0 2px 12px;
-                font-size:22px;
-                font-weight:900;
-                color:#111827;'>
-        Collab<span style='color:#3B82F6;'>Skill</span> AI
-    </div>
-    """, unsafe_allow_html=True)
     render_navbar()
     back_btn()
     st.markdown("<div style='height:12px;'></div>", unsafe_allow_html=True)
