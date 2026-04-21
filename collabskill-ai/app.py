@@ -609,39 +609,39 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 /* ══ FLAT STATS ROW ═════════════════════════════════════════ */
 .stats-flat-row {
     display: flex; align-items: flex-end; gap: 0;
-    padding: 28px 0 32px; margin-bottom: 12px;
+    padding: 20px 0 24px; margin-bottom: 8px;
     border-bottom: 1px solid #F3F4F6;
 }
 .stat-flat-item {
-    padding: 0 36px 0 0; margin-right: 36px;
-    border-right: 1px solid #EBEBEB;
+    padding: 0 28px 0 0; margin-right: 28px;
+    border-right: 1px solid #F3F4F6;
 }
 .stat-flat-item:last-child { border-right: none; padding-right: 0; margin-right: 0; }
 .stat-flat-lbl {
-    font-size: 11px; font-weight: 700; letter-spacing: .1em;
+    font-size: 10px; font-weight: 700; letter-spacing: .1em;
     text-transform: uppercase; color: #9CA3AF;
-    margin-bottom: 8px;
+    margin-bottom: 5px;
 }
 .stat-flat-val {
-    font-size: 36px; font-weight: 800; color: #111827;
-    line-height: 1; letter-spacing: -.03em;
+    font-size: 24px; font-weight: 800; color: #111827;
+    line-height: 1; letter-spacing: -.02em;
 }
 .stat-flat-val.accent { color: #3B82F6; }
 
 /* ══ PROFILE STRIP — flat, no card ══════════════════════════ */
 .profile-strip {
     display: flex; align-items: center; gap: 14px;
-    padding: 22px 0 18px;
+    padding: 20px 0 16px;
     border-bottom: 1px solid #F3F4F6;
     margin-bottom: 4px;
 }
 .profile-strip-info { flex: 1; }
 .profile-strip-name {
-    font-size: 16px; font-weight: 700; color: #111827;
-    margin-bottom: 3px;
+    font-size: 15px; font-weight: 700; color: #111827;
+    margin-bottom: 2px;
 }
-.profile-strip-skill { font-size: 13px; color: #6B7280; }
-.profile-strip-exp   { font-size: 12px; color: #9CA3AF; margin-top: 2px; }
+.profile-strip-skill { font-size: 12px; color: #6B7280; }
+.profile-strip-exp   { font-size: 11px; color: #9CA3AF; margin-top: 1px; }
 
 /* ══ SCROLLBAR — light ═══════════════════════════════════════ */
 ::-webkit-scrollbar { width: 6px; height: 6px; }
@@ -794,7 +794,7 @@ def render_navbar():
     # ── Build nav list ───────────────────────────────────────
     if is_guest:
         nav_items = [
-            
+            ("__spacer__",     "__spacer__"),
             ("Sign In",        "login"),
             ("Sign Up",        "register"),
         ]
@@ -830,6 +830,8 @@ def render_navbar():
     # ── Active-page highlight via nth-child ─────────────────
     active_idx = 0
     for i, (_, pg) in enumerate(nav_items):
+        if pg == "__spacer__":
+            continue
         if pg == cur:
             active_idx = i + 1
             break
@@ -838,24 +840,33 @@ def render_navbar():
     guest_extra = ""
     if is_guest:
         guest_extra = """
+        /* Sign Up — blue filled, compact */
         div[data-testid="stHorizontalBlock"]:first-of-type
             > div[data-testid="column"]:last-child .stButton > button {
             background: #2563EB !important;
             color: #FFFFFF !important;
             border: none !important;
-            border-radius: 8px !important;
+            border-radius: 7px !important;
             font-weight: 600 !important;
-            padding: 7px 18px !important;
+            font-size: 12px !important;
+            padding: 5px 14px !important;
+            height: 32px !important;
+            min-width: unset !important;
         }
         div[data-testid="stHorizontalBlock"]:first-of-type
             > div[data-testid="column"]:last-child .stButton > button:hover {
             background: #1D4ED8 !important;
             color: #FFFFFF !important;
         }
+        /* Sign In — ghost, compact */
         div[data-testid="stHorizontalBlock"]:first-of-type
             > div[data-testid="column"]:nth-last-child(2) .stButton > button {
             border: 1.5px solid #D1D5DB !important;
             color: #374151 !important;
+            font-size: 12px !important;
+            padding: 5px 14px !important;
+            height: 32px !important;
+            min-width: unset !important;
         }
         div[data-testid="stHorizontalBlock"]:first-of-type
             > div[data-testid="column"]:nth-last-child(2) .stButton > button:hover {
@@ -884,10 +895,17 @@ def render_navbar():
 """, unsafe_allow_html=True)
 
     # ── Flat column row — ZERO wrapper divs ─────────────────
-    cols = st.columns([2.0] + [1.0] * (total - 1))
+    if is_guest:
+        # Spacer takes most space, then two compact auth buttons
+        cols = st.columns([8.0, 1.0, 1.0])
+    else:
+        cols = st.columns([2.0] + [1.0] * (total - 1))
+
     for col, (lbl, pg) in zip(cols, nav_items):
         with col:
-            if st.button(lbl, key=f"nav__{pg}", use_container_width=True):
+            if pg == "__spacer__":
+                st.empty()
+            elif st.button(lbl, key=f"nav__{pg}", use_container_width=True):
                 if pg in ("__logo__", "landing"):
                     go("landing")
                 elif pg == "__logout__":
@@ -899,81 +917,16 @@ def render_navbar():
 
 
 def page_landing():
-    # ── Top bar: logo left + auth buttons right ───────────────
     st.markdown("""
-    <style>
-    .lp-topbar {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        padding: 14px 4px 8px;
-        border-bottom: 1px solid #F3F4F6;
-        margin-bottom: 8px;
-    }
-    .lp-topbar-logo {
-        font-size: 20px; font-weight: 900; color: #111827;
-        letter-spacing: -.03em;
-    }
-    .lp-topbar-logo span { color: #3B82F6; }
-    .lp-topbar-btns {
-        display: flex; gap: 8px; align-items: center;
-    }
-    .lp-topbar-btns a.lp-signin {
-        font-size: 13px; font-weight: 500; color: #374151;
-        border: 1px solid #D1D5DB; border-radius: 6px;
-        padding: 5px 14px; text-decoration: none;
-        background: transparent;
-        transition: all .15s;
-        display: inline-block;
-    }
-    .lp-topbar-btns a.lp-signin:hover {
-        border-color: #9CA3AF; color: #111827; background: #F9FAFB;
-    }
-    .lp-topbar-btns a.lp-signup {
-        font-size: 13px; font-weight: 600; color: #FFFFFF;
-        border-radius: 6px; padding: 5px 14px;
-        background: #3B82F6; text-decoration: none;
-        box-shadow: 0 1px 6px rgba(59,130,246,.3);
-        transition: all .15s;
-        display: inline-block;
-    }
-    .lp-topbar-btns a.lp-signup:hover {
-        background: #2563EB;
-    }
-    </style>
-    <div class="lp-topbar">
-        <div class="lp-topbar-logo">
-            Collab<span>Skill</span> AI
-        </div>
-        <div class="lp-topbar-btns">
-            <a class="lp-signin" href="#"
-               onclick="window.parent.document.querySelectorAll('button').forEach(b=>{if(b.innerText.trim()==='nav__login')b.click()});return false;">
-               Sign In</a>
-            <a class="lp-signup" href="#"
-               onclick="window.parent.document.querySelectorAll('button').forEach(b=>{if(b.innerText.trim()==='nav__register')b.click()});return false;">
-               Sign Up</a>
-        </div>
+    <div style='padding:10px 0 2px 12px;
+                font-size:22px;
+                font-weight:900;
+                color:#111827;'>
+        Collab<span style='color:#3B82F6;'>Skill</span> AI
     </div>
     """, unsafe_allow_html=True)
 
-    # Hidden routing buttons for Sign In / Sign Up
-    hc1, hc2 = st.columns(2)
-    with hc1:
-        if st.button(" ", key="nav__login", help="login"):
-            go("login")
-    with hc2:
-        if st.button(" ", key="nav__register", help="register"):
-            go("register")
-    st.markdown("""
-    <style>
-    /* Hide the routing buttons — only logo+buttons bar is visible */
-    div[data-testid="stHorizontalBlock"]:has(button[title="login"]) {
-        height: 0 !important; overflow: hidden !important;
-        visibility: hidden !important; pointer-events: none !important;
-        position: absolute !important; margin: 0 !important; padding: 0 !important;
-    }
-    </style>
-    """, unsafe_allow_html=True)
+    render_navbar()
 
     # ── Hero Section ─────────────────────────────────────────
     st.markdown("""
