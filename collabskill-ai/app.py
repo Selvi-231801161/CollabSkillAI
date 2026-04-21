@@ -881,12 +881,12 @@ def render_navbar():
 #csn-rt ~ div,
 #csn-rt + div,
 #csn-rt ~ div[data-testid="stHorizontalBlock"],
-#csn-rt ~ div[data-testid="element-container"] {
+#csn-rt ~ div[data-testid="element-container"] {{
     height: 0 !important; max-height: 0 !important;
     overflow: hidden !important; visibility: hidden !important;
     pointer-events: none !important; position: absolute !important;
     margin: 0 !important; padding: 0 !important; opacity: 0 !important;
-}
+}}
 </style>
 
 <div class="csn-bar">
