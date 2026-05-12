@@ -52,6 +52,56 @@ try:
 except Exception:
     pass
 
+# ── Ensure applications table has status/accept columns ──────
+try:
+    db_execute("ALTER TABLE applications ADD COLUMN status TEXT DEFAULT 'pending'")
+except Exception:
+    pass
+try:
+    db_execute("ALTER TABLE applications ADD COLUMN message TEXT DEFAULT ''")
+except Exception:
+    pass
+
+
+def get_task_applicants(task_id):
+    """Return applicants for a task with full profile details."""
+    rows = db_fetchall("""
+        SELECT a.id, a.user_id, a.status, a.created_at, a.message,
+               u.username, u.skills, u.experience, u.trust_score,
+               u.bio, u.portfolio, u.phone_number, u.avatar_color,
+               u.total_ratings
+        FROM applications a
+        JOIN users u ON u.id = a.user_id
+        WHERE a.task_id = ?
+        ORDER BY a.created_at DESC
+    """, (task_id,))
+    return rows
+
+
+def accept_task_applicant(application_id, task_id, applicant_id):
+    """Accept an applicant and update task status to in_progress."""
+    db_execute("UPDATE applications SET status='accepted' WHERE id=?", (application_id,))
+    db_execute("UPDATE applications SET status='rejected' WHERE task_id=? AND id!=? AND status='pending'",
+               (task_id, application_id))
+    db_execute("UPDATE tasks SET status='in_progress' WHERE id=?", (task_id,))
+
+
+def reject_task_applicant(application_id):
+    """Reject an applicant."""
+    db_execute("UPDATE applications SET status='rejected' WHERE id=?", (application_id,))
+
+
+def get_accepted_applicant(task_id):
+    """Return the accepted applicant for a task, or None."""
+    return db_fetchone("""
+        SELECT a.id, a.user_id, a.status, u.username, u.skills,
+               u.experience, u.trust_score, u.bio, u.portfolio,
+               u.phone_number, u.avatar_color
+        FROM applications a JOIN users u ON u.id = a.user_id
+        WHERE a.task_id=? AND a.status='accepted'
+        LIMIT 1
+    """, (task_id,))
+
 st.set_page_config(
     page_title="CollabSkill AI",
     page_icon="C",
@@ -717,6 +767,45 @@ div[data-testid="stHorizontalBlock"]:first-of-type
 ::-webkit-scrollbar-track { background: #F9FAFB; }
 ::-webkit-scrollbar-thumb { background: #D1D5DB; border-radius: 999px; }
 ::-webkit-scrollbar-thumb:hover { background: #3B82F6; }
+
+/* ══ INTERESTED USERS PANEL ══════════════════════════════════ */
+.interested-panel {
+    background: #F8FAFF;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 14px;
+    padding: 18px 20px;
+    margin-top: 12px;
+}
+.interested-panel-header {
+    font-size: 12px; font-weight: 700; color: #1D4ED8;
+    letter-spacing: .06em; text-transform: uppercase;
+    margin-bottom: 14px; display: flex; align-items: center; gap: 8px;
+}
+.applicant-card {
+    background: #FFFFFF;
+    border: 1px solid #E5E7EB;
+    border-radius: 10px;
+    padding: 14px 16px;
+    margin-bottom: 10px;
+    transition: box-shadow 0.18s ease;
+}
+.applicant-card:hover { box-shadow: 0 4px 14px rgba(0,0,0,.08); }
+.applicant-card.accepted { border-color: #86EFAC; background: #F0FDF4; }
+.applicant-card.rejected { border-color: #FCA5A5; background: #FFF5F5; opacity:.75; }
+.applicant-meta { font-size: 11px; color: #9CA3AF; margin-top: 3px; }
+.applicant-skills { font-size: 11px; color: #6B7280; margin-top: 4px; }
+.applicant-contact {
+    font-size: 11px; color: #3B82F6; margin-top: 2px;
+    font-weight: 600;
+}
+.book-session-banner {
+    background: linear-gradient(135deg, #EFF6FF 0%, #F5F3FF 100%);
+    border: 1.5px solid #C7D2FE;
+    border-radius: 12px;
+    padding: 14px 18px;
+    margin-top: 10px;
+    display: flex; align-items: center; gap: 12px;
+}
 </style>
 """, unsafe_allow_html=True)
 
@@ -1629,9 +1718,17 @@ def _render_entry_card(t, owner=False):
             if owner:
                 if t["status"] == "open":
                     if st.button("Close",  key=f"tc_{t['id']}"): update_task_status(t["id"], "closed"); st.rerun()
-                else:
+                elif t["status"] != "in_progress":
                     if st.button("Reopen", key=f"to_{t['id']}"): update_task_status(t["id"], "open"); st.rerun()
                 if st.button("Delete", key=f"td_{t['id']}"): delete_task(t["id"]); st.rerun()
+
+                # ── TASK mode: show interested applicants ────────
+                if not is_know and interest_cnt > 0:
+                    if st.button(f"👥 View Applicants ({interest_cnt})", key=f"va_{t['id']}",
+                                 use_container_width=True):
+                        st.session_state[f"show_applicants_{t['id']}"] = \
+                            not st.session_state.get(f"show_applicants_{t['id']}", False)
+
                 # For knowledge LEARN posts — show interested teachers
                 if is_know and intent == INTENT_LEARN and interest_cnt > 0:
                     st.markdown("<div style='margin-top:8px;'>", unsafe_allow_html=True)
@@ -1648,13 +1745,158 @@ def _render_entry_card(t, owner=False):
                         st.session_state[f"show_interested_{t['id']}"] = \
                             not st.session_state.get(f"show_interested_{t['id']}", False)
 
-        # ── Show interested users panel ────────────────────────
+        # ── Show task applicants panel (Work mode) ─────────────
+        if (owner and not is_know
+                and st.session_state.get(f"show_applicants_{t['id']}", False)):
+            _render_task_applicants(t)
+
+        # ── Show interested users panel (Knowledge mode) ───────
         if (owner and is_know
                 and st.session_state.get(f"show_interested_{t['id']}", False)):
             if intent == INTENT_LEARN:
                 _render_interested_teachers(t)
             elif intent == INTENT_TEACH:
                 _render_interested_learners(t)
+
+
+def _render_task_applicants(t):
+    """
+    Show all applicants for a TASK post with full profile details.
+    Owner can Accept, Reject, Chat, and Book Session.
+    """
+    uid        = st.session_state.user["id"]
+    applicants = get_task_applicants(t["id"])
+    accepted   = get_accepted_applicant(t["id"])
+
+    st.markdown("""
+    <div class='interested-panel'>
+        <div class='interested-panel-header'>
+            <svg width='14' height='14' fill='none' stroke='#1D4ED8' stroke-width='2' viewBox='0 0 24 24'>
+                <path d='M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2'/>
+                <circle cx='9' cy='7' r='4'/>
+                <path d='M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75'/>
+            </svg>
+            Interested Collaborators
+        </div>
+    """, unsafe_allow_html=True)
+
+    if not applicants:
+        st.markdown("<div style='color:#9CA3AF;font-size:12px;'>No applicants yet.</div>",
+                    unsafe_allow_html=True)
+        st.markdown("</div>", unsafe_allow_html=True)
+        return
+
+    accepted_exists = accepted is not None
+
+    for app in applicants:
+        status    = app["status"] or "pending"
+        ini       = "".join(w[0].upper() for w in app["username"].split()[:2])
+        av        = app.get("avatar_color", "#2563EB")
+        card_cls  = "accepted" if status == "accepted" else ("rejected" if status == "rejected" else "")
+
+        # Status badge HTML
+        status_html = {
+            "accepted": "<span class='cs-badge badge-green'>✓ Accepted</span>",
+            "rejected": "<span class='cs-badge badge-red'>✗ Declined</span>",
+            "pending":  "<span class='cs-badge badge-amber'>⏳ Pending</span>",
+        }.get(status, "")
+
+        # Portfolio link
+        port_html = ""
+        if app.get("portfolio"):
+            port_html = (f"<a href='{app['portfolio']}' target='_blank' "
+                         f"style='font-size:11px;color:#3B82F6;font-weight:600;'>"
+                         f"Portfolio / GitHub ↗</a>")
+
+        # Phone/contact
+        contact_html = ""
+        if app.get("phone_number") and status == "accepted":
+            contact_html = (f"<div class='applicant-contact'>"
+                            f"📞 {app['phone_number']}</div>")
+
+        st.markdown(f"""
+        <div class='applicant-card {card_cls}'>
+            <div style='display:flex;align-items:flex-start;gap:12px;'>
+                <div style='width:44px;height:44px;border-radius:50%;background:{av};
+                    display:inline-flex;align-items:center;justify-content:center;
+                    font-size:15px;font-weight:700;color:#fff;flex-shrink:0;'>{ini}</div>
+                <div style='flex:1;'>
+                    <div style='display:flex;align-items:center;gap:8px;flex-wrap:wrap;'>
+                        <span style='font-weight:700;color:#111827;font-size:14px;'>{app['username']}</span>
+                        {status_html}
+                    </div>
+                    <div class='applicant-skills'>
+                        <span class='cs-badge badge-slate' style='font-size:10px;'>{app.get('skills','') or 'Skills not listed'}</span>
+                        <span class='cs-badge badge-violet' style='font-size:10px;'>{app.get('experience','')}</span>
+                    </div>
+                    <div class='applicant-meta'>
+                        Trust Score: <strong style='color:#3B82F6;'>{app.get('trust_score', 0)}/10</strong>
+                        &nbsp;·&nbsp; {app.get('total_ratings', 0)} ratings
+                        &nbsp;·&nbsp; Applied {str(app.get('created_at',''))[:10]}
+                    </div>
+                    {f"<div style='font-size:11px;color:#6B7280;margin-top:4px;line-height:1.5;'>{app.get('bio','')[:120]}{'...' if len(app.get('bio','') or '') > 120 else ''}</div>" if app.get('bio') else ''}
+                    {contact_html}
+                    {f"<div style='margin-top:4px;'>{port_html}</div>" if port_html else ''}
+                </div>
+            </div>
+        </div>""", unsafe_allow_html=True)
+
+        # Action buttons
+        if status == "pending" and not accepted_exists:
+            ba, br = st.columns(2)
+            with ba:
+                if st.button("✓ Accept", key=f"task_acc_{app['id']}_{t['id']}",
+                             use_container_width=True):
+                    accept_task_applicant(app["id"], t["id"], app["user_id"])
+                    add_notification(app["user_id"], "🎉 Application Accepted!",
+                        f"{st.session_state.user['username']} accepted your application for: {t['title']}")
+                    st.session_state["_task_app_msg"] = (
+                        "ok",
+                        f"Accepted {app['username']}! Task is now In Progress. You can chat and book sessions.")
+                    st.rerun()
+            with br:
+                if st.button("✗ Decline", key=f"task_rej_{app['id']}_{t['id']}",
+                             use_container_width=True):
+                    reject_task_applicant(app["id"])
+                    add_notification(app["user_id"], "Application Update",
+                        f"Your application for '{t['title']}' was not selected this time.")
+                    st.rerun()
+
+        elif status == "accepted":
+            # Accepted collaborator: show Chat + Book Session
+            st.markdown("""
+            <div class='book-session-banner'>
+                <svg width='16' height='16' fill='none' stroke='#4F46E5' stroke-width='2' viewBox='0 0 24 24'>
+                    <circle cx='12' cy='12' r='10'/><path d='M12 6v6l4 2'/>
+                </svg>
+                <span style='font-size:12px;color:#4F46E5;font-weight:600;'>
+                    Collaboration Active — Chat and schedule a session below
+                </span>
+            </div>""", unsafe_allow_html=True)
+
+            bc1, bc2 = st.columns(2)
+            with bc1:
+                if st.button("💬 Open Chat", key=f"task_chat_{app['id']}_{t['id']}",
+                             use_container_width=True):
+                    st.session_state.chat_partner = app["user_id"]
+                    go("chat")
+            with bc2:
+                if st.button("📅 Book Session", key=f"task_book_{app['id']}_{t['id']}",
+                             use_container_width=True):
+                    st.session_state.book_post_id    = t["id"]
+                    st.session_state.book_teacher_id = app["user_id"]
+                    st.session_state.book_learner_id = uid
+                    go("book_session")
+
+    st.markdown("</div>", unsafe_allow_html=True)
+
+    # Show deferred message
+    if "_task_app_msg" in st.session_state:
+        kind, msg = st.session_state.pop("_task_app_msg")
+        if kind == "ok":
+            st.success(msg)
+        else:
+            st.warning(msg)
 
 def _render_interested_teachers(t):
     """Show list of teachers who expressed interest — learner can Accept/Reject."""
